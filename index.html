@@ -608,14 +608,17 @@ body{
   display:flex;flex-direction:column;
   /* prevent double-tap zoom on mobile */
   touch-action:manipulation;
-  /* safe area for notched phones */
-  padding-top:env(safe-area-inset-top);
+  /* safe area for notched phones — bottom only; top handled by page-header */
   padding-bottom:env(safe-area-inset-bottom);
 }
 /* ensure full-screen app screens respect safe areas */
 #floorScreen,#chatBox,#tablesRoom,#doorScreen,#loginScreen,#welcomeScreen{
   padding-left:env(safe-area-inset-left);
   padding-right:env(safe-area-inset-right);
+}
+/* door/login/welcome don't have a page-header, so apply top safe area directly */
+#doorScreen,#loginScreen,#welcomeScreen{
+  padding-top:env(safe-area-inset-top);
 }
 /* minimum touch target for all buttons */
 button,.hbtn,.back-btn,.tables-btn,.ws-btn,.join-btn,.ctx-btn{
@@ -656,7 +659,7 @@ button,.hbtn,.back-btn,.tables-btn,.ws-btn,.join-btn,.ctx-btn{
 /* ═══════════════════ SHARED COMPONENTS ═══════════════════ */
 .page-header{
   background:linear-gradient(135deg,var(--espresso),var(--mocha));
-  padding:12px 16px;display:flex;align-items:center;gap:9px;flex-shrink:0;
+  padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));display:flex;align-items:center;gap:9px;flex-shrink:0;
   border-bottom:2.5px solid var(--caramel);position:relative;overflow:hidden;
 }
 .page-header::after{content:'';position:absolute;right:-18px;top:-18px;width:78px;height:78px;border-radius:50%;border:10px solid rgba(200,149,92,.12);pointer-events:none;}
