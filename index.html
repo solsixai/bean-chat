@@ -35,7 +35,13 @@
   let ambientNode=null, ambientGain=null, clinkTimeout=null;
   let messagesUnsub=null, typingUnsub=null, seatsUnsub=null, tablesUnsub=null;
   let beanLevel=0, beanTimer=null, bgBeanInterval=null;
-  let editingKey=null; // for message edit
+  let editingKey=null;
+
+  /* ── SESSION STORAGE HELPERS ────────────────────────────── */
+  const SESSION_KEY = 'beanchat_username';
+  function saveSession(name){ try{ sessionStorage.setItem(SESSION_KEY, name); }catch(e){} }
+  function loadSession(){ try{ return sessionStorage.getItem(SESSION_KEY)||''; }catch(e){ return ''; } }
+  function clearSession(){ try{ sessionStorage.removeItem(SESSION_KEY); }catch(e){} }
 
   /* ── TABLES ─────────────────────────────────────────────── */
   const TABLES=[
@@ -165,7 +171,9 @@
   window.joinChat=()=>{
     const n=document.getElementById('nameInput').value.trim();
     if(!n){const i=document.getElementById('nameInput');i.classList.add('shake');setTimeout(()=>i.classList.remove('shake'),500);return;}
-    username=n;actx.resume();
+    username=n;
+    saveSession(username); // ← save to sessionStorage
+    actx.resume();
     myOnlineRef=ref(db,'online/'+username);
     set(myOnlineRef,{name:username,joinedAt:Date.now()});
     onDisconnect(myOnlineRef).remove();
@@ -353,7 +361,6 @@
       document.getElementById('floorTypingBar').innerHTML='';
       document.getElementById('floorTypingBar').style.display='none';
     }
-    // reset edit state
     editingKey=null;
     hideEditBar();
     isFirstLoad=true;
@@ -368,7 +375,6 @@
     const inp=inputEl(),text=inp.value.trim();
     if(!text||!currentTable)return;
 
-    // EDIT MODE
     if(editingKey){
       const msgRef=ref(db,`tables/${currentTable}/messages/${editingKey}`);
       update(msgRef,{text,edited:true,editedAt:serverTimestamp()});
@@ -428,7 +434,6 @@
     let bar=document.getElementById('editBar');
     if(!bar){
       bar=document.createElement('div');bar.id='editBar';bar.className='edit-bar';
-      // insert before input-bar
       const inputArea=document.querySelector('#chatBox .input-bar')||document.querySelector('#floorScreen .input-bar');
       if(inputArea)inputArea.parentNode.insertBefore(bar,inputArea);
     }
@@ -452,7 +457,6 @@
     inp.focus();
     autoResize(inp);
     showEditBar(text);
-    // close context menu
     closeContextMenu();
   };
   window.deleteMsg=(key)=>{
@@ -478,7 +482,6 @@
     menu.innerHTML=`
       <button class="ctx-btn" onclick="startEditMsg('${key}',${JSON.stringify(text)})">✏️ Edit</button>
       <button class="ctx-btn ctx-del" onclick="deleteMsg('${key}')">🗑 Delete</button>`;
-    // position near bubble
     const rect=targetEl.getBoundingClientRect();
     menu.style.top=(rect.top-80+window.scrollY)+'px';
     menu.style.left=Math.max(8,Math.min(rect.left-10,window.innerWidth-160))+'px';
@@ -508,7 +511,6 @@
           const bub=document.createElement('div');
           bub.className='bub '+(mine?'bub-mine':'bub-them');
           bub.textContent=msg.text;
-          // Long-press / right-click for own messages
           if(mine){
             bub.addEventListener('contextmenu',e=>{e.preventDefault();window.openContextMenu(key,msg.text,true,bub);});
             bub.addEventListener('click',()=>window.openContextMenu(key,msg.text,true,bub));
@@ -523,24 +525,37 @@
     });
   }
 
+  /* ── SESSION RESTORE + DOMContentLoaded ────────────────── */
   document.addEventListener('DOMContentLoaded',()=>{
     document.getElementById('loginSpecialDrink').textContent=special.drink;
     document.getElementById('loginSpecialNote').textContent=special.note;
     applyTime();
-    // Make sure door is visible on first load
-    showScreen('doorScreen');
-    initDoorScreen();
+
+    const savedName = loadSession();
+    if(savedName){
+      // Returning user — skip door & login, go straight to floor
+      username = savedName;
+      actx.resume();
+      myOnlineRef = ref(db,'online/'+username);
+      set(myOnlineRef,{name:username,joinedAt:Date.now()});
+      onDisconnect(myOnlineRef).remove();
+      showScreen('floorScreen');
+      initFloor();
+      initDoorScreen(); // still set up PWA install listener
+    } else {
+      // New user — show the door
+      showScreen('doorScreen');
+      initDoorScreen();
+    }
   });
 
   /* ── DOOR SCREEN INIT ───────────────────────────────────── */
   function initDoorScreen(){
-    // PWA install prompt
     let deferredPrompt=null;
     window.addEventListener('beforeinstallprompt',e=>{
       e.preventDefault();deferredPrompt=e;
       setTimeout(()=>showInstallBanner(deferredPrompt),4000);
     });
-    // iOS Safari fallback
     const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
     const isStandalone=('standalone' in navigator)&&navigator.standalone;
     if(isIOS&&!isStandalone){
