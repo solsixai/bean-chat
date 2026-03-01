@@ -597,11 +597,12 @@
 [data-time=afternoon]{--bg1:rgba(210,100,30,.12);--bg2:rgba(140,60,20,.09);}
 [data-time=evening]  {--bg1:rgba(50,15,2,.18);   --bg2:rgba(20,8,2,.14);}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;height:100dvh;}
+html{height:100%;height:100dvh;background:#3b1f0e;}
+body{height:100%;height:100dvh;}
 body{
   min-height:100vh;min-height:100dvh;
   font-family:'Lato',sans-serif;color:var(--ink);
-  background:var(--parchment);
+  background:var(--espresso);
   background-image:
     radial-gradient(ellipse at 20% 10%,var(--bg1,rgba(200,149,92,.10)) 0%,transparent 60%),
     radial-gradient(ellipse at 80% 90%,var(--bg2,rgba(107,58,31,.08)) 0%,transparent 60%);
@@ -611,6 +612,7 @@ body{
   /* safe area for notched phones — bottom only; top handled by page-header */
   padding-bottom:env(safe-area-inset-bottom);
 }
+/* screens use position:fixed;inset:0 — safe areas handled natively */
 /* ensure full-screen app screens respect safe areas */
 #floorScreen,#chatBox,#tablesRoom,#doorScreen,#loginScreen,#welcomeScreen{
   padding-left:env(safe-area-inset-left);
