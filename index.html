@@ -2,19 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Bean Chat ☕</title>
-<link rel="manifest" href="manifest.json"/>
-<meta name="theme-color" content="#3b1f0e"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="Bean Chat"/>
-<link rel="apple-touch-icon" href="icon-192.png"/>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#3b1f0e"/>
+<title>Bean Chat ☕</title>
+<link rel="manifest" href="manifest.json"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lato:wght@300;400;700&family=Dancing+Script:wght@600&display=swap" rel="stylesheet"/>
 
 <script type="module">
   import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, push, onValue, set, remove, serverTimestamp, onDisconnect }
+  import { getDatabase, ref, push, onValue, set, update, remove, serverTimestamp, onDisconnect }
     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
@@ -29,13 +28,14 @@
   const app=initializeApp(firebaseConfig), db=getDatabase(app);
 
   /* ── STATE ─────────────────────────────────────────────── */
-  let username="", currentTable=null, currentScreen="login";
+  let username="", currentTable=null, currentScreen="door";
   let myOnlineRef=null, myTableSeatRef=null, myTypingRef=null;
   let soundOn=true, ambientOn=false;
   let isFirstLoad=true, typingTimer=null, isTyping=false;
   let ambientNode=null, ambientGain=null, clinkTimeout=null;
   let messagesUnsub=null, typingUnsub=null, seatsUnsub=null, tablesUnsub=null;
   let beanLevel=0, beanTimer=null, bgBeanInterval=null;
+  let editingKey=null; // for message edit
 
   /* ── TABLES ─────────────────────────────────────────────── */
   const TABLES=[
@@ -114,7 +114,7 @@
   /* ── BEANS ──────────────────────────────────────────────── */
   const BEANS=['🫘','🫘','🫘','☕','☕','🥐','🍵','🍫','✨','🌿'];
   function spawnFlyBean(big){
-    const host=document.getElementById('chatBox');if(!host)return;
+    const host=document.getElementById('chatBox')||document.getElementById('floorScreen');if(!host)return;
     const el=document.createElement('div');el.className='fly-bean';
     el.textContent=BEANS[Math.floor(Math.random()*BEANS.length)];
     el.style.left=(5+Math.random()*88)+'%';
@@ -147,12 +147,19 @@
 
   /* ── SCREENS ────────────────────────────────────────────── */
   function showScreen(id){
-    ['loginScreen','floorScreen','tablesRoom','chatBox'].forEach(s=>{
+    ['doorScreen','loginScreen','welcomeScreen','floorScreen','tablesRoom','chatBox'].forEach(s=>{
       const el=document.getElementById(s);if(el)el.style.display='none';
     });
     const el=document.getElementById(id);if(el)el.style.display='flex';
     currentScreen=id;
   }
+
+  /* ── DOOR SCREEN ────────────────────────────────────────── */
+  window.enterShop=()=>{
+    const door=document.querySelector('.ds-door-scene');
+    if(door){door.style.transition='all 0.4s ease';door.style.transform='scale(0.9) translateY(8px)';door.style.opacity='0.2';}
+    setTimeout(()=>{showScreen('loginScreen');applyTime();},380);
+  };
 
   /* ── LOGIN ──────────────────────────────────────────────── */
   window.joinChat=()=>{
@@ -162,10 +169,27 @@
     myOnlineRef=ref(db,'online/'+username);
     set(myOnlineRef,{name:username,joinedAt:Date.now()});
     onDisconnect(myOnlineRef).remove();
+    showScreen('welcomeScreen');
+    initWelcome();
+  };
+  window.handleJoinKey=e=>{if(e.key==='Enter')window.joinChat();};
+
+  /* ── HOSTESS WELCOME ────────────────────────────────────── */
+  function initWelcome(){
+    document.getElementById('hostessName').textContent=username;
+  }
+  window.goToMainFloor=()=>{
     showScreen('floorScreen');
     initFloor();
   };
-  window.handleJoinKey=e=>{if(e.key==='Enter')window.joinChat();};
+  window.goToTablesFromWelcome=()=>{
+    showScreen('tablesRoom');
+    document.getElementById('tablesUserAv').textContent=username[0].toUpperCase();
+    document.querySelectorAll('.special-fill').forEach(e=>e.textContent=specialStr);
+    renderRoundTables();
+    listenTablesOverview();
+    startBgBeans('tablesRoomBody');
+  };
 
   /* ── FLOOR ──────────────────────────────────────────────── */
   function initFloor(){
@@ -174,7 +198,7 @@
     document.querySelectorAll('.special-fill').forEach(e=>e.textContent=specialStr);
     applyTime();setInterval(applyTime,60000);
     startBgBeans('floorScreen');
-    listenTablesOverview(); // keep floor count live
+    listenTablesOverview();
     enterRoom(FREE_ID,FREE_INFO,false);
   }
   window.goToTables=()=>{
@@ -186,12 +210,10 @@
     listenTablesOverview();
     startBgBeans('tablesRoomBody');
   };
-  // New: go from Tables back to floor without disturbing the floor session
   window.tablesBackToFloor=()=>{
     stopBgBeans();
     showScreen('floorScreen');
     startBgBeans('floorScreen');
-    // re-attach floor seat if we left it
     if(!currentTable||currentTable!==FREE_ID){
       if(currentTable&&currentTable!==FREE_ID){leaveRoomSilent();}
       enterRoom(FREE_ID,FREE_INFO,false);
@@ -199,14 +221,12 @@
   };
   window.backToFloor=()=>{
     stopBgBeans();
-    // if in a private table, announce leave
     if(currentTable&&currentTable!==FREE_ID){
       push(ref(db,`tables/${currentTable}/messages`),{type:'system',text:`${username} headed back to the floor 👣`,ts:serverTimestamp()});
       playLeave();leaveRoomSilent();
     }
     showScreen('floorScreen');
     startBgBeans('floorScreen');
-    // re-enter free chat
     enterRoom(FREE_ID,FREE_INFO,false);
   };
 
@@ -246,7 +266,6 @@
         const ns=[];snap.child(t.id).child('seats').forEach(c=>ns.push(c.val().name));
         el.innerHTML=ns.length?ns.map(n=>`<span class="rt-chip">${n[0].toUpperCase()}</span>`).join(''):'<span class="rt-empty">empty</span>';
       });
-      // update floor count
       const fEl=document.getElementById('floorCount');
       if(fEl&&snap.exists()&&snap.child(FREE_ID).child('seats').exists()){
         const ns=[];snap.child(FREE_ID).child('seats').forEach(c=>ns.push(c.val().name));
@@ -287,7 +306,7 @@
     if(messagesUnsub){messagesUnsub();messagesUnsub=null;}
     if(typingUnsub){typingUnsub();typingUnsub=null;}
     if(seatsUnsub){seatsUnsub();seatsUnsub=null;}
-    currentTable=null;isFirstLoad=true;
+    currentTable=null;isFirstLoad=true;editingKey=null;
   }
 
   window.leaveChat=()=>{
@@ -308,7 +327,6 @@
   };
 
   /* ── CHAT UI ─────────────────────────────────────────────── */
-  // Return the correct element IDs depending on which screen is showing
   function msgsEl()   { return document.getElementById(currentScreen==='floorScreen'?'floorMsgs':'chatMsgs'); }
   function inputEl()  { return document.getElementById(currentScreen==='floorScreen'?'floorMsgInput':'chatMsgInput'); }
   function typingEl() { return document.getElementById(currentScreen==='floorScreen'?'floorTypingBar':'chatTypingBar'); }
@@ -316,7 +334,6 @@
   function showChatUI(info){
     const isFloor=info.id===FREE_ID;
     if(!isFloor){
-      // style the private table chat header
       const chatBox=document.getElementById('chatBox');
       chatBox.style.setProperty('--tc',info.color);
       chatBox.style.setProperty('--tr',info.ring||info.color);
@@ -336,6 +353,9 @@
       document.getElementById('floorTypingBar').innerHTML='';
       document.getElementById('floorTypingBar').style.display='none';
     }
+    // reset edit state
+    editingKey=null;
+    hideEditBar();
     isFirstLoad=true;
     listenMessages();
     if(!isFloor)listenSeats();
@@ -343,17 +363,34 @@
     inputEl().focus();
   }
 
+  /* ── SEND / EDIT / DELETE ───────────────────────────────── */
   window.sendMessage=()=>{
     const inp=inputEl(),text=inp.value.trim();
     if(!text||!currentTable)return;
-    inp.value='';setTyping(false);clearTimeout(typingTimer);
+
+    // EDIT MODE
+    if(editingKey){
+      const msgRef=ref(db,`tables/${currentTable}/messages/${editingKey}`);
+      update(msgRef,{text,edited:true,editedAt:serverTimestamp()});
+      editingKey=null;hideEditBar();
+      inp.value='';autoResize(inp);
+      return;
+    }
+
+    inp.value='';autoResize(inp);setTyping(false);clearTimeout(typingTimer);
     playSend();coffeeCheck(text);burst(1);
     push(ref(db,`tables/${currentTable}/messages`),{type:'message',user:username,text,ts:serverTimestamp()});
   };
   window.handleMsgKey=e=>{
-    if(e.key==='Enter'){window.sendMessage();return;}
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();window.sendMessage();return;}
+    if(e.key==='Escape'&&editingKey){cancelEdit();return;}
     setTyping(true);clearTimeout(typingTimer);typingTimer=setTimeout(()=>setTyping(false),1800);
   };
+
+  function autoResize(el){
+    el.style.height='auto';
+    el.style.height=Math.min(el.scrollHeight,100)+'px';
+  }
 
   function setTyping(v){
     if(!myTypingRef)return;
@@ -386,13 +423,77 @@
     });
   }
 
+  /* ── EDIT BAR HELPERS ───────────────────────────────────── */
+  function showEditBar(originalText){
+    let bar=document.getElementById('editBar');
+    if(!bar){
+      bar=document.createElement('div');bar.id='editBar';bar.className='edit-bar';
+      // insert before input-bar
+      const inputArea=document.querySelector('#chatBox .input-bar')||document.querySelector('#floorScreen .input-bar');
+      if(inputArea)inputArea.parentNode.insertBefore(bar,inputArea);
+    }
+    bar.innerHTML=`<span class="eb-icon">✏️</span><span class="eb-text">Editing message</span><button class="eb-cancel" onclick="cancelEdit()">✕ Cancel</button>`;
+    bar.style.display='flex';
+  }
+  function hideEditBar(){
+    const bar=document.getElementById('editBar');
+    if(bar)bar.style.display='none';
+  }
+  window.cancelEdit=()=>{
+    editingKey=null;hideEditBar();
+    const inp=inputEl();inp.value='';autoResize(inp);inp.focus();
+  };
+
+  /* ── MESSAGE ACTIONS ────────────────────────────────────── */
+  window.startEditMsg=(key,text)=>{
+    editingKey=key;
+    const inp=inputEl();
+    inp.value=text;
+    inp.focus();
+    autoResize(inp);
+    showEditBar(text);
+    // close context menu
+    closeContextMenu();
+  };
+  window.deleteMsg=(key)=>{
+    if(!currentTable)return;
+    if(confirm('Delete this message?')){
+      remove(ref(db,`tables/${currentTable}/messages/${key}`));
+    }
+    closeContextMenu();
+  };
+
+  let contextMenuTarget=null;
+  function closeContextMenu(){
+    const old=document.getElementById('msgContextMenu');
+    if(old)old.remove();
+    contextMenuTarget=null;
+  }
+  window.openContextMenu=(key,text,isOwner,targetEl)=>{
+    closeContextMenu();
+    if(!isOwner)return;
+    contextMenuTarget=key;
+    const menu=document.createElement('div');
+    menu.id='msgContextMenu';menu.className='ctx-menu';
+    menu.innerHTML=`
+      <button class="ctx-btn" onclick="startEditMsg('${key}',${JSON.stringify(text)})">✏️ Edit</button>
+      <button class="ctx-btn ctx-del" onclick="deleteMsg('${key}')">🗑 Delete</button>`;
+    // position near bubble
+    const rect=targetEl.getBoundingClientRect();
+    menu.style.top=(rect.top-80+window.scrollY)+'px';
+    menu.style.left=Math.max(8,Math.min(rect.left-10,window.innerWidth-160))+'px';
+    document.body.appendChild(menu);
+    setTimeout(()=>document.addEventListener('click',closeContextMenu,{once:true}),10);
+  };
+
+  /* ── LISTEN MESSAGES ────────────────────────────────────── */
   function listenMessages(){
     if(messagesUnsub)messagesUnsub();
     messagesUnsub=onValue(ref(db,`tables/${currentTable}/messages`),snap=>{
       const box=msgsEl();box.innerHTML='';
       if(!snap.exists()){box.innerHTML='<div class="empty-state">The table is set.<br/>Say something warm. ☕</div>';isFirstLoad=false;return;}
       snap.forEach(child=>{
-        const msg=child.val();
+        const key=child.key, msg=child.val();
         if(msg.type==='system'){
           const el=document.createElement('div');el.className='sys-msg';el.textContent=msg.text;box.appendChild(el);
         }else{
@@ -402,8 +503,18 @@
           const inn=document.createElement('div');inn.className='msg-inner';
           const meta=document.createElement('div');meta.className='meta';
           const t=msg.ts?new Date(msg.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-          meta.textContent=`${msg.user} · ${t}`;
-          const bub=document.createElement('div');bub.className='bub '+(mine?'bub-mine':'bub-them');bub.textContent=msg.text;
+          const editedNote=msg.edited?'<span class="edited-note">(edited)</span>':'';
+          meta.innerHTML=`${msg.user} · ${t} ${editedNote}`;
+          const bub=document.createElement('div');
+          bub.className='bub '+(mine?'bub-mine':'bub-them');
+          bub.textContent=msg.text;
+          // Long-press / right-click for own messages
+          if(mine){
+            bub.addEventListener('contextmenu',e=>{e.preventDefault();window.openContextMenu(key,msg.text,true,bub);});
+            bub.addEventListener('click',()=>window.openContextMenu(key,msg.text,true,bub));
+            bub.style.cursor='pointer';
+            bub.title='Tap to edit or delete';
+          }
           inn.append(meta,bub);mine?wrap.append(inn,av):wrap.append(av,inn);box.appendChild(wrap);
         }
       });
@@ -416,7 +527,45 @@
     document.getElementById('loginSpecialDrink').textContent=special.drink;
     document.getElementById('loginSpecialNote').textContent=special.note;
     applyTime();
+    // Make sure door is visible on first load
+    showScreen('doorScreen');
+    initDoorScreen();
   });
+
+  /* ── DOOR SCREEN INIT ───────────────────────────────────── */
+  function initDoorScreen(){
+    // PWA install prompt
+    let deferredPrompt=null;
+    window.addEventListener('beforeinstallprompt',e=>{
+      e.preventDefault();deferredPrompt=e;
+      setTimeout(()=>showInstallBanner(deferredPrompt),4000);
+    });
+    // iOS Safari fallback
+    const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
+    const isStandalone=('standalone' in navigator)&&navigator.standalone;
+    if(isIOS&&!isStandalone){
+      setTimeout(()=>showInstallBanner(null),5000);
+    }
+    window.addEventListener('appinstalled',()=>{
+      const b=document.getElementById('installBanner');if(b)b.classList.remove('show');
+    });
+  }
+
+  function showInstallBanner(prompt){
+    const banner=document.getElementById('installBanner');
+    if(!banner)return;
+    banner.classList.add('show');
+    document.getElementById('installAddBtn').onclick=async()=>{
+      if(prompt){
+        prompt.prompt();
+        await prompt.userChoice;
+        banner.classList.remove('show');
+      } else {
+        alert('📱 To install Bean Chat on iOS:\n1. Tap the Share button (□↑) in Safari\n2. Tap "Add to Home Screen"\n3. Tap "Add" — enjoy your café! ☕');
+      }
+    };
+    document.getElementById('installDismiss').onclick=()=>banner.classList.remove('show');
+  }
 </script>
 
 <style>
@@ -433,28 +582,57 @@
 [data-time=afternoon]{--bg1:rgba(210,100,30,.12);--bg2:rgba(140,60,20,.09);}
 [data-time=evening]  {--bg1:rgba(50,15,2,.18);   --bg2:rgba(20,8,2,.14);}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;height:100dvh;}
 body{
-  min-height:100vh;font-family:'Lato',sans-serif;color:var(--ink);
+  min-height:100vh;min-height:100dvh;
+  font-family:'Lato',sans-serif;color:var(--ink);
   background:var(--parchment);
   background-image:
     radial-gradient(ellipse at 20% 10%,var(--bg1,rgba(200,149,92,.10)) 0%,transparent 60%),
     radial-gradient(ellipse at 80% 90%,var(--bg2,rgba(107,58,31,.08)) 0%,transparent 60%);
   display:flex;flex-direction:column;
+  /* prevent double-tap zoom on mobile */
+  touch-action:manipulation;
+  /* safe area for notched phones */
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);
 }
+/* ensure full-screen app screens respect safe areas */
+#floorScreen,#chatBox,#tablesRoom,#doorScreen,#loginScreen,#welcomeScreen{
+  padding-left:env(safe-area-inset-left);
+  padding-right:env(safe-area-inset-right);
+}
+/* minimum touch target for all buttons */
+button,.hbtn,.back-btn,.tables-btn,.ws-btn,.join-btn,.ctx-btn{
+  min-height:44px;
+  cursor:pointer;
+}
+/* override min-height only for icon-only buttons that must stay circular */
+.hbtn{min-height:unset;}
+#chatSendBtn,#floorSendBtn{min-height:unset;}
 
 /* ═══════════════════ KEYFRAMES ═══════════════════ */
-@keyframes fadeUp {from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-@keyframes steamUp{0%{transform:translateY(0)scaleX(1);opacity:.6}50%{transform:translateY(-16px)scaleX(1.3);opacity:.3}100%{transform:translateY(-32px)scaleX(.8);opacity:0}}
-@keyframes bob    {0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-@keyframes blink  {0%,100%{opacity:1}50%{opacity:.3}}
-@keyframes popIn  {from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
-@keyframes msgIn  {from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
-@keyframes flyUp  {0%{transform:translateY(0)rotate(0)scale(1);opacity:1}100%{transform:translateY(-160px)rotate(32deg)scale(1.5);opacity:0}}
-@keyframes bgRise {0%{transform:translateY(110vh)rotate(0);opacity:0}8%{opacity:1}92%{opacity:.7}100%{transform:translateY(-80px)rotate(18deg);opacity:0}}
-@keyframes shake  {0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
-@keyframes glow   {0%,100%{box-shadow:0 0 8px rgba(200,149,92,.3)}50%{box-shadow:0 0 20px rgba(200,149,92,.7)}}
-@keyframes chalkIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-@keyframes tableIn{from{opacity:0;transform:scale(.85)translateY(20px)}to{opacity:1;transform:scale(1)translateY(0)}}
+@keyframes fadeUp  {from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes steamUp {0%{transform:translateY(0)scaleX(1);opacity:.6}50%{transform:translateY(-16px)scaleX(1.3);opacity:.3}100%{transform:translateY(-32px)scaleX(.8);opacity:0}}
+@keyframes bob     {0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes blink   {0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes popIn   {from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+@keyframes msgIn   {from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@keyframes flyUp   {0%{transform:translateY(0)rotate(0)scale(1);opacity:1}100%{transform:translateY(-160px)rotate(32deg)scale(1.5);opacity:0}}
+@keyframes bgRise  {0%{transform:translateY(110vh)rotate(0);opacity:0}8%{opacity:1}92%{opacity:.7}100%{transform:translateY(-80px)rotate(18deg);opacity:0}}
+@keyframes shake   {0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+@keyframes glow    {0%,100%{box-shadow:0 0 8px rgba(200,149,92,.3)}50%{box-shadow:0 0 20px rgba(200,149,92,.7)}}
+@keyframes chalkIn {from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+@keyframes tableIn {from{opacity:0;transform:scale(.85)translateY(20px)}to{opacity:1;transform:scale(1)translateY(0)}}
+@keyframes signSwing{0%,100%{transform:rotate(-1.8deg)}50%{transform:rotate(1.8deg)}}
+@keyframes doorGlow{0%,100%{opacity:.7}50%{opacity:1}}
+@keyframes hostFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes bubblePop{from{opacity:0;transform:scale(.5)translateY(10px)}to{opacity:1;transform:scale(1)translateY(0)}}
+@keyframes choiceIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bannerIn{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes lanternSway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+@keyframes flickerGlow{0%,100%{opacity:.85;filter:blur(8px)}40%{opacity:1;filter:blur(6px)}70%{opacity:.9;filter:blur(10px)}}
+@keyframes windowPulse{0%,100%{opacity:.55}50%{opacity:.75}}
 
 /* ═══════════════════ BEANS ═══════════════════ */
 .fly-bean{position:absolute;pointer-events:none;z-index:600;bottom:80px;animation:flyUp 2.4s ease-out forwards;filter:drop-shadow(0 2px 5px rgba(59,31,14,.3));}
@@ -484,9 +662,375 @@ body{
 .ck-l{font-size:9px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:#c8955c;white-space:nowrap;flex-shrink:0;}
 .ck-d{font-family:'Playfair Display',serif;font-size:12px;font-style:italic;color:#f5ead0;font-weight:700;}
 .ck-t{font-size:9px;color:rgba(200,149,92,.7);letter-spacing:1.5px;text-transform:uppercase;margin-left:auto;white-space:nowrap;flex-shrink:0;}
+.ph-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+
+/* ═══════════════════ DOOR SCREEN — Coffee Shop Exterior ═══════════════════ */
+#doorScreen{
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  min-height:100dvh;
+  position:relative;overflow:hidden;
+  /* warm daytime sky */
+  background:linear-gradient(180deg,#d4956a 0%,#c17a48 30%,#a05e30 60%,#7a4020 100%);
+}
+
+/* ── LIGHT WARM BRICK WALL ── */
+.ds-wall{
+  position:absolute;inset:0;
+  /* Light warm sandy-brown brick base */
+  background-color:#c49464;
+}
+/* Brick pattern layer 1 – horizontal mortar */
+.ds-wall::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent 0px, transparent 26px,
+      rgba(100,58,20,.55) 26px, rgba(100,58,20,.55) 30px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 52px,
+      rgba(100,58,20,.45) 52px, rgba(100,58,20,.45) 55px
+    );
+  background-size:110px 60px;
+}
+/* Brick pattern layer 2 – offset row joints */
+.ds-wall::after{
+  content:'';position:absolute;inset:0;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 52px,
+      rgba(80,42,12,.4) 52px, rgba(80,42,12,.4) 55px
+    );
+  background-size:110px 60px;
+  background-position:55px 30px;
+  /* subtle warm colour variation */
+  mix-blend-mode:multiply;
+}
+
+/* warm ambient light wash from top */
+.ds-wall-overlay{
+  position:absolute;inset:0;pointer-events:none;z-index:1;
+  background:
+    radial-gradient(ellipse 100% 55% at 50% 0%, rgba(255,200,120,.22) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 40% at 20% 100%, rgba(160,90,30,.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(140,80,20,.15) 0%, transparent 60%);
+}
+
+/* ── SIGN SECTION — top of screen ── */
+.ds-sign-mount{
+  position:relative;
+  margin-top:clamp(28px,7vh,60px);
+  display:flex;flex-direction:column;align-items:center;
+  z-index:10;
+}
+/* two small hooks/brackets at top */
+.ds-chains{
+  display:flex;
+  gap:clamp(48px,14vw,80px);
+}
+.ds-chain-l{
+  width:3px;
+  height:clamp(20px,3vh,32px);
+  background:linear-gradient(180deg,#7a5020 0%,#b07838 50%,#7a5020 100%);
+  border-radius:2px;
+  box-shadow:1px 0 3px rgba(0,0,0,.3);
+}
+/* the wooden board */
+.ds-board{
+  background:linear-gradient(160deg,#4a2808 0%,#2e1606 50%,#3a2010 100%);
+  border:4px solid #c8955c;
+  border-radius:10px;
+  padding:clamp(10px,2vh,16px) clamp(24px,6vw,44px);
+  text-align:center;
+  box-shadow:
+    0 8px 32px rgba(0,0,0,.55),
+    inset 0 1px 0 rgba(232,184,109,.2),
+    0 0 0 1px rgba(200,149,92,.15);
+  animation:signSwing 6s ease-in-out infinite;
+  transform-origin:top center;
+  position:relative;
+  min-width:clamp(200px,58vw,320px);
+}
+/* wood grain texture */
+.ds-board::before{
+  content:'';position:absolute;inset:0;border-radius:7px;
+  background:repeating-linear-gradient(
+    170deg,transparent 0px,transparent 5px,rgba(0,0,0,.05) 5px,rgba(0,0,0,.05) 6px
+  );
+}
+/* decorative top border line */
+.ds-board::after{
+  content:'';position:absolute;top:7px;left:12px;right:12px;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(200,149,92,.4),transparent);
+}
+.ds-board-title{
+  font-family:'Dancing Script',cursive;
+  font-size:clamp(2rem,8vw,3.2rem);
+  color:#f0cc78;
+  text-shadow:0 0 16px rgba(232,184,109,.5),1px 2px 0 rgba(0,0,0,.7);
+  letter-spacing:1px;line-height:1.1;
+  position:relative;z-index:1;
+}
+.ds-board-sub{
+  font-family:'Lato',sans-serif;
+  font-size:clamp(.62rem,1.8vw,.78rem);
+  color:rgba(240,210,160,.75);
+  letter-spacing:3px;
+  text-transform:uppercase;
+  margin-top:5px;
+  position:relative;z-index:1;
+}
+
+/* ── LANTERNS — flank the sign ── */
+.ds-lantern-wrap{
+  position:absolute;
+  top:clamp(24px,5vh,44px);
+  z-index:11;
+  display:flex;flex-direction:column;align-items:center;
+  animation:lanternSway 5s ease-in-out infinite;
+  transform-origin:top center;
+}
+.ds-lantern-wrap.left{ left:clamp(8px,4vw,32px); }
+.ds-lantern-wrap.right{ right:clamp(8px,4vw,32px); animation-delay:1.2s; }
+.ds-lantern-wire{
+  width:2px;height:clamp(18px,3vh,28px);
+  background:linear-gradient(180deg,#999,#666);
+}
+.ds-lantern-body{
+  width:clamp(18px,3.5vw,26px);
+  height:clamp(24px,4.5vw,34px);
+  background:linear-gradient(160deg,#2a1400,#1a0c00);
+  border:2px solid #8a5820;
+  border-radius:3px 3px 6px 6px;
+  position:relative;overflow:hidden;
+  box-shadow:0 0 20px rgba(255,170,50,.4),0 4px 12px rgba(0,0,0,.5);
+}
+.ds-lantern-glow{
+  position:absolute;inset:3px;border-radius:2px;
+  background:radial-gradient(circle,rgba(255,210,80,.9) 0%,rgba(255,140,20,.4) 100%);
+  animation:flickerGlow 2.8s ease-in-out infinite;
+}
+/* cone of light below lantern */
+.ds-lantern-cone{
+  width:clamp(40px,8vw,70px);
+  height:clamp(50px,10vw,80px);
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,200,80,.18) 0%,transparent 75%);
+  filter:blur(5px);
+  pointer-events:none;
+  animation:windowPulse 3.5s ease-in-out infinite;
+}
+
+/* ── FACADE BAND — between sign and door ── */
+.ds-facade{
+  position:absolute;
+  /* sits just above the pavement */
+  bottom:75px;
+  left:0;right:0;
+  height:42px;
+  background:linear-gradient(180deg,#3a1e08 0%,#2a1404 100%);
+  border-top:5px solid #6a3c14;
+  border-bottom:5px solid #6a3c14;
+  z-index:3;
+  display:none; /* removed — name is on board now */
+}
+
+/* ── PAVEMENT / STEP ── */
+.ds-pavement{
+  position:absolute;bottom:0;left:0;right:0;
+  height:80px;
+  background:linear-gradient(180deg,#8a7060 0%,#6a5448 50%,#504038 100%);
+  border-top:4px solid rgba(200,160,100,.35);
+  z-index:2;
+}
+/* paving stone lines */
+.ds-pavement::before{
+  content:'';position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(90deg,transparent 0px,transparent 60px,rgba(0,0,0,.2) 60px,rgba(0,0,0,.2) 62px),
+    repeating-linear-gradient(0deg,transparent 0px,transparent 38px,rgba(0,0,0,.15) 38px,rgba(0,0,0,.15) 40px);
+}
+/* door glow reflection on pavement */
+.ds-pavement::after{
+  content:'';position:absolute;
+  bottom:8px;left:50%;transform:translateX(-50%);
+  width:clamp(120px,40vw,220px);height:28px;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(255,220,180,.14) 0%,transparent 70%);
+  filter:blur(5px);
+}
+
+/* ── WHITE MODERN DOOR ── */
+.ds-door-scene{
+  position:absolute;
+  bottom:76px;
+  left:50%;transform:translateX(-50%);
+  width:clamp(130px,36vw,200px);
+  z-index:5;
+  cursor:pointer;
+  transition:transform .25s ease;
+}
+.ds-door-scene:hover{ transform:translateX(-50%) scale(1.02); }
+.ds-door-scene:active{ transform:translateX(-50%) scale(0.98); }
+
+/* door surround / architrave */
+.ds-door-surround{
+  position:absolute;
+  inset:-10px -14px -0px;
+  background:linear-gradient(180deg,#8a6030 0%,#6a4820 100%);
+  border-radius:6px 6px 0 0;
+  z-index:0;
+  box-shadow:0 -4px 20px rgba(0,0,0,.4);
+}
+.ds-door-surround::before{
+  /* inner shadow / reveal */
+  content:'';position:absolute;inset:6px 6px 0;
+  background:linear-gradient(180deg,#5a3010,#3a1e08);
+  border-radius:4px 4px 0 0;
+}
+
+/* main white door body */
+.ds-door-body{
+  position:relative;z-index:1;
+  background:linear-gradient(160deg,#ffffff 0%,#f0ede8 60%,#e8e4de 100%);
+  border-radius:3px 3px 0 0;
+  width:100%;
+  height:clamp(180px,46vw,260px);
+  display:flex;flex-direction:column;
+  align-items:center;
+  box-shadow:
+    inset -3px 0 8px rgba(0,0,0,.06),
+    inset 3px 0 8px rgba(0,0,0,.04),
+    inset 0 -4px 10px rgba(0,0,0,.08);
+  overflow:hidden;
+}
+
+/* door panel inset recesses */
+.ds-door-panel-top{
+  width:74%;
+  height:38%;
+  margin-top:14px;
+  border:2px solid rgba(160,120,80,.25);
+  border-radius:3px;
+  background:linear-gradient(160deg,rgba(255,255,255,.8),rgba(230,220,210,.5));
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.06),0 1px 0 rgba(255,255,255,.9);
+  flex-shrink:0;
+  position:relative;
+}
+/* "ENTER" text on upper panel */
+.ds-door-panel-top::after{
+  content:'ENTER';
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Playfair Display',serif;
+  font-size:clamp(.7rem,2.2vw,.95rem);
+  font-weight:700;
+  color:#6b3a1f;
+  letter-spacing:clamp(3px,1.5vw,6px);
+  text-transform:uppercase;
+  opacity:.9;
+}
+
+.ds-door-panel-bot{
+  width:74%;
+  height:28%;
+  margin-top:10px;
+  border:2px solid rgba(160,120,80,.25);
+  border-radius:3px;
+  background:linear-gradient(160deg,rgba(255,255,255,.8),rgba(230,220,210,.5));
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.06),0 1px 0 rgba(255,255,255,.9);
+  flex-shrink:0;
+}
+
+/* brass door knob */
+.ds-knob{
+  position:absolute;
+  right:clamp(10px,3vw,16px);
+  bottom:clamp(55px,14vw,80px);
+  z-index:3;
+  width:clamp(10px,2.5vw,14px);
+  height:clamp(10px,2.5vw,14px);
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#f8d878,#c8955c,#7a5010);
+  box-shadow:0 2px 6px rgba(0,0,0,.5),0 0 8px rgba(200,149,92,.35);
+}
+
+/* letter slot */
+.ds-letter-slot{
+  position:absolute;
+  bottom:clamp(38px,9vw,54px);
+  left:50%;transform:translateX(-50%);
+  width:34%;height:5px;
+  background:#d0c8c0;
+  border-radius:3px;
+  border:1.5px solid rgba(140,100,60,.3);
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.15);
+  z-index:3;
+}
+
+/* door step */
+.ds-step{
+  width:calc(100% + 28px);
+  margin-left:-14px;
+  height:14px;
+  background:linear-gradient(180deg,#b09070 0%,#907050 100%);
+  border-top:2px solid rgba(255,255,255,.3);
+  box-shadow:0 6px 14px rgba(0,0,0,.4);
+  position:relative;z-index:2;
+}
+
+/* ── POTTED PLANTS ── */
+.ds-plant{
+  position:absolute;bottom:78px;z-index:5;
+  font-size:clamp(2rem,6vw,2.8rem);
+  filter:drop-shadow(2px 6px 10px rgba(0,0,0,.35));
+}
+.ds-plant.left{ left:calc(50% - clamp(105px,28vw,155px)); }
+.ds-plant.right{ right:calc(50% - clamp(105px,28vw,155px)); }
+
+/* ── STREET LAMP ── */
+.ds-lamp{
+  position:absolute;bottom:78px;left:5%;z-index:3;
+  display:flex;flex-direction:column;align-items:center;
+}
+.ds-lamp-post{
+  width:5px;height:clamp(90px,18vh,150px);
+  background:linear-gradient(90deg,#4a4a4a,#6a6a6a,#4a4a4a);
+  border-radius:2px;
+}
+.ds-lamp-arm{
+  width:clamp(24px,5vw,36px);height:4px;
+  background:#555;
+  position:absolute;top:0;left:5px;
+  border-radius:0 0 8px 0;
+}
+.ds-lamp-head{
+  position:absolute;top:-14px;left:clamp(26px,6vw,38px);
+  width:18px;height:22px;
+  background:linear-gradient(180deg,#3a3a3a,#252525);
+  border-radius:3px 3px 9px 9px;
+  box-shadow:0 0 28px rgba(255,210,80,.35);
+}
+.ds-lamp-head::after{
+  content:'';position:absolute;top:5px;left:50%;transform:translateX(-50%);
+  width:9px;height:9px;border-radius:50%;
+  background:rgba(255,230,130,.95);
+  box-shadow:0 0 18px rgba(255,210,60,.9),0 0 32px rgba(255,180,40,.4);
+  animation:flickerGlow 4s ease-in-out infinite;
+}
+.ds-lamp-cone{
+  position:absolute;top:8px;left:clamp(18px,5vw,26px);
+  width:clamp(60px,14vw,100px);height:clamp(80px,18vw,130px);
+  background:conic-gradient(from 180deg at 50% 0%,transparent 55deg,rgba(255,210,60,.07) 90deg,transparent 125deg);
+  pointer-events:none;filter:blur(8px);
+}
 
 /* ═══════════════════ LOGIN ═══════════════════ */
-#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+#loginScreen{display:none;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
 .lcard{background:var(--foam);border:1.5px solid var(--latte);border-radius:28px;padding:48px 42px 40px;width:100%;max-width:390px;box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.8);text-align:center;animation:fadeUp .6s ease;position:relative;overflow:hidden;}
 .lcard::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;background:linear-gradient(90deg,var(--caramel),var(--mocha),var(--caramel));}
 .bean-emb{position:relative;width:92px;height:92px;margin:0 auto 24px;}
@@ -510,6 +1054,56 @@ body{
 .join-btn:hover{opacity:.88;}.join-btn:active{transform:scale(.98);}
 .l-btns{display:flex;gap:10px;justify-content:center;margin-top:13px;}
 
+/* ═══════════════════ WELCOME / HOSTESS ═══════════════════ */
+#welcomeScreen{
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;padding:32px 24px;
+  background:linear-gradient(160deg,#1a0802 0%,#3d2210 60%,#1a0a02 100%);
+  position:relative;overflow:hidden;
+}
+.ws-bubble{
+  background:var(--foam);color:var(--ink);
+  border-radius:22px;padding:18px 24px;
+  max-width:min(340px,86vw);text-align:center;
+  font-family:'Playfair Display',serif;font-size:clamp(.95rem,3vw,1.1rem);
+  line-height:1.6;
+  box-shadow:0 10px 40px rgba(0,0,0,.5);
+  position:relative;margin-bottom:0;
+  animation:bubblePop .6s cubic-bezier(.34,1.56,.64,1) .6s both;
+}
+.ws-bubble em{color:var(--caramel);font-style:italic;}
+.ws-bubble strong{color:var(--mocha);font-weight:900;}
+.ws-bubble::after{
+  content:'';position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);
+  border:11px solid transparent;border-top-color:var(--foam);border-bottom:none;
+}
+.ws-hostess{
+  font-size:clamp(5rem,18vw,8rem);
+  animation:hostFloat 3.5s ease-in-out infinite, fadeUp .7s ease .2s both;
+  filter:drop-shadow(0 12px 22px rgba(0,0,0,.5));
+  margin-top:10px;
+}
+.ws-greeting{font-size:clamp(.75rem,2.2vw,.85rem);color:rgba(250,246,240,.45);letter-spacing:2px;text-transform:uppercase;margin-top:4px;font-family:'Lato',sans-serif;}
+#hostessName{color:#c8955c;}
+.ws-choices{
+  display:flex;gap:14px;margin-top:28px;flex-wrap:wrap;justify-content:center;padding:0 16px;
+}
+.ws-btn{
+  background:linear-gradient(135deg,var(--mocha),var(--espresso));
+  border:2px solid var(--caramel);color:var(--cream);
+  font-family:'Playfair Display',serif;font-size:clamp(.85rem,2.5vw,1rem);
+  padding:14px 26px;border-radius:50px;cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+  box-shadow:0 4px 20px rgba(0,0,0,.45);
+  transition:all .25s ease;white-space:nowrap;
+  animation:choiceIn .5s ease both;
+}
+.ws-btn:nth-child(1){animation-delay:.9s;}
+.ws-btn:nth-child(2){animation-delay:1.05s;}
+.ws-btn:hover{background:linear-gradient(135deg,#8b5e3c,var(--mocha));transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.5),0 0 18px rgba(200,149,92,.25);}
+.ws-btn:active{transform:scale(.97);}
+.ws-btn-icon{font-size:1.25em;}
+
 /* ═══════════════════ FLOOR SCREEN ═══════════════════ */
 #floorScreen{display:none;flex-direction:column;height:100vh;height:100dvh;position:relative;overflow:hidden;}
 .floor-welcome{
@@ -517,107 +1111,42 @@ body{
   background:linear-gradient(180deg,rgba(59,31,14,.06)0%,transparent 100%);
   border-bottom:1px solid var(--border);flex-shrink:0;
 }
-.fw-left{}
 .fw-left h2{font-family:'Playfair Display',serif;font-size:16px;font-style:italic;color:var(--espresso);font-weight:700;}
 .fw-left h2 em{color:var(--caramel);}
 .fw-left p{font-size:11px;color:var(--mid);margin-top:2px;}
 .fw-count{font-size:11px;color:var(--caramel);font-weight:700;text-align:right;flex-shrink:0;}
-/* Tables button — pill style */
-.tables-btn{
-  display:flex;align-items:center;gap:7px;
-  background:linear-gradient(135deg,var(--mocha),var(--espresso));
-  color:var(--cream);border:none;border-radius:999px;
-  padding:9px 18px;font-size:13px;font-weight:700;font-family:'Lato',sans-serif;
-  cursor:pointer;letter-spacing:.3px;
-  box-shadow:0 3px 14px rgba(59,31,14,.28);
-  transition:opacity .2s,transform .1s;
-  flex-shrink:0;white-space:nowrap;
-}
-.tables-btn:hover{opacity:.88;transform:translateY(-1px);}
-.tables-btn:active{transform:scale(.97);}
-/* Group sound/ambient buttons together so they don't float apart */
-.ph-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.tables-btn{display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--mocha),var(--espresso));color:var(--cream);border:none;border-radius:999px;padding:9px 18px;font-size:13px;font-weight:700;font-family:'Lato',sans-serif;cursor:pointer;letter-spacing:.3px;box-shadow:0 3px 14px rgba(59,31,14,.28);transition:opacity .2s,transform .1s;flex-shrink:0;white-space:nowrap;}
+.tables-btn:hover{opacity:.88;transform:translateY(-1px);}.tables-btn:active{transform:scale(.97);}
 
 /* ═══════════════════ TABLES ROOM ═══════════════════ */
 #tablesRoom{display:none;flex-direction:column;height:100vh;height:100dvh;position:relative;overflow:hidden;}
-#tablesRoomBody{
-  flex:1;overflow-y:auto;padding:22px 18px 40px;
-  position:relative;
-  background:
-    radial-gradient(ellipse at 30% 20%,rgba(200,149,92,.07)0%,transparent 55%),
-    radial-gradient(ellipse at 70% 80%,rgba(107,58,31,.05)0%,transparent 55%),
-    var(--parchment);
-}
-/* wood-floor texture */
-#tablesRoomBody::before{
-  content:'';position:absolute;inset:0;pointer-events:none;
-  background:
-    repeating-linear-gradient(0deg,transparent,transparent 48px,rgba(139,69,19,.018)48px,rgba(139,69,19,.018)49px),
-    repeating-linear-gradient(90deg,transparent,transparent 48px,rgba(139,69,19,.014)48px,rgba(139,69,19,.014)49px);
-}
+#tablesRoomBody{flex:1;overflow-y:auto;padding:22px 18px 40px;position:relative;background:radial-gradient(ellipse at 30% 20%,rgba(200,149,92,.07)0%,transparent 55%),radial-gradient(ellipse at 70% 80%,rgba(107,58,31,.05)0%,transparent 55%),var(--parchment);}
+#tablesRoomBody::before{content:'';position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 48px,rgba(139,69,19,.018)48px,rgba(139,69,19,.018)49px),repeating-linear-gradient(90deg,transparent,transparent 48px,rgba(139,69,19,.014)48px,rgba(139,69,19,.014)49px);}
 .tr-intro{text-align:center;margin-bottom:26px;position:relative;z-index:1;}
 .tr-intro h3{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;color:var(--espresso);}
 .tr-intro h3 em{font-style:italic;color:var(--caramel);}
 .tr-intro p{font-size:12px;color:var(--mid);margin-top:4px;font-style:italic;}
-
-#roundTablesGrid{
-  display:grid;grid-template-columns:repeat(4,1fr);
-  gap:36px 14px;position:relative;z-index:1;justify-items:center;
-}
-/* ── ROUND TABLE ── */
+#roundTablesGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:36px 14px;position:relative;z-index:1;justify-items:center;}
 .rt-wrap{animation:tableIn .5s ease both;display:flex;flex-direction:column;align-items:center;}
-.rt-outer{
-  position:relative;width:128px;height:128px;border-radius:50%;
-  background:radial-gradient(circle at 36% 30%,
-    color-mix(in srgb,var(--tc) 55%,white 45%) 0%,
-    var(--tc) 55%,
-    color-mix(in srgb,var(--tc) 55%,black 45%) 100%);
-  border:5px solid var(--tr);
-  box-shadow:
-    0 0 0 2px color-mix(in srgb,var(--tr) 30%,white 70%),
-    inset 0 5px 14px rgba(255,255,255,.18),
-    inset 0 -5px 12px rgba(0,0,0,.28),
-    0 14px 30px rgba(0,0,0,.24),
-    0 4px 8px rgba(0,0,0,.14);
-  cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:transform .28s cubic-bezier(.34,1.56,.64,1),box-shadow .28s;overflow:visible;
-}
-.rt-outer:hover{
-  transform:translateY(-8px)scale(1.06);
-  box-shadow:
-    0 0 0 2px color-mix(in srgb,var(--tr) 30%,white 70%),
-    inset 0 5px 14px rgba(255,255,255,.18),
-    inset 0 -5px 12px rgba(0,0,0,.28),
-    0 22px 44px rgba(0,0,0,.3),
-    0 6px 16px rgba(0,0,0,.18);
-}
+.rt-outer{position:relative;width:128px;height:128px;border-radius:50%;background:radial-gradient(circle at 36% 30%,color-mix(in srgb,var(--tc)55%,white 45%)0%,var(--tc)55%,color-mix(in srgb,var(--tc)55%,black 45%)100%);border:5px solid var(--tr);box-shadow:0 0 0 2px color-mix(in srgb,var(--tr)30%,white 70%),inset 0 5px 14px rgba(255,255,255,.18),inset 0 -5px 12px rgba(0,0,0,.28),0 14px 30px rgba(0,0,0,.24),0 4px 8px rgba(0,0,0,.14);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .28s cubic-bezier(.34,1.56,.64,1),box-shadow .28s;overflow:visible;}
+.rt-outer:hover{transform:translateY(-8px)scale(1.06);box-shadow:0 0 0 2px color-mix(in srgb,var(--tr)30%,white 70%),inset 0 5px 14px rgba(255,255,255,.18),inset 0 -5px 12px rgba(0,0,0,.28),0 22px 44px rgba(0,0,0,.3),0 6px 16px rgba(0,0,0,.18);}
 .rt-outer:active{transform:scale(.95);}
-/* specular sheen */
-.rt-sheen{
-  position:absolute;width:52%;height:38%;top:11%;left:14%;border-radius:50%;
-  background:radial-gradient(ellipse at 50% 20%,rgba(255,255,255,.30)0%,transparent 70%);
-  pointer-events:none;
-}
+.rt-sheen{position:absolute;width:52%;height:38%;top:11%;left:14%;border-radius:50%;background:radial-gradient(ellipse at 50% 20%,rgba(255,255,255,.30)0%,transparent 70%);pointer-events:none;}
 .rt-inner{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;border-radius:50%;padding:10px;text-align:center;position:relative;z-index:1;}
 .rt-cup{font-size:28px;margin-bottom:4px;display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35));}
 .rt-name{font-family:'Playfair Display',serif;font-size:10.5px;font-weight:700;color:var(--tct,#faf6f0);line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,.45);}
 .rt-seats{display:flex;gap:3px;justify-content:center;flex-wrap:wrap;margin-top:5px;}
 .rt-chip{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,.22);border:1.5px solid rgba(255,255,255,.5);font-size:8px;font-weight:700;color:var(--tct,#faf6f0);display:flex;align-items:center;justify-content:center;}
 .rt-empty{font-size:8px;color:rgba(250,246,240,.4);font-style:italic;}
-/* legs */
 .rt-leg{position:absolute;bottom:-22px;width:9px;height:24px;background:linear-gradient(180deg,color-mix(in srgb,var(--tc)50%,#3a1a05 50%)0%,#221005 100%);border-radius:0 0 4px 4px;}
 .rt-leg.rl{left:30%;transform:rotate(-12deg);}
 .rt-leg.rr{right:30%;transform:rotate(12deg);}
-/* steam wisps */
 .rt-wisp{position:absolute;top:-9px;width:3px;height:11px;background:linear-gradient(to top,rgba(200,149,92,.55),transparent);border-radius:3px;pointer-events:none;animation:steamUp 2.8s ease-in-out infinite;}
 .rt-wisp.rw1{left:38%;animation-delay:0s;}
 .rt-wisp.rw2{left:54%;animation-delay:.9s;height:8px;}
-/* label below table */
 .rt-label{margin-top:18px;text-align:center;}
 .rt-lname{font-family:'Playfair Display',serif;font-size:12px;font-weight:700;color:var(--espresso);}
 .rt-ldesc{font-size:10px;color:var(--mid);font-style:italic;margin-top:1px;}
-/* nth delays */
 .rt-wrap:nth-child(1){animation-delay:.04s;}.rt-wrap:nth-child(2){animation-delay:.09s;}
 .rt-wrap:nth-child(3){animation-delay:.13s;}.rt-wrap:nth-child(4){animation-delay:.17s;}
 .rt-wrap:nth-child(5){animation-delay:.21s;}.rt-wrap:nth-child(6){animation-delay:.25s;}
@@ -635,8 +1164,15 @@ body{
 .s-dot{width:6px;height:6px;border-radius:50%;background:var(--caramel);animation:blink 1.8s infinite;flex-shrink:0;}
 .s-name{font-size:12px;font-weight:700;color:var(--mocha);white-space:nowrap;}
 .no-one{font-size:12px;color:#c0a882;font-style:italic;}
-#chatMsgs,#floorMsgs{flex:1;overflow-y:auto;padding:16px 15px;display:flex;flex-direction:column;gap:10px;background:var(--parchment);background-image:radial-gradient(ellipse at 75% 25%,rgba(200,149,92,.07)0%,transparent 50%),radial-gradient(ellipse at 15% 20%,rgba(200,149,92,.07)0%,transparent 50%),radial-gradient(ellipse at 85% 80%,rgba(107,58,31,.05)0%,transparent 50%);}
-#chatMsgs::-webkit-scrollbar,#floorMsgs::-webkit-scrollbar{width:4px;}#chatMsgs::-webkit-scrollbar-thumb,#floorMsgs::-webkit-scrollbar-thumb{background:var(--latte);border-radius:4px;}
+
+/* messages */
+#chatMsgs,#floorMsgs{
+  flex:1;overflow-y:auto;padding:16px 15px;display:flex;flex-direction:column;gap:10px;
+  background:var(--parchment);
+  background-image:radial-gradient(ellipse at 75% 25%,rgba(200,149,92,.07)0%,transparent 50%),radial-gradient(ellipse at 15% 20%,rgba(200,149,92,.07)0%,transparent 50%),radial-gradient(ellipse at 85% 80%,rgba(107,58,31,.05)0%,transparent 50%);
+}
+#chatMsgs::-webkit-scrollbar,#floorMsgs::-webkit-scrollbar{width:4px;}
+#chatMsgs::-webkit-scrollbar-thumb,#floorMsgs::-webkit-scrollbar-thumb{background:var(--latte);border-radius:4px;}
 .empty-state{text-align:center;color:#c0a882;font-size:15px;margin:auto;line-height:2.2;font-style:italic;font-family:'Playfair Display',serif;}
 .sys-msg{text-align:center;font-size:11px;color:var(--mid);padding:2px 0;font-style:italic;letter-spacing:.5px;}
 .msg-wrap{display:flex;gap:9px;align-items:flex-end;animation:msgIn .22s ease;}
@@ -647,49 +1183,386 @@ body{
 .msg-inner{max-width:72%;}
 .meta{font-size:10px;color:var(--mid);margin-bottom:4px;letter-spacing:.3px;}
 .mine .meta{text-align:right;}
-.bub{padding:10px 14px;border-radius:17px;font-size:15px;line-height:1.6;word-break:break-word;}
+.edited-note{font-style:italic;opacity:.65;margin-left:4px;}
+.bub{padding:10px 14px;border-radius:17px;font-size:15px;line-height:1.6;word-break:break-word;transition:opacity .15s;}
 .bub-them{background:var(--foam);color:var(--ink);border:1px solid var(--border);border-bottom-left-radius:4px;box-shadow:0 2px 10px rgba(59,31,14,.07);}
 .bub-mine{background:linear-gradient(135deg,var(--mocha),var(--espresso));color:var(--cream);border-bottom-right-radius:4px;box-shadow:0 3px 12px rgba(59,31,14,.22);}
+.bub-mine:hover{opacity:.88;}
+
+/* typing */
 #chatTypingBar,#floorTypingBar{display:none;align-items:center;gap:8px;padding:5px 16px;background:var(--foam);border-top:1px solid var(--border);flex-shrink:0;min-height:28px;}
 .tcups{display:flex;gap:3px;}.tc{font-size:13px;animation:bob .8s ease-in-out infinite;display:inline-block;}
 .tc:nth-child(2){animation-delay:.2s;}.tc:nth-child(3){animation-delay:.4s;}
 .ttext{font-size:11px;color:var(--mid);font-style:italic;}
-.input-bar{background:var(--foam);border-top:1px solid var(--border);padding:10px 12px;display:flex;gap:9px;align-items:center;flex-shrink:0;}
-#chatMsgInput,#floorMsgInput{flex:1;border:1.5px solid var(--border);border-radius:999px;padding:11px 17px;font-size:15px;font-family:'Lato',sans-serif;color:var(--ink);background:var(--cream);outline:none;transition:border-color .2s,box-shadow .2s;}
+
+/* edit bar */
+.edit-bar{
+  display:none;align-items:center;gap:10px;
+  background:rgba(200,149,92,.1);border-top:2px solid rgba(200,149,92,.35);
+  padding:8px 16px;flex-shrink:0;
+}
+.eb-icon{font-size:14px;}
+.eb-text{font-size:12px;color:var(--mocha);font-weight:700;flex:1;}
+.eb-cancel{background:rgba(200,149,92,.15);border:1px solid rgba(200,149,92,.35);border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--mocha);cursor:pointer;font-family:'Lato',sans-serif;transition:background .2s;}
+.eb-cancel:hover{background:rgba(200,149,92,.3);}
+
+/* input bar */
+.input-bar{
+  background:var(--foam);border-top:1px solid var(--border);
+  padding:10px 12px;
+  padding-bottom:max(10px, env(safe-area-inset-bottom));
+  display:flex;gap:9px;align-items:flex-end;flex-shrink:0;
+}
+#chatMsgInput,#floorMsgInput{
+  flex:1;border:1.5px solid var(--border);border-radius:22px;padding:11px 17px;
+  font-size:15px;font-family:'Lato',sans-serif;color:var(--ink);background:var(--cream);
+  outline:none;transition:border-color .2s,box-shadow .2s;resize:none;
+  max-height:100px;overflow-y:auto;scrollbar-width:none;line-height:1.45;
+}
 #chatMsgInput:focus,#floorMsgInput:focus{border-color:var(--caramel);box-shadow:0 0 0 3px rgba(200,149,92,.15);}
 #chatMsgInput::placeholder,#floorMsgInput::placeholder{color:#c0a882;}
 #chatSendBtn,#floorSendBtn{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--caramel),var(--roast));color:var(--foam);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:opacity .2s,transform .1s;box-shadow:0 3px 12px rgba(139,69,19,.35);}
 #chatSendBtn:hover,#floorSendBtn:hover{opacity:.88;}#chatSendBtn:active,#floorSendBtn:active{transform:scale(.90);}
 
+/* ═══════════════════ CONTEXT MENU ═══════════════════ */
+#msgContextMenu{
+  position:fixed;z-index:9000;
+  background:var(--foam);border:1.5px solid var(--border);border-radius:14px;
+  box-shadow:0 8px 32px rgba(59,31,14,.25);
+  display:flex;flex-direction:column;overflow:hidden;
+  animation:popIn .18s ease;
+  min-width:130px;
+}
+.ctx-btn{
+  background:none;border:none;padding:12px 18px;text-align:left;
+  font-size:14px;font-family:'Lato',sans-serif;color:var(--ink);cursor:pointer;
+  display:flex;align-items:center;gap:8px;transition:background .15s;
+}
+.ctx-btn:hover{background:rgba(200,149,92,.12);}
+.ctx-del{color:#c0392b;}
+.ctx-del:hover{background:rgba(192,57,43,.08);}
+
+/* ═══════════════════ PWA INSTALL BANNER ═══════════════════ */
+#installBanner{
+  position:fixed;bottom:0;left:0;right:0;z-index:8000;
+  background:linear-gradient(90deg,var(--espresso),var(--mocha));
+  border-top:2px solid var(--caramel);
+  padding:14px 18px;
+  padding-bottom:max(14px, env(safe-area-inset-bottom));
+  display:flex;align-items:center;gap:12px;
+  transform:translateY(100%);transition:transform .5s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 -4px 30px rgba(0,0,0,.4);
+}
+#installBanner.show{transform:translateY(0);}
+.ib-icon{font-size:2rem;flex-shrink:0;}
+.ib-text{flex:1;min-width:0;}
+.ib-title{font-family:'Dancing Script',cursive;font-size:1.15rem;color:var(--caramel);}
+.ib-sub{font-size:0.72rem;color:rgba(250,246,240,.5);margin-top:2px;}
+.ib-add{background:var(--caramel);color:var(--espresso);border:none;border-radius:20px;padding:9px 18px;font-family:'Lato',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:opacity .2s;}
+.ib-add:hover{opacity:.85;}
+.ib-close{background:none;border:none;color:rgba(250,246,240,.4);font-size:1.3rem;cursor:pointer;padding:4px;flex-shrink:0;}
+
 /* ═══════════════════ RESPONSIVE ═══════════════════ */
+
+/* ── Base: all screens fill the viewport on mobile ── */
+#loginScreen,#welcomeScreen{
+  width:100%;min-height:100dvh;
+}
+#floorScreen,#chatBox,#tablesRoom{
+  width:100%;height:100dvh;
+}
+#doorScreen{
+  width:100%;min-height:100dvh;
+}
+
+/* ── Tablet / small desktop (≥ 600px) ── */
+@media(min-width:600px){
+  body{align-items:center;justify-content:center;}
+
+  #loginScreen{
+    width:100%;padding:32px;
+  }
+  .lcard{
+    max-width:420px;
+  }
+
+  #welcomeScreen{
+    max-width:540px;margin:0 auto;
+    border-radius:28px;
+  }
+}
+
+/* ── Desktop (≥ 768px) – cards float centred ── */
 @media(min-width:768px){
   body{align-items:center;justify-content:center;}
-  #loginScreen{width:100%;}
-  #floorScreen,#chatBox{max-width:680px;width:100%;height:92vh;border-radius:24px;overflow:hidden;box-shadow:var(--shadow),0 0 0 1px var(--latte);}
-  #tablesRoom{max-width:860px;width:100%;height:92vh;border-radius:24px;overflow:hidden;box-shadow:var(--shadow),0 0 0 1px var(--latte);}
+
+  #floorScreen,#chatBox{
+    max-width:700px;width:100%;
+    height:92dvh;
+    border-radius:24px;
+    box-shadow:var(--shadow),0 0 0 1px var(--latte);
+  }
+  #tablesRoom{
+    max-width:900px;width:100%;
+    height:92dvh;
+    border-radius:24px;
+    box-shadow:var(--shadow),0 0 0 1px var(--latte);
+  }
   .page-header{border-radius:24px 24px 0 0;}
+
+  /* door scene: cap width so it doesn't stretch on wide screens */
+  #doorScreen{
+    max-width:600px;margin:0 auto;
+    min-height:100dvh;
+  }
+
+  /* larger tables on desktop */
+  #roundTablesGrid{
+    grid-template-columns:repeat(4,1fr);
+    gap:40px 20px;
+  }
+  .rt-outer{width:136px;height:136px;}
+  .rt-cup{font-size:30px;}
+
+  /* bubbles can be a bit narrower on wide screens */
+  .msg-inner{max-width:65%;}
+
+  /* input padding breathes more */
+  .input-bar{padding:12px 18px;}
 }
-@media(max-width:680px){
-  #roundTablesGrid{grid-template-columns:repeat(2,1fr);gap:28px 12px;}
-  .rt-outer{width:110px;height:110px;}
-  .rt-cup{font-size:24px;}
+
+/* ── Large desktop (≥ 1100px) ── */
+@media(min-width:1100px){
+  #floorScreen,#chatBox{max-width:760px;}
+  #tablesRoom{max-width:980px;}
+  .rt-outer{width:144px;height:144px;}
 }
-@media(max-width:400px){
-  #roundTablesGrid{grid-template-columns:repeat(2,1fr);gap:20px 8px;}
-  .rt-outer{width:96px;height:96px;}.rt-cup{font-size:21px;}.rt-name{font-size:9.5px;}
-  .msg-inner{max-width:84%;}.bub{font-size:14px;padding:9px 12px;}
-  .uname{display:none;}
-  .tables-btn-label{display:none;}
-  .tables-btn{padding:9px 12px;}
-  .page-header{gap:6px;padding:10px 10px;}
+
+/* ── Narrow mobile (≤ 480px) – the most common phone width ── */
+@media(max-width:480px){
+  /* login card: tighter padding, smaller emblem */
+  .lcard{padding:36px 24px 28px;border-radius:20px;}
+  .bean-emb,.bean-ring{width:76px;height:76px;}
+  .bean-ring{font-size:32px;}
+  .lcard h1{font-size:28px;}
+  .tagline{font-size:10px;}
+  .ls-drink{font-size:13px;}
+  .join-btn{padding:13px;font-size:14px;}
+
+  /* header tighter */
+  .page-header{padding:10px 12px;gap:7px;}
   .ph-logo{width:34px;height:34px;font-size:15px;}
-  .ph-title{font-size:14px;}
-  .hbtn{width:30px;height:30px;font-size:13px;}
+  .ph-title{font-size:14px;gap:5px;}
+  .hbtn{width:32px;height:32px;font-size:14px;}
   .upill{padding:4px 8px 4px 5px;}
+
+  /* hide username text in pill – avatar alone is enough */
+  .uname{display:none;}
+
+  /* tables button: icon only on very small */
+  .tables-btn-label{display:none;}
+  .tables-btn{padding:9px 13px;}
+
+  /* chalk bar: truncate special drink text gracefully */
+  .ck-d{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:48vw;}
+  .ck-t{display:none;} /* hide time greeting to save space */
+
+  /* tables grid: 2 columns */
+  #roundTablesGrid{grid-template-columns:repeat(2,1fr);gap:24px 10px;}
+  .rt-outer{width:108px;height:108px;}
+  .rt-cup{font-size:23px;}
+  .rt-name{font-size:10px;}
+  .rt-ldesc{font-size:9px;}
+
+  /* messages */
+  .msg-inner{max-width:80%;}
+  .bub{font-size:14px;padding:9px 12px;}
+  .av{width:28px;height:28px;font-size:11px;}
+  .meta{font-size:9px;}
+
+  /* floor welcome strip */
+  .fw-left h2{font-size:14px;}
+  .fw-left p{font-size:10px;}
+  .fw-count{font-size:10px;}
+
+  /* input bar */
+  .input-bar{padding:8px 10px;gap:7px;}
+  #chatMsgInput,#floorMsgInput{padding:10px 14px;font-size:14px;}
+  #chatSendBtn,#floorSendBtn{width:40px;height:40px;font-size:15px;}
+
+  /* welcome screen */
+  .ws-hostess{font-size:clamp(4rem,16vw,6rem);}
+  .ws-btn{padding:12px 20px;font-size:.9rem;}
+  .ws-choices{gap:10px;margin-top:20px;}
+
+  /* door scene tweaks for narrow phones */
+  .ds-board{padding:8px 18px;}
+  .ds-shop-name{font-size:clamp(.82rem,3.5vw,1.1rem);letter-spacing:1.5px;}
+  .ds-board-sub{letter-spacing:1.5px;}
+  .ds-plant.left,.ds-plant.right{font-size:1.6rem;}
+  .ds-lamp{display:none;} /* lamp clips on very narrow screens */
+}
+
+/* ── Extra-small (≤ 360px, e.g. older Android) ── */
+@media(max-width:360px){
+  .lcard{padding:28px 16px 22px;}
+  .lcard h1{font-size:24px;}
+  .lspecial{padding:8px 12px;}
+  .ls-drink{font-size:12px;}
+
+  .rt-outer{width:90px;height:90px;}
+  .rt-cup{font-size:20px;}
+  .rt-name{font-size:9px;}
+  #roundTablesGrid{gap:18px 8px;}
+
+  .msg-inner{max-width:86%;}
+  .bub{font-size:13px;}
+
+  .page-header{padding:8px 10px;gap:5px;}
+  .ph-title{font-size:13px;}
+  .hbtn{width:28px;height:28px;font-size:12px;}
+
+  .ws-btn{padding:11px 16px;font-size:.82rem;}
+  .ws-bubble{padding:14px 16px;font-size:.88rem;}
+
+  .ds-board-title{font-size:1.7rem;}
+  /* ds-shop-name removed in new design */
+}
+
+/* ── Landscape phone – short viewport ── */
+@media(max-height:500px) and (orientation:landscape){
+  /* login: horizontal card layout */
+  #loginScreen{padding:12px 24px;align-items:center;}
+  .lcard{
+    max-width:560px;
+    padding:20px 28px;
+    display:flex;flex-direction:row;flex-wrap:wrap;
+    align-items:center;gap:0 24px;
+    text-align:left;
+  }
+  .bean-emb{margin:0;flex-shrink:0;width:64px;height:64px;}
+  .bean-ring{width:64px;height:64px;font-size:28px;}
+  .lcard h1{font-size:22px;margin-bottom:0;}
+  .tagline{margin-bottom:8px;font-size:9px;}
+  .lspecial{margin-bottom:12px;padding:7px 12px;}
+  .ls-drink{font-size:12px;}
+  .ls-note{font-size:10px;}
+  .inp-g{margin-bottom:10px;flex-basis:100%;}
+  .join-btn{padding:11px;}
+  .l-btns{margin-top:8px;}
+
+  /* chat: reduce header / chalk bar heights */
+  .chalk{padding:4px 12px;}
+  .ck-d{font-size:10px;}
+  .floor-welcome{padding:7px 14px;}
+  .fw-left h2{font-size:13px;}
+  .seats-bar{min-height:32px;padding:5px 12px;}
+
+  /* welcome screen: horizontal layout */
+  #welcomeScreen{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:16px;padding:16px;}
+  .ws-bubble{font-size:.85rem;padding:12px 16px;max-width:260px;}
+  .ws-hostess{font-size:4rem;margin-top:0;}
+  .ws-choices{margin-top:0;flex-direction:column;gap:8px;}
+  .ws-btn{padding:10px 18px;font-size:.85rem;}
+
+  /* door: shrink vertical layout */
+  .ds-sign-mount{margin-top:14px;}
+  .ds-door-scene{bottom:66px;}
+  .ds-facade{bottom:52px;height:30px;}
+  .ds-pavement{height:68px;}
+  .ds-plant{bottom:66px;}
+  .ds-board-title{font-size:1.6rem;}
+}
+
+/* ── Very tall phones / small tablets portrait (≥ 812px height) ── */
+@media(min-height:812px) and (max-width:480px){
+  /* give the login card a little more breathing room */
+  .lcard{padding:52px 36px 44px;}
+  .bean-emb,.bean-ring{width:100px;height:100px;}
+  .bean-ring{font-size:44px;}
+  .lcard h1{font-size:36px;}
+
+  /* chat messages area can show more */
+  .bub{font-size:15.5px;padding:11px 15px;}
+
+  /* tables: slightly bigger */
+  .rt-outer{width:116px;height:116px;}
+  .rt-cup{font-size:26px;}
+}
+
+/* ── Prevent system font-size scaling from breaking layouts ── */
+@media(min-resolution:2dppx){
+  /* ensure crisp borders on retina */
+  .lcard,.msg-wrap,.bub,.seat-pill,.rt-outer{
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
 }
 </style>
 </head>
 <body>
+
+<!-- ═══════════════════ DOOR SCREEN ═══════════════════ -->
+<div id="doorScreen">
+
+  <!-- light warm brick wall -->
+  <div class="ds-wall"></div>
+  <div class="ds-wall-overlay"></div>
+
+  <!-- LEFT lantern flanking sign -->
+  <div class="ds-lantern-wrap left">
+    <div class="ds-lantern-wire"></div>
+    <div class="ds-lantern-body"><div class="ds-lantern-glow"></div></div>
+    <div class="ds-lantern-cone"></div>
+  </div>
+
+  <!-- RIGHT lantern flanking sign -->
+  <div class="ds-lantern-wrap right">
+    <div class="ds-lantern-wire"></div>
+    <div class="ds-lantern-body"><div class="ds-lantern-glow"></div></div>
+    <div class="ds-lantern-cone"></div>
+  </div>
+
+  <!-- SIGN — top of screen with chains -->
+  <div class="ds-sign-mount">
+    <div class="ds-chains">
+      <div class="ds-chain-l"></div>
+      <div class="ds-chain-l"></div>
+    </div>
+    <div class="ds-board">
+      <div class="ds-board-title">Bean Chat</div>
+      <div class="ds-board-sub">Ronald's Coffee Shop</div>
+    </div>
+  </div>
+
+  <!-- street lamp -->
+  <div class="ds-lamp">
+    <div class="ds-lamp-arm"></div>
+    <div class="ds-lamp-head"></div>
+    <div class="ds-lamp-cone"></div>
+    <div class="ds-lamp-post"></div>
+  </div>
+
+  <!-- potted plants flanking the door -->
+  <div class="ds-plant left">🪴</div>
+  <div class="ds-plant right">🪴</div>
+
+  <!-- WHITE MODERN DOOR -->
+  <div class="ds-door-scene" onclick="enterShop()">
+    <div class="ds-door-surround"></div>
+    <div class="ds-door-body">
+      <div class="ds-door-panel-top"></div>
+      <div class="ds-door-panel-bot"></div>
+      <div class="ds-knob"></div>
+      <div class="ds-letter-slot"></div>
+    </div>
+    <div class="ds-step"></div>
+  </div>
+
+  <!-- pavement -->
+  <div class="ds-pavement"></div>
+
+</div>
 
 <!-- ═══════════════════ LOGIN ═══════════════════ -->
 <div id="loginScreen">
@@ -713,6 +1586,24 @@ body{
       <button class="hbtn amb-btn" onclick="toggleAmbient()" title="Café ambience">🎵</button>
       <button class="hbtn snd-btn" onclick="toggleSound()"   title="Sound">🔔</button>
     </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ HOSTESS WELCOME ═══════════════════ -->
+<div id="welcomeScreen">
+  <div class="ws-bubble">
+    <em>"Good day! Welcome Ronald,s Coffee Shop."</em><br/>
+    <span id="hostessName"></span>, would you like to join the <strong>Main Floor</strong> or find a private <strong>Table</strong>?
+  </div>
+  <div class="ws-hostess">👩‍🦱</div>
+  <div class="ws-greeting">Your hostess is ready to seat you</div>
+  <div class="ws-choices">
+    <button class="ws-btn" onclick="goToMainFloor()">
+      <span class="ws-btn-icon">🪑</span> Main Floor
+    </button>
+    <button class="ws-btn" onclick="goToTablesFromWelcome()">
+      <span class="ws-btn-icon">📋</span> Browse Tables
+    </button>
   </div>
 </div>
 
@@ -751,11 +1642,10 @@ body{
     <div class="fw-count" id="floorCount">Loading…</div>
   </div>
 
-  <!-- Chat UI embedded in floor -->
   <div id="floorMsgs"></div>
   <div id="floorTypingBar"></div>
   <div class="input-bar">
-    <input id="floorMsgInput" type="text" placeholder="Say something warm to everyone…" onkeydown="handleMsgKey(event)"/>
+    <textarea id="floorMsgInput" rows="1" placeholder="Say something warm to everyone…" onkeydown="handleMsgKey(event)" oninput="autoResize(this)"></textarea>
     <button id="floorSendBtn" onclick="sendMessage()">➤</button>
   </div>
 </div>
@@ -833,12 +1723,24 @@ body{
   <div id="chatMsgs"></div>
   <div id="chatTypingBar"></div>
   <div class="input-bar">
-    <input id="chatMsgInput" type="text" placeholder="Pass something warm along…" onkeydown="handleMsgKey(event)"/>
+    <textarea id="chatMsgInput" rows="1" placeholder="Pass something warm along…" onkeydown="handleMsgKey(event)" oninput="autoResize(this)"></textarea>
     <button id="chatSendBtn" onclick="sendMessage()">➤</button>
   </div>
 </div>
 
+<!-- ═══════════════════ PWA INSTALL BANNER ═══════════════════ -->
+<div id="installBanner">
+  <div class="ib-icon">☕</div>
+  <div class="ib-text">
+    <div class="ib-title">Bean Chat</div>
+    <div class="ib-sub">Add to your home screen for the full café experience</div>
+  </div>
+  <button class="ib-add" id="installAddBtn">Add App</button>
+  <button class="ib-close" id="installDismiss">✕</button>
+</div>
+
 <script>
+/* DOMContentLoaded fallback for specials fill */
 document.addEventListener('DOMContentLoaded',()=>{
   const SPECIALS=[
     {drink:'Honey Oat Latte',note:'A golden hug in a cup'},
@@ -850,16 +1752,21 @@ document.addEventListener('DOMContentLoaded',()=>{
     {drink:'Vanilla Bean Macchiato',note:'Simple things done perfectly'},
   ];
   const s=SPECIALS[new Date().getDay()%SPECIALS.length];
-  document.getElementById('loginSpecialDrink').textContent=s.drink;
-  document.getElementById('loginSpecialNote').textContent=s.note;
-  document.querySelectorAll('.special-fill').forEach(e=>e.textContent=`${s.drink} — ${s.note}`);
-});
-</script>
+  const d=document.getElementById('loginSpecialDrink');
+  const n=document.getElementById('loginSpecialNote');
+  if(d)d.textContent=s.drink;
+  if(n)n.textContent=s.note;
 
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
-}
+  /* Show door immediately — module scripts are deferred so we
+     need this non-module block to make the door visible right away */
+  const screens=['doorScreen','loginScreen','welcomeScreen','floorScreen','tablesRoom','chatBox'];
+  screens.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.style.display='none';
+  });
+  const door=document.getElementById('doorScreen');
+  if(door)door.style.display='flex';
+});
 </script>
 </body>
 </html>
