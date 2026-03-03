@@ -514,12 +514,14 @@
   /* ── MESSAGE ACTIONS ────────────────────────────────────── */
   window.startEditMsg=(key,text)=>{
     editingKey=key;
+    closeContextMenu();
     const inp=inputEl();
     inp.value=text;
+    // Move cursor to end
+    inp.setSelectionRange(inp.value.length, inp.value.length);
     inp.focus();
     autoResize(inp);
     showEditBar(text);
-    closeContextMenu();
   };
   window.deleteMsg=(key)=>{
     if(!currentTable)return;
@@ -554,7 +556,8 @@
     if(old)old.remove();
     contextMenuTarget=null;
   }
-  window.openContextMenu=(key,text,isOwner,targetEl)=>{
+  window.openContextMenu=(key,text,isOwner,targetEl,e)=>{
+    if(e){e.preventDefault();e.stopPropagation();}
     closeContextMenu();
     if(!isOwner)return;
     contextMenuTarget=key;
@@ -563,11 +566,29 @@
     menu.innerHTML=`
       <button class="ctx-btn" onclick="startEditMsg('${key}',${JSON.stringify(text)})">✏️ Edit</button>
       <button class="ctx-btn ctx-del" onclick="deleteMsg('${key}')">🗑 Delete</button>`;
+
+    // Position relative to viewport (works on fixed-position screens)
     const rect=targetEl.getBoundingClientRect();
-    menu.style.top=(rect.top-80+window.scrollY)+'px';
-    menu.style.left=Math.max(8,Math.min(rect.left-10,window.innerWidth-160))+'px';
+    const menuH=90; // approximate height of menu
+    let top=rect.top - menuH - 8;
+    if(top < 8) top = rect.bottom + 8; // flip below if no room above
+    let left=rect.left;
+    // Clamp so it doesn't go off screen right edge
+    menu.style.position='fixed';
+    menu.style.zIndex='9000';
+    menu.style.top=top+'px';
+    menu.style.left=Math.max(8,Math.min(left,window.innerWidth-160))+'px';
     document.body.appendChild(menu);
-    setTimeout(()=>document.addEventListener('click',closeContextMenu,{once:true}),10);
+
+    // Close on next click anywhere — use capture & delay to avoid same-event close
+    setTimeout(()=>{
+      document.addEventListener('click',function handler(ev){
+        if(!menu.contains(ev.target)){
+          closeContextMenu();
+          document.removeEventListener('click',handler,true);
+        }
+      },true);
+    },50);
   };
 
   /* ── LISTEN MESSAGES ────────────────────────────────────── */
@@ -593,10 +614,23 @@
           bub.className='bub '+(mine?'bub-mine':'bub-them');
           bub.textContent=msg.text;
           if(mine){
-            bub.addEventListener('contextmenu',e=>{e.preventDefault();window.openContextMenu(key,msg.text,true,bub);});
-            bub.addEventListener('click',()=>window.openContextMenu(key,msg.text,true,bub));
-            bub.style.cursor='pointer';
-            bub.title='Tap to edit or delete';
+            // Right-click on desktop
+            bub.addEventListener('contextmenu',e=>{
+              e.preventDefault();e.stopPropagation();
+              window.openContextMenu(key,msg.text,true,bub,e);
+            });
+            // Long-press / tap on mobile — use a small inline edit icon instead of tap-to-open
+            // so tap to read doesn't accidentally open menu
+            const editBtn=document.createElement('button');
+            editBtn.className='msg-edit-btn';
+            editBtn.innerHTML='✏️';
+            editBtn.title='Edit or delete';
+            editBtn.addEventListener('click',e=>{
+              e.stopPropagation();
+              window.openContextMenu(key,msg.text,true,bub,e);
+            });
+            inn.appendChild(editBtn);
+            bub.style.cursor='default';
           }
           inn.append(meta,bub);mine?wrap.append(inn,av):wrap.append(av,inn);box.appendChild(wrap);
         }
@@ -1333,14 +1367,32 @@ button,.hbtn,.back-btn,.tables-btn,.ws-btn,.join-btn,.ctx-btn{
 #chatSendBtn,#floorSendBtn{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--caramel),var(--roast));color:var(--foam);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;transition:opacity .2s,transform .1s;box-shadow:0 3px 12px rgba(139,69,19,.35);}
 #chatSendBtn:hover,#floorSendBtn:hover{opacity:.88;}#chatSendBtn:active,#floorSendBtn:active{transform:scale(.90);}
 
-/* ═══════════════════ CONTEXT MENU ═══════════════════ */
+/* message edit button (own messages) */
+.msg-edit-btn{
+  display:none;
+  background:rgba(200,149,92,.18);border:1px solid rgba(200,149,92,.4);
+  border-radius:50%;width:22px;height:22px;font-size:11px;
+  align-items:center;justify-content:center;cursor:pointer;
+  padding:0;margin-top:5px;align-self:flex-end;
+  transition:background .18s,transform .15s;flex-shrink:0;
+}
+.msg-edit-btn:hover{background:rgba(200,149,92,.38);transform:scale(1.15);}
+/* Show on hover (desktop) */
+.msg-wrap.mine:hover .msg-edit-btn{ display:flex; }
+/* Always show on touch devices */
+@media(hover:none){
+  .msg-edit-btn{ display:flex !important; }
+}
+
+/* Fix context menu to use fixed positioning */
 #msgContextMenu{
-  position:fixed;z-index:9000;
+  position:fixed !important;
+  z-index:9000;
   background:var(--foam);border:1.5px solid var(--border);border-radius:14px;
   box-shadow:0 8px 32px rgba(59,31,14,.25);
   display:flex;flex-direction:column;overflow:hidden;
   animation:popIn .18s ease;
-  min-width:130px;
+  min-width:140px;
 }
 .ctx-btn{
   background:none;border:none;padding:12px 18px;text-align:left;
