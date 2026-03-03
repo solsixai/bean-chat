@@ -328,16 +328,19 @@
         prevTableCounts[t.id]=ns.length;
       });
       const fEl=document.getElementById('floorCount');
-      if(fEl&&snap.exists()&&snap.child(FREE_ID).child('seats').exists()){
-        const ns=[];snap.child(FREE_ID).child('seats').forEach(c=>ns.push(c.val().name));
-        const prev=prevTableCounts[FREE_ID]||0;
-        if(ns.length>prev){
-          // Someone joined the floor!
-          for(let i=0;i<4;i++) setTimeout(()=>spawnFlyBean(ns.length>4),i*130);
-          if(soundOn&&ns.length>1) tone(660,'sine',.10,.4,880);
+      if(fEl){
+        if(snap.exists()&&snap.child(FREE_ID).child('seats').exists()){
+          const ns=[];snap.child(FREE_ID).child('seats').forEach(c=>ns.push(c.val().name));
+          const prev=prevTableCounts[FREE_ID]||0;
+          if(ns.length>prev){
+            for(let i=0;i<4;i++) setTimeout(()=>spawnFlyBean(ns.length>4),i*130);
+            if(soundOn&&ns.length>1) tone(660,'sine',.10,.4,880);
+          }
+          prevTableCounts[FREE_ID]=ns.length;
+          fEl.textContent=ns.length>1?`${ns.length} people chatting`:ns.length===1?'1 person here':'Just you right now';
+        } else {
+          fEl.textContent='Just you right now';
         }
-        prevTableCounts[FREE_ID]=ns.length;
-        fEl.textContent=ns.length>1?`${ns.length} people chatting`:ns.length===1?'1 person here':'Just you right now';
       }
     });
   }
@@ -396,10 +399,26 @@
     }
   };
 
-  /* ── CHAT UI ─────────────────────────────────────────────── */
-  function msgsEl()   { return document.getElementById(currentScreen==='floorScreen'?'floorMsgs':'chatMsgs'); }
-  function inputEl()  { return document.getElementById(currentScreen==='floorScreen'?'floorMsgInput':'chatMsgInput'); }
-  function typingEl() { return document.getElementById(currentScreen==='floorScreen'?'floorTypingBar':'chatTypingBar'); }
+  /* ── CHAT UI HELPERS ─────────────────────────────────────── */
+  function msgsEl(){
+    // Use whichever messages container is currently visible
+    const floor=document.getElementById('floorMsgs');
+    const chat=document.getElementById('chatMsgs');
+    if(floor&&document.getElementById('floorScreen').style.display!=='none') return floor;
+    return chat;
+  }
+  function inputEl(){
+    const floor=document.getElementById('floorMsgInput');
+    const chat=document.getElementById('chatMsgInput');
+    if(floor&&document.getElementById('floorScreen').style.display!=='none') return floor;
+    return chat;
+  }
+  function typingEl(){
+    const floor=document.getElementById('floorTypingBar');
+    const chat=document.getElementById('chatTypingBar');
+    if(floor&&document.getElementById('floorScreen').style.display!=='none') return floor;
+    return chat;
+  }
 
   function showChatUI(info){
     const isFloor=info.id===FREE_ID;
@@ -493,13 +512,18 @@
 
   /* ── EDIT BAR HELPERS ───────────────────────────────────── */
   function showEditBar(originalText){
-    let bar=document.getElementById('editBar');
-    if(!bar){
-      bar=document.createElement('div');bar.id='editBar';bar.className='edit-bar';
-      const inputArea=document.querySelector('#chatBox .input-bar')||document.querySelector('#floorScreen .input-bar');
-      if(inputArea)inputArea.parentNode.insertBefore(bar,inputArea);
-    }
+    // Remove any existing edit bar first
+    const old=document.getElementById('editBar');
+    if(old)old.remove();
+    const bar=document.createElement('div');
+    bar.id='editBar';bar.className='edit-bar';
     bar.innerHTML=`<span class="eb-icon">✏️</span><span class="eb-text">Editing message</span><button class="eb-cancel" onclick="cancelEdit()">✕ Cancel</button>`;
+    // Insert before the correct input bar (whichever screen is visible)
+    const floorVisible=document.getElementById('floorScreen').style.display!=='none';
+    const inputArea=floorVisible
+      ? document.querySelector('#floorScreen .input-bar')
+      : document.querySelector('#chatBox .input-bar');
+    if(inputArea) inputArea.parentNode.insertBefore(bar,inputArea);
     bar.style.display='flex';
   }
   function hideEditBar(){
