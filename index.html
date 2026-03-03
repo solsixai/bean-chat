@@ -185,9 +185,21 @@
     const lockCb=document.getElementById('lockNameCb');
     if(lockCb&&lockCb.checked) lockName(); else unlockName();
     actx.resume();
-    myOnlineRef=ref(db,'online/'+username);
-    set(myOnlineRef,{name:username,joinedAt:Date.now()});
-    onDisconnect(myOnlineRef).remove();
+    myOnlineRef = ref(db, 'presence/' + username);
+
+    set(myOnlineRef, {
+      name: username,
+      state: 'online',
+      lastActive: Date.now()
+    });
+
+    onDisconnect(myOnlineRef).set({
+      name: username,
+      state: 'offline',
+      lastActive: Date.now()
+    });
+
+    setActive();
     showScreen('welcomeScreen');
     initWelcome();
   };
@@ -507,6 +519,7 @@
         pill.innerHTML=`<span class="s-dot"></span><span class="s-name">${u.name}</span>`;
         p.appendChild(pill);
       });
+      listenPresence();
     });
   }
 
@@ -554,6 +567,61 @@
     }
     closeContextMenu();
   };
+
+  
+  /* ── PRESENCE ACTIVITY SYSTEM ─────────────────────────── */
+  let activityTimer = null;
+
+  function setActive(){
+    if(!myOnlineRef) return;
+
+    update(myOnlineRef,{
+      state:'online',
+      lastActive:Date.now()
+    });
+
+    clearTimeout(activityTimer);
+
+    activityTimer = setTimeout(()=>{
+      update(myOnlineRef,{
+        state:'away',
+        lastActive:Date.now()
+      });
+    },120000); // 2 minutes
+  }
+
+  function listenPresence(){
+    onValue(ref(db,'presence'),snap=>{
+      if(!snap.exists()) return;
+
+      const users = snap.val();
+
+      document.querySelectorAll('.seat-pill').forEach(pill=>{
+        const nameEl = pill.querySelector('.s-name');
+        if(!nameEl) return;
+
+        const name = nameEl.textContent;
+        const dot = pill.querySelector('.s-dot');
+        if(!dot) return;
+
+        if(!users[name]){
+          dot.className = 's-dot offline';
+          return;
+        }
+
+        if(users[name].state === 'online'){
+          dot.className = 's-dot online';
+        }
+        else if(users[name].state === 'away'){
+          dot.className = 's-dot away';
+        }
+        else{
+          dot.className = 's-dot offline';
+        }
+      });
+      listenPresence();
+    });
+  }
 
   /* ── CLEAR ALL MY MESSAGES ──────────────────────────────── */
   window.clearMyChats=()=>{
@@ -623,18 +691,7 @@
       const savedEditKey=editingKey;
       const savedEditText=savedEditKey?inputEl().value:'';
 
-      const box = msgsEl();
-
-      const savedEditKey = editingKey;
-      const savedEditText = savedEditKey ? inputEl().value : '';
-
-      // Preserve scroll position
-      const previousScrollHeight = box.scrollHeight;
-      const previousScrollTop = box.scrollTop;
-      const wasAtBottom =
-        previousScrollTop + box.clientHeight >= previousScrollHeight - 5;
-
-      box.innerHTML='';
+      const box=msgsEl();box.innerHTML='';
       if(!snap.exists()){box.innerHTML='<div class="empty-state">The table is set.<br/>Say something warm. ☕</div>';isFirstLoad=false;return;}
       snap.forEach(child=>{
         const key=child.key, msg=child.val();
@@ -676,35 +733,25 @@
 
       // Restore edit state if user was mid-edit when Firebase re-rendered
       if(savedEditKey){
-        editingKey = savedEditKey;
-
-        const inp = inputEl();
-        inp.value = savedEditText;
-        inp.focus();
-        inp.setSelectionRange(inp.value.length, inp.value.length);
-
-        showEditBar(savedEditText);
+        editingKey=savedEditKey;
+        const inp=inputEl();
+        if(inp.value!==savedEditText) inp.value=savedEditText;
+        showEditBar('');
       }
 
       if(!isFirstLoad&&!savedEditKey) playPing();
       isFirstLoad=false;
       // Only auto-scroll if not currently editing
-      if(savedEditKey){
-        box.scrollTop = previousScrollTop;
-      } 
-      else if (wasAtBottom){
-        box.scrollTop = box.scrollHeight;
-      } 
-      else {
-        const newScrollHeight = box.scrollHeight;
-        box.scrollTop =
-          previousScrollTop + (newScrollHeight - previousScrollHeight);
-      }
+      if(!savedEditKey) box.scrollTop=box.scrollHeight;
     });
   }
 
   /* ── SESSION RESTORE + DOMContentLoaded ────────────────── */
   document.addEventListener('DOMContentLoaded',()=>{
+
+    ['click','keydown','touchstart','mousemove'].forEach(evt=>{
+      document.addEventListener(evt, setActive);
+    });
     document.getElementById('loginSpecialDrink').textContent=special.drink;
     document.getElementById('loginSpecialNote').textContent=special.note;
     applyTime();
@@ -845,6 +892,30 @@ button,.hbtn,.back-btn,.tables-btn,.ws-btn,.join-btn,.ctx-btn{
 .bg-bean {position:absolute;pointer-events:none;z-index:0;bottom:-50px;animation:bgRise 13s linear forwards;}
 
 /* ═══════════════════ SHARED COMPONENTS ═══════════════════ */
+
+.s-dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  display:inline-block;
+  margin-right:6px;
+  background:#888;
+}
+
+.s-dot.online{
+  background:#2ecc71;
+  box-shadow:0 0 6px #2ecc71;
+}
+
+.s-dot.away{
+  background:#f1c40f;
+  box-shadow:0 0 6px #f1c40f;
+}
+
+.s-dot.offline{
+  background:#777;
+}
+
 .page-header{
   background:linear-gradient(135deg,var(--espresso),var(--mocha));
   padding:12px 16px;padding-top:calc(12px + env(safe-area-inset-top));display:flex;align-items:center;gap:9px;flex-shrink:0;
@@ -2105,6 +2176,10 @@ button,.hbtn,.back-btn,.tables-btn,.ws-btn,.join-btn,.ctx-btn{
 <script>
 /* DOMContentLoaded fallback for specials fill */
 document.addEventListener('DOMContentLoaded',()=>{
+
+    ['click','keydown','touchstart','mousemove'].forEach(evt=>{
+      document.addEventListener(evt, setActive);
+    });
   const SPECIALS=[
     {drink:'Honey Oat Latte',note:'A golden hug in a cup'},
     {drink:'Cardamom Flat White',note:'Spice up your morning'},
