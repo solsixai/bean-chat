@@ -619,6 +619,10 @@
   function listenMessages(){
     if(messagesUnsub)messagesUnsub();
     messagesUnsub=onValue(ref(db,`tables/${currentTable}/messages`),snap=>{
+      // Preserve editingKey across re-renders — Firebase can fire while user is mid-edit
+      const savedEditKey=editingKey;
+      const savedEditText=savedEditKey?inputEl().value:'';
+
       const box=msgsEl();box.innerHTML='';
       if(!snap.exists()){box.innerHTML='<div class="empty-state">The table is set.<br/>Say something warm. ☕</div>';isFirstLoad=false;return;}
       snap.forEach(child=>{
@@ -638,29 +642,39 @@
           bub.className='bub '+(mine?'bub-mine':'bub-them');
           bub.textContent=msg.text;
           if(mine){
-            // Right-click on desktop
             bub.addEventListener('contextmenu',e=>{
               e.preventDefault();e.stopPropagation();
               window.openContextMenu(key,msg.text,true,bub,e);
             });
-            // Long-press / tap on mobile — use a small inline edit icon instead of tap-to-open
-            // so tap to read doesn't accidentally open menu
             const editBtn=document.createElement('button');
             editBtn.className='msg-edit-btn';
             editBtn.innerHTML='✏️';
             editBtn.title='Edit or delete';
             editBtn.addEventListener('click',e=>{
-              e.stopPropagation();
+              e.preventDefault();e.stopPropagation();
               window.openContextMenu(key,msg.text,true,bub,e);
             });
-            inn.appendChild(editBtn);
-            bub.style.cursor='default';
+            inn.append(meta,bub,editBtn);
+          } else {
+            inn.append(meta,bub);
           }
-          inn.append(meta,bub);mine?wrap.append(inn,av):wrap.append(av,inn);box.appendChild(wrap);
+          mine?wrap.append(inn,av):wrap.append(av,inn);
+          box.appendChild(wrap);
         }
       });
-      if(!isFirstLoad)playPing();
-      isFirstLoad=false;box.scrollTop=box.scrollHeight;
+
+      // Restore edit state if user was mid-edit when Firebase re-rendered
+      if(savedEditKey){
+        editingKey=savedEditKey;
+        const inp=inputEl();
+        if(inp.value!==savedEditText) inp.value=savedEditText;
+        showEditBar('');
+      }
+
+      if(!isFirstLoad&&!savedEditKey) playPing();
+      isFirstLoad=false;
+      // Only auto-scroll if not currently editing
+      if(!savedEditKey) box.scrollTop=box.scrollHeight;
     });
   }
 
