@@ -35,7 +35,6 @@
   let ambientNode=null, ambientGain=null, clinkTimeout=null;
   let messagesUnsub=null, typingUnsub=null, seatsUnsub=null, tablesUnsub=null;
   let beanLevel=0, beanTimer=null, bgBeanInterval=null;
-  let editingKey=null;
 
   /* ── PERSISTENT NAME STORAGE (localStorage) ─────────────── */
   const SESSION_KEY = 'beanchat_username';
@@ -257,6 +256,9 @@
     document.getElementById('floorUserAv').textContent=username[0].toUpperCase();
     document.getElementById('floorUserName').textContent=username;
     document.querySelectorAll('.special-fill').forEach(e=>e.textContent=specialStr);
+    // Set floor count immediately so it never stays on "Loading..."
+    const fEl=document.getElementById('floorCount');
+    if(fEl) fEl.textContent='Just you right now';
     applyTime();setInterval(applyTime,60000);
     startBgBeans('floorScreen');
     listenTablesOverview();
@@ -380,6 +382,7 @@
     myTypingRef=ref(db,`tables/${id}/typing/${username}`);
     showChatUI(info);
     playJoin();burst(3);
+    startJane();
     // Exciting entrance: spawn a wave of beans for a big welcome
     for(let i=0;i<5;i++) setTimeout(()=>spawnFlyBean(true),i*180);
   }
@@ -391,7 +394,8 @@
     if(messagesUnsub){messagesUnsub();messagesUnsub=null;}
     if(typingUnsub){typingUnsub();typingUnsub=null;}
     if(seatsUnsub){seatsUnsub();seatsUnsub=null;}
-    currentTable=null;isFirstLoad=true;editingKey=null;
+    stopJane();
+    currentTable=null;isFirstLoad=true;
   }
 
   window.leaveChat=()=>{
@@ -412,25 +416,10 @@
   };
 
   /* ── CHAT UI HELPERS ─────────────────────────────────────── */
-  function msgsEl(){
-    // Use whichever messages container is currently visible
-    const floor=document.getElementById('floorMsgs');
-    const chat=document.getElementById('chatMsgs');
-    if(floor&&document.getElementById('floorScreen').style.display!=='none') return floor;
-    return chat;
-  }
-  function inputEl(){
-    const floor=document.getElementById('floorMsgInput');
-    const chat=document.getElementById('chatMsgInput');
-    if(floor&&document.getElementById('floorScreen').style.display!=='none') return floor;
-    return chat;
-  }
-  function typingEl(){
-    const floor=document.getElementById('floorTypingBar');
-    const chat=document.getElementById('chatTypingBar');
-    if(floor&&document.getElementById('floorScreen').style.display!=='none') return floor;
-    return chat;
-  }
+  function isFloorActive(){ return currentTable===FREE_ID; }
+  function msgsEl()  { return document.getElementById(isFloorActive()?'floorMsgs':'chatMsgs'); }
+  function inputEl() { return document.getElementById(isFloorActive()?'floorMsgInput':'chatMsgInput'); }
+  function typingEl(){ return document.getElementById(isFloorActive()?'floorTypingBar':'chatTypingBar'); }
 
   function showChatUI(info){
     const isFloor=info.id===FREE_ID;
@@ -454,8 +443,6 @@
       document.getElementById('floorTypingBar').innerHTML='';
       document.getElementById('floorTypingBar').style.display='none';
     }
-    editingKey=null;
-    hideEditBar();
     isFirstLoad=true;
     listenMessages();
     if(!isFloor)listenSeats();
@@ -468,21 +455,13 @@
     const inp=inputEl(),text=inp.value.trim();
     if(!text||!currentTable)return;
 
-    if(editingKey){
-      const msgRef=ref(db,`tables/${currentTable}/messages/${editingKey}`);
-      update(msgRef,{text,edited:true,editedAt:serverTimestamp()});
-      editingKey=null;hideEditBar();
-      inp.value='';autoResize(inp);
-      return;
-    }
-
     inp.value='';autoResize(inp);setTyping(false);clearTimeout(typingTimer);
     playSend();coffeeCheck(text);burst(1);
+    resetJaneIdle();
     push(ref(db,`tables/${currentTable}/messages`),{type:'message',user:username,text,ts:serverTimestamp()});
   };
   window.handleMsgKey=e=>{
     if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();window.sendMessage();return;}
-    if(e.key==='Escape'&&editingKey){cancelEdit();return;}
     setTyping(true);clearTimeout(typingTimer);typingTimer=setTimeout(()=>setTyping(false),1800);
   };
 
@@ -523,43 +502,7 @@
     });
   }
 
-  /* ── EDIT BAR HELPERS ───────────────────────────────────── */
-  function showEditBar(originalText){
-    // Remove any existing edit bar first
-    const old=document.getElementById('editBar');
-    if(old)old.remove();
-    const bar=document.createElement('div');
-    bar.id='editBar';bar.className='edit-bar';
-    bar.innerHTML=`<span class="eb-icon">✏️</span><span class="eb-text">Editing message</span><button class="eb-cancel" onclick="cancelEdit()">✕ Cancel</button>`;
-    // Insert before the correct input bar (whichever screen is visible)
-    const floorVisible=document.getElementById('floorScreen').style.display!=='none';
-    const inputArea=floorVisible
-      ? document.querySelector('#floorScreen .input-bar')
-      : document.querySelector('#chatBox .input-bar');
-    if(inputArea) inputArea.parentNode.insertBefore(bar,inputArea);
-    bar.style.display='flex';
-  }
-  function hideEditBar(){
-    const bar=document.getElementById('editBar');
-    if(bar)bar.style.display='none';
-  }
-  window.cancelEdit=()=>{
-    editingKey=null;hideEditBar();
-    const inp=inputEl();inp.value='';autoResize(inp);inp.focus();
-  };
-
   /* ── MESSAGE ACTIONS ────────────────────────────────────── */
-  window.startEditMsg=(key,text)=>{
-    editingKey=key;
-    closeContextMenu();
-    const inp=inputEl();
-    inp.value=text;
-    // Move cursor to end
-    inp.setSelectionRange(inp.value.length, inp.value.length);
-    inp.focus();
-    autoResize(inp);
-    showEditBar(text);
-  };
   window.deleteMsg=(key)=>{
     if(!currentTable)return;
     if(confirm('Delete this message?')){
@@ -655,9 +598,7 @@
     contextMenuTarget=key;
     const menu=document.createElement('div');
     menu.id='msgContextMenu';menu.className='ctx-menu';
-    menu.innerHTML=`
-      <button class="ctx-btn" onclick="startEditMsg('${key}',${JSON.stringify(text)})">✏️ Edit</button>
-      <button class="ctx-btn ctx-del" onclick="deleteMsg('${key}')">🗑 Delete</button>`;
+    menu.innerHTML=`<button class="ctx-btn ctx-del" onclick="deleteMsg('${key}')">🗑 Delete</button>`;
 
     // Position relative to viewport (works on fixed-position screens)
     const rect=targetEl.getBoundingClientRect();
@@ -687,16 +628,15 @@
   function listenMessages(){
     if(messagesUnsub)messagesUnsub();
     messagesUnsub=onValue(ref(db,`tables/${currentTable}/messages`),snap=>{
-      // Preserve editingKey across re-renders — Firebase can fire while user is mid-edit
-      const savedEditKey=editingKey;
-      const savedEditText=savedEditKey?inputEl().value:'';
-
       const box=msgsEl();box.innerHTML='';
       if(!snap.exists()){box.innerHTML='<div class="empty-state">The table is set.<br/>Say something warm. ☕</div>';isFirstLoad=false;return;}
       snap.forEach(child=>{
         const key=child.key, msg=child.val();
         if(msg.type==='system'){
-          const el=document.createElement('div');el.className='sys-msg';el.textContent=msg.text;box.appendChild(el);
+          const el=document.createElement('div');
+          const isJane = msg.text && (msg.text.startsWith('👩‍🦱') || msg.text.includes('Jane:'));
+          el.className='sys-msg'+(isJane?' jane-msg':'');
+          el.textContent=msg.text;box.appendChild(el);
         }else{
           const mine=msg.user===username;
           const wrap=document.createElement('div');wrap.className='msg-wrap '+(mine?'mine':'theirs');
@@ -714,15 +654,7 @@
               e.preventDefault();e.stopPropagation();
               window.openContextMenu(key,msg.text,true,bub,e);
             });
-            const editBtn=document.createElement('button');
-            editBtn.className='msg-edit-btn';
-            editBtn.innerHTML='✏️';
-            editBtn.title='Edit or delete';
-            editBtn.addEventListener('click',e=>{
-              e.preventDefault();e.stopPropagation();
-              window.openContextMenu(key,msg.text,true,bub,e);
-            });
-            inn.append(meta,bub,editBtn);
+            inn.append(meta,bub);
           } else {
             inn.append(meta,bub);
           }
@@ -731,18 +663,9 @@
         }
       });
 
-      // Restore edit state if user was mid-edit when Firebase re-rendered
-      if(savedEditKey){
-        editingKey=savedEditKey;
-        const inp=inputEl();
-        if(inp.value!==savedEditText) inp.value=savedEditText;
-        showEditBar('');
-      }
-
-      if(!isFirstLoad&&!savedEditKey) playPing();
+      if(!isFirstLoad){ playPing(); resetJaneIdle(); }
       isFirstLoad=false;
-      // Only auto-scroll if not currently editing
-      if(!savedEditKey) box.scrollTop=box.scrollHeight;
+      box.scrollTop=box.scrollHeight;
     });
   }
 
@@ -797,6 +720,237 @@
     window.addEventListener('appinstalled',()=>{
       const b=document.getElementById('installBanner');if(b)b.classList.remove('show');
     });
+  }
+
+
+  /* ══════════════════════════════════════════════════════════
+     JANE THE WAITRESS
+  ══════════════════════════════════════════════════════════ */
+  const JANE_JOKES = [
+    "Why did the espresso file a police report? It got mugged. ☕😂",
+    "What do you call sad coffee? A depresso. 😢☕",
+    "How does a coffee ask for a hug? 'Can I give you a latte love?' 🤗",
+    "Why did the coffee go to therapy? It had too many grounds for concern. 🛋️",
+    "What's a barista's favourite karate move? The chai kick! 🥋🍵",
+    "Why do coffee beans never argue? They don't want to stir things up. 😄",
+    "What did the coffee say to the milk? 'You complete me.' ☕🥛",
+    "I tried to write a joke about coffee… but I'm drawing a blank roast. ✍️",
+    "Why is coffee bad at golf? It always ends up in the rough brew. ⛳",
+    "What's a coffee's favourite song? Hit Me Brew One More Time. 🎵",
+  ];
+  const JANE_WANDERS = [
+    "✨ *Jane glides past with a fresh pot, topping everyone up silently* ☕",
+    "🧹 *Jane tidies the chalk board and hums softly to herself*",
+    "🌿 *Jane waters the little plant by the window, smiling*",
+    "🫧 *Jane wipes down the counter with care, whistling*",
+    "📖 *Jane flips through the specials menu, nodding approvingly*",
+    "🕯️ *Jane lights a new candle on the counter — the café glows a little warmer*",
+    "🥐 *Jane carries a fresh tray of pastries from the back* 'Hot from the oven!'",
+    "🎵 *Jane adjusts the background music ever so slightly*",
+    "☕ *Jane brews a fresh batch, the aroma drifting across the room*",
+    "🪴 *Jane rearranges the potted ferns and steps back to admire them*",
+  ];
+  const JANE_GREETINGS = [
+    "name => `Welcome back, ${name}! Your usual? ☕`",
+    "name => `${name}! So lovely to see you again 🌿`",
+    "name => `Ah, ${name}! I saved you a good spot ☕`",
+  ];
+
+  let janeIdleTimer = null;
+  let janeWanderInterval = null;
+  let lastMsgTime = Date.now();
+
+  function janeSpeak(text, isJoke=false){
+    if(!currentTable) return;
+    const icon = isJoke ? '👩‍🦱😄' : '👩‍🦱';
+    push(ref(db,`tables/${currentTable}/messages`),{
+      type:'system',
+      text:`${icon} Jane: ${text}`,
+      ts:serverTimestamp()
+    });
+  }
+
+  function resetJaneIdle(){
+    lastMsgTime = Date.now();
+    clearTimeout(janeIdleTimer);
+    janeIdleTimer = setTimeout(janeIdleAction, 60000); // 1 min silence
+  }
+
+  function janeIdleAction(){
+    if(!currentTable) return;
+    const roll = Math.random();
+    if(roll < 0.55){
+      // Tell a joke
+      const joke = JANE_JOKES[Math.floor(Math.random()*JANE_JOKES.length)];
+      janeSpeak('Want to hear a joke of the day? 😄', false);
+      setTimeout(()=> janeSpeak(joke, true), 2200);
+    } else {
+      // Just wander
+      janeWander();
+    }
+    // Reset for next idle cycle
+    resetJaneIdle();
+  }
+
+  function janeWander(){
+    if(!currentTable) return;
+    const action = JANE_WANDERS[Math.floor(Math.random()*JANE_WANDERS.length)];
+    janeSpeak(action, false);
+  }
+
+  function startJane(){
+    clearTimeout(janeIdleTimer);
+    clearInterval(janeWanderInterval);
+    resetJaneIdle();
+    // Jane also randomly wanders every 4-8 min independent of idle
+    const wanderMs = (240 + Math.random()*240) * 1000;
+    janeWanderInterval = setInterval(()=>{
+      // Only wander if there's been recent chat (last 10 min)
+      if(Date.now()-lastMsgTime < 600000) janeWander();
+    }, wanderMs);
+  }
+
+  function stopJane(){
+    clearTimeout(janeIdleTimer);
+    clearInterval(janeWanderInterval);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     EMOJI PICKER
+  ══════════════════════════════════════════════════════════ */
+  const EMOJI_LIST = [
+    '😄','😂','🤣','😊','😍','🥰','😘','😎','🤔','😅',
+    '😭','😤','🥺','😴','🤯','😇','🤩','😏','🙄','😬',
+    '👍','👎','❤️','🔥','✨','💯','👏','🙏','🫶','💪',
+    '☕','🫘','🍫','🥐','🍵','🧁','🎂','🍰','🥂','🍾',
+    '😂','🤣','😆','😝','🤪','🥳','🎉','🎊','🎈','🎁',
+    '🌸','🌿','🪴','🌻','🍀','🌈','⭐','🌙','☀️','❄️',
+  ];
+
+  let emojiOpen = false;
+
+  window.toggleEmoji = () => {
+    emojiOpen = !emojiOpen;
+    let picker = document.getElementById('emojiPicker');
+    if(!picker){
+      picker = document.createElement('div');
+      picker.id = 'emojiPicker';
+      picker.className = 'emoji-picker';
+      EMOJI_LIST.forEach(em => {
+        const btn = document.createElement('button');
+        btn.className = 'em-btn';
+        btn.textContent = em;
+        btn.addEventListener('click', e => {
+          e.stopPropagation();
+          const inp = inputEl();
+          const pos = inp.selectionStart || inp.value.length;
+          inp.value = inp.value.slice(0,pos) + em + inp.value.slice(pos);
+          inp.focus();
+          inp.setSelectionRange(pos+em.length, pos+em.length);
+          autoResize(inp);
+        });
+        picker.appendChild(btn);
+      });
+      // Insert above input bar
+      const inputArea = isFloorActive()
+        ? document.querySelector('#floorScreen .input-bar')
+        : document.querySelector('#chatBox .input-bar');
+      if(inputArea) inputArea.parentNode.insertBefore(picker, inputArea);
+    }
+    picker.style.display = emojiOpen ? 'flex' : 'none';
+    document.querySelectorAll('.emoji-toggle-btn').forEach(b=>b.classList.toggle('on', emojiOpen));
+  };
+
+  // Close emoji picker when clicking outside
+  document.addEventListener('click', e => {
+    if(emojiOpen && !e.target.closest('#emojiPicker') && !e.target.closest('.emoji-toggle-btn')){
+      emojiOpen = false;
+      const picker = document.getElementById('emojiPicker');
+      if(picker) picker.style.display = 'none';
+      document.querySelectorAll('.emoji-toggle-btn').forEach(b=>b.classList.remove('on'));
+    }
+  });
+
+  /* ══════════════════════════════════════════════════════════
+     VOICE — SPEECH TO TEXT  (Web Speech API, no storage)
+  ══════════════════════════════════════════════════════════ */
+  let recognition = null;
+  let isRecording = false;
+  let voiceTranscript = '';
+
+  function initVoice(){
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SpeechRecognition) return; // browser doesn't support it
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = e => {
+      let interim = '', final = '';
+      for(let i = e.resultIndex; i < e.results.length; i++){
+        if(e.results[i].isFinal) final += e.results[i][0].transcript;
+        else interim += e.results[i][0].transcript;
+      }
+      voiceTranscript += final;
+      // Show live preview in input box
+      const inp = inputEl();
+      inp.value = voiceTranscript + (interim ? ' ' + interim : '');
+      autoResize(inp);
+    };
+
+    recognition.onerror = e => {
+      console.warn('Voice error:', e.error);
+      stopVoice();
+    };
+
+    recognition.onend = () => {
+      if(isRecording){
+        // Auto-restart if we stopped mid-session (Chrome stops after silence)
+        try{ recognition.start(); }catch(e){}
+      }
+    };
+  }
+
+  window.toggleVoice = () => {
+    if(!recognition){ initVoice(); }
+    if(!recognition){
+      alert('Voice input is not supported in this browser. Try Chrome or Edge.');
+      return;
+    }
+    if(!isRecording){
+      startVoice();
+    } else {
+      stopVoiceAndSend();
+    }
+  };
+
+  function startVoice(){
+    isRecording = true;
+    voiceTranscript = '';
+    const inp = inputEl();
+    inp.value = '';
+    inp.placeholder = '🎤 Listening… tap mic again to send';
+    autoResize(inp);
+    document.querySelectorAll('.mic-btn').forEach(b=>{ b.classList.add('recording'); b.textContent='⏹'; });
+    actx.resume();
+    try{ recognition.start(); }catch(e){}
+  }
+
+  function stopVoice(){
+    isRecording = false;
+    try{ recognition.stop(); }catch(e){}
+    document.querySelectorAll('.mic-btn').forEach(b=>{ b.classList.remove('recording'); b.textContent='🎤'; });
+    const inp = inputEl();
+    inp.placeholder = isFloorActive() ? 'Say something warm to everyone…' : 'Pass something warm along…';
+  }
+
+  function stopVoiceAndSend(){
+    stopVoice();
+    setTimeout(()=>{
+      const inp = inputEl();
+      if(inp.value.trim()) window.sendMessage();
+    }, 100);
   }
 
   function showInstallBanner(prompt){
@@ -1918,6 +2072,61 @@ button,.hbtn,.back-btn,.tables-btn,.ws-btn,.join-btn,.ctx-btn{
 /* Message clear chats button style in context menu */
 .ctx-clear{color:#7a5010;}
 .ctx-clear:hover{background:rgba(122,80,16,.08);}
+
+/* ═══════════════════ JANE MESSAGES ═══════════════════ */
+.sys-msg.jane-msg{
+  text-align:center;
+  background:linear-gradient(135deg,rgba(200,149,92,.10),rgba(107,58,31,.07));
+  border:1px solid rgba(200,149,92,.22);
+  border-radius:14px;
+  padding:7px 14px;
+  font-size:12px;
+  color:var(--mocha);
+  font-style:italic;
+  animation:msgIn .3s ease;
+}
+
+/* ═══════════════════ EMOJI PICKER ═══════════════════ */
+.emoji-picker{
+  display:none;
+  flex-wrap:wrap;
+  gap:4px;
+  padding:10px 12px;
+  background:var(--foam);
+  border-top:1px solid var(--border);
+  max-height:140px;
+  overflow-y:auto;
+  flex-shrink:0;
+}
+.em-btn{
+  background:none;border:none;font-size:20px;cursor:pointer;
+  padding:3px;border-radius:8px;transition:transform .12s,background .12s;
+  min-height:unset;
+}
+.em-btn:hover{background:rgba(200,149,92,.15);transform:scale(1.2);}
+
+/* ═══════════════════ INPUT BAR ICON BUTTONS ═══════════════════ */
+.hbtn-input{
+  background:none;border:none;font-size:18px;cursor:pointer;
+  padding:0 2px;flex-shrink:0;border-radius:8px;
+  transition:transform .14s,background .14s;
+  min-height:unset;line-height:1;
+  opacity:.6;
+}
+.hbtn-input:hover{opacity:1;transform:scale(1.15);background:rgba(200,149,92,.12);}
+.hbtn-input.on{opacity:1;}
+
+/* Mic recording pulse */
+.mic-btn.recording{
+  opacity:1;
+  animation:micPulse 1s ease-in-out infinite;
+  color:#e04040;
+}
+@keyframes micPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+
+/* Context menu — delete only, slightly wider */
+#msgContextMenu{ min-width:120px; }
+
 </style>
 </head>
 <body>
@@ -2077,6 +2286,8 @@ button,.hbtn,.back-btn,.tables-btn,.ws-btn,.join-btn,.ctx-btn{
   <div id="floorMsgs"></div>
   <div id="floorTypingBar"></div>
   <div class="input-bar">
+    <button class="emoji-toggle-btn hbtn-input" onclick="toggleEmoji()" title="Emoji">😊</button>
+    <button class="mic-btn hbtn-input" onclick="toggleVoice()" title="Voice message">🎤</button>
     <textarea id="floorMsgInput" rows="1" placeholder="Say something warm to everyone…" onkeydown="handleMsgKey(event)" oninput="autoResize(this)"></textarea>
     <button id="floorSendBtn" onclick="sendMessage()">➤</button>
   </div>
@@ -2157,6 +2368,8 @@ button,.hbtn,.back-btn,.tables-btn,.ws-btn,.join-btn,.ctx-btn{
   <div id="chatMsgs"></div>
   <div id="chatTypingBar"></div>
   <div class="input-bar">
+    <button class="emoji-toggle-btn hbtn-input" onclick="toggleEmoji()" title="Emoji">😊</button>
+    <button class="mic-btn hbtn-input" onclick="toggleVoice()" title="Voice message">🎤</button>
     <textarea id="chatMsgInput" rows="1" placeholder="Pass something warm along…" onkeydown="handleMsgKey(event)" oninput="autoResize(this)"></textarea>
     <button id="chatSendBtn" onclick="sendMessage()">➤</button>
   </div>
