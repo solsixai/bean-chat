@@ -619,20 +619,20 @@
   function listenMessages(){
     if(messagesUnsub)messagesUnsub();
     messagesUnsub=onValue(ref(db,`tables/${currentTable}/messages`),snap=>{
-
-      if(editingKey){
-        return;
-      }
       // Preserve editingKey across re-renders — Firebase can fire while user is mid-edit
       const savedEditKey=editingKey;
       const savedEditText=savedEditKey?inputEl().value:'';
 
       const box = msgsEl();
 
-      // 🔒 Preserve scroll position before rerender
+      const savedEditKey = editingKey;
+      const savedEditText = savedEditKey ? inputEl().value : '';
+
+      // Preserve scroll position
       const previousScrollHeight = box.scrollHeight;
       const previousScrollTop = box.scrollTop;
-      const wasAtBottom = previousScrollTop + box.clientHeight >= previousScrollHeight - 5;
+      const wasAtBottom =
+        previousScrollTop + box.clientHeight >= previousScrollHeight - 5;
 
       box.innerHTML='';
       if(!snap.exists()){box.innerHTML='<div class="empty-state">The table is set.<br/>Say something warm. ☕</div>';isFirstLoad=false;return;}
@@ -676,23 +676,29 @@
 
       // Restore edit state if user was mid-edit when Firebase re-rendered
       if(savedEditKey){
-        editingKey=savedEditKey;
-        const inp=inputEl();
-        if(inp.value!==savedEditText) inp.value=savedEditText;
-        showEditBar('');
+        editingKey = savedEditKey;
+
+        const inp = inputEl();
+        inp.value = savedEditText;
+        inp.focus();
+        inp.setSelectionRange(inp.value.length, inp.value.length);
+
+        showEditBar(savedEditText);
       }
 
       if(!isFirstLoad&&!savedEditKey) playPing();
       isFirstLoad=false;
       // Only auto-scroll if not currently editing
-      // 🔒 Restore scroll position safely
       if(savedEditKey){
         box.scrollTop = previousScrollTop;
-      } else if (wasAtBottom){
+      } 
+      else if (wasAtBottom){
         box.scrollTop = box.scrollHeight;
-      } else {
+      } 
+      else {
         const newScrollHeight = box.scrollHeight;
-        box.scrollTop = previousScrollTop + (newScrollHeight - previousScrollHeight);
+        box.scrollTop =
+          previousScrollTop + (newScrollHeight - previousScrollHeight);
       }
     });
   }
