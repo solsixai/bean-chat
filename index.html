@@ -619,11 +619,22 @@
   function listenMessages(){
     if(messagesUnsub)messagesUnsub();
     messagesUnsub=onValue(ref(db,`tables/${currentTable}/messages`),snap=>{
+
+      if(editingKey){
+        return;
+      }
       // Preserve editingKey across re-renders — Firebase can fire while user is mid-edit
       const savedEditKey=editingKey;
       const savedEditText=savedEditKey?inputEl().value:'';
 
-      const box=msgsEl();box.innerHTML='';
+      const box = msgsEl();
+
+      // 🔒 Preserve scroll position before rerender
+      const previousScrollHeight = box.scrollHeight;
+      const previousScrollTop = box.scrollTop;
+      const wasAtBottom = previousScrollTop + box.clientHeight >= previousScrollHeight - 5;
+
+      box.innerHTML='';
       if(!snap.exists()){box.innerHTML='<div class="empty-state">The table is set.<br/>Say something warm. ☕</div>';isFirstLoad=false;return;}
       snap.forEach(child=>{
         const key=child.key, msg=child.val();
@@ -674,7 +685,15 @@
       if(!isFirstLoad&&!savedEditKey) playPing();
       isFirstLoad=false;
       // Only auto-scroll if not currently editing
-      if(!savedEditKey) box.scrollTop=box.scrollHeight;
+      // 🔒 Restore scroll position safely
+      if(savedEditKey){
+        box.scrollTop = previousScrollTop;
+      } else if (wasAtBottom){
+        box.scrollTop = box.scrollHeight;
+      } else {
+        const newScrollHeight = box.scrollHeight;
+        box.scrollTop = previousScrollTop + (newScrollHeight - previousScrollHeight);
+      }
     });
   }
 
