@@ -37,11 +37,15 @@
   let beanLevel=0, beanTimer=null, bgBeanInterval=null;
   let editingKey=null;
 
-  /* ── SESSION STORAGE HELPERS ────────────────────────────── */
+  /* ── PERSISTENT NAME STORAGE (localStorage) ─────────────── */
   const SESSION_KEY = 'beanchat_username';
-  function saveSession(name){ try{ sessionStorage.setItem(SESSION_KEY, name); }catch(e){} }
-  function loadSession(){ try{ return sessionStorage.getItem(SESSION_KEY)||''; }catch(e){ return ''; } }
-  function clearSession(){ try{ sessionStorage.removeItem(SESSION_KEY); }catch(e){} }
+  const LOCK_KEY    = 'beanchat_locked';
+  function saveSession(name){ try{ localStorage.setItem(SESSION_KEY, name); }catch(e){} }
+  function loadSession(){ try{ return localStorage.getItem(SESSION_KEY)||''; }catch(e){ return ''; } }
+  function clearSession(){ try{ localStorage.removeItem(SESSION_KEY); localStorage.removeItem(LOCK_KEY); }catch(e){} }
+  function isNameLocked(){ try{ return localStorage.getItem(LOCK_KEY)==='1'; }catch(e){ return false; } }
+  function lockName(){ try{ localStorage.setItem(LOCK_KEY,'1'); }catch(e){} }
+  function unlockName(){ try{ localStorage.removeItem(LOCK_KEY); }catch(e){} }
 
   /* ── TABLES ─────────────────────────────────────────────── */
   const TABLES=[
@@ -115,6 +119,10 @@
     if(h>=5&&h<11)t='morning';else if(h<15)t='noon';else if(h<19)t='afternoon';
     document.documentElement.setAttribute('data-time',t);
     document.querySelectorAll('.time-greet').forEach(e=>e.textContent=timeGreet());
+    // Night mode: turn on shop lights at night / evening
+    const isNight=(h>=19||h<5);
+    document.body.classList.toggle('night-mode',isNight);
+    document.getElementById('doorScreen')&&document.getElementById('doorScreen').classList.toggle('night-mode',isNight);
   }
 
   /* ── BEANS ──────────────────────────────────────────────── */
@@ -172,7 +180,10 @@
     const n=document.getElementById('nameInput').value.trim();
     if(!n){const i=document.getElementById('nameInput');i.classList.add('shake');setTimeout(()=>i.classList.remove('shake'),500);return;}
     username=n;
-    saveSession(username); // ← save to sessionStorage
+    saveSession(username);
+    // If lock checkbox is checked, persist the lock
+    const lockCb=document.getElementById('lockNameCb');
+    if(lockCb&&lockCb.checked) lockName(); else unlockName();
     actx.resume();
     myOnlineRef=ref(db,'online/'+username);
     set(myOnlineRef,{name:username,joinedAt:Date.now()});
@@ -181,6 +192,36 @@
     initWelcome();
   };
   window.handleJoinKey=e=>{if(e.key==='Enter')window.joinChat();};
+
+  /* ── RESET NAME (from login screen) ────────────────────── */
+  window.resetName=()=>{
+    clearSession();
+    const ni=document.getElementById('nameInput');
+    if(ni){ni.value='';ni.focus();}
+    const lockCb=document.getElementById('lockNameCb');
+    if(lockCb) lockCb.checked=false;
+  };
+
+  /* ── LOGOUT / EXIT ──────────────────────────────────────── */
+  window.logOut=()=>{
+    if(!confirm('Leave the café? You can come back any time ☕')) return;
+    // Leave current room silently
+    if(currentTable){
+      push(ref(db,`tables/${currentTable}/messages`),{type:'system',text:`${username} stepped out of the café 🚪`,ts:serverTimestamp()});
+      leaveRoomSilent();
+    }
+    if(myOnlineRef){ remove(myOnlineRef); myOnlineRef=null; }
+    stopBgBeans(); stopAmbient();
+    // If locked, just go back to login (keep name), else clear everything
+    if(isNameLocked()){
+      showScreen('loginScreen');
+      applyTime();
+    } else {
+      clearSession();
+      showScreen('doorScreen');
+    }
+    username=''; currentTable=null;
+  };
 
   /* ── HOSTESS WELCOME ────────────────────────────────────── */
   function initWelcome(){
@@ -265,18 +306,37 @@
     });
   }
 
+  let prevTableCounts={};
   function listenTablesOverview(){
     if(tablesUnsub)tablesUnsub();
     tablesUnsub=onValue(ref(db,'tables'),snap=>{
       TABLES.forEach(t=>{
         const el=document.getElementById('rts-'+t.id);if(!el)return;
-        if(!snap.exists()||!snap.child(t.id).child('seats').exists()){el.innerHTML='<span class="rt-empty">empty</span>';return;}
+        if(!snap.exists()||!snap.child(t.id).child('seats').exists()){
+          el.innerHTML='<span class="rt-empty">empty</span>';
+          prevTableCounts[t.id]=0;return;
+        }
         const ns=[];snap.child(t.id).child('seats').forEach(c=>ns.push(c.val().name));
         el.innerHTML=ns.length?ns.map(n=>`<span class="rt-chip">${n[0].toUpperCase()}</span>`).join(''):'<span class="rt-empty">empty</span>';
+        // Animate table when new person joins
+        if(prevTableCounts[t.id]!==undefined && ns.length > prevTableCounts[t.id]){
+          const outer=el.closest('.rt-outer');
+          if(outer){outer.classList.remove('table-joined');void outer.offsetWidth;outer.classList.add('table-joined');}
+          // Spawn beans on table screen
+          for(let i=0;i<3;i++) setTimeout(()=>spawnFlyBean(false),i*120);
+        }
+        prevTableCounts[t.id]=ns.length;
       });
       const fEl=document.getElementById('floorCount');
       if(fEl&&snap.exists()&&snap.child(FREE_ID).child('seats').exists()){
         const ns=[];snap.child(FREE_ID).child('seats').forEach(c=>ns.push(c.val().name));
+        const prev=prevTableCounts[FREE_ID]||0;
+        if(ns.length>prev){
+          // Someone joined the floor!
+          for(let i=0;i<4;i++) setTimeout(()=>spawnFlyBean(ns.length>4),i*130);
+          if(soundOn&&ns.length>1) tone(660,'sine',.10,.4,880);
+        }
+        prevTableCounts[FREE_ID]=ns.length;
         fEl.textContent=ns.length>1?`${ns.length} people chatting`:ns.length===1?'1 person here':'Just you right now';
       }
     });
@@ -305,6 +365,8 @@
     myTypingRef=ref(db,`tables/${id}/typing/${username}`);
     showChatUI(info);
     playJoin();burst(3);
+    // Exciting entrance: spawn a wave of beans for a big welcome
+    for(let i=0;i<5;i++) setTimeout(()=>spawnFlyBean(true),i*180);
   }
 
   function leaveRoomSilent(){
@@ -467,6 +529,25 @@
     closeContextMenu();
   };
 
+  /* ── CLEAR ALL MY MESSAGES ──────────────────────────────── */
+  window.clearMyChats=()=>{
+    if(!currentTable)return;
+    closeContextMenu();
+    if(!confirm('Clear all YOUR messages from this chat?'))return;
+    // We already have ref/remove from the top-level import
+    const msgsRef=ref(db,`tables/${currentTable}/messages`);
+    onValue(msgsRef,snap=>{
+      if(!snap.exists())return;
+      snap.forEach(child=>{
+        const msg=child.val();
+        if(msg.user===username && msg.type!=='system'){
+          remove(ref(db,`tables/${currentTable}/messages/${child.key}`));
+        }
+      });
+      burst(2);
+    },{onlyOnce:true});
+  };
+
   let contextMenuTarget=null;
   function closeContextMenu(){
     const old=document.getElementById('msgContextMenu');
@@ -532,8 +613,12 @@
     applyTime();
 
     const savedName = loadSession();
-    if(savedName){
-      // Returning user — skip door & login, go straight to floor
+    const locked    = isNameLocked();
+    // Restore lock checkbox visual state
+    const lockCb=document.getElementById('lockNameCb');
+    if(lockCb && locked) lockCb.checked=true;
+    if(savedName && locked){
+      // Locked name — skip door & login, go straight to floor
       username = savedName;
       actx.resume();
       myOnlineRef = ref(db,'online/'+username);
@@ -541,9 +626,13 @@
       onDisconnect(myOnlineRef).remove();
       showScreen('floorScreen');
       initFloor();
-      initDoorScreen(); // still set up PWA install listener
+      initDoorScreen();
     } else {
-      // New user — show the door
+      // Show door; pre-fill name if saved but not locked
+      if(savedName){
+        const ni=document.getElementById('nameInput');
+        if(ni) ni.value=savedName;
+      }
       showScreen('doorScreen');
       initDoorScreen();
     }
@@ -1518,6 +1607,131 @@ button,.hbtn,.back-btn,.tables-btn,.ws-btn,.join-btn,.ctx-btn{
     -moz-osx-font-smoothing:grayscale;
   }
 }
+
+/* ═══════════════════ LOCK NAME ROW ═══════════════════ */
+.lock-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;gap:8px;
+}
+.lock-label{
+  display:flex;align-items:center;gap:7px;cursor:pointer;
+  font-size:12px;color:var(--mid);font-weight:700;letter-spacing:.5px;
+  flex:1;
+}
+.lock-icon{font-size:13px;}
+.lock-label input[type=checkbox]{display:none;}
+.lock-toggle{
+  position:relative;display:inline-block;
+  width:36px;height:20px;background:#d8ccbc;border-radius:20px;
+  transition:background .25s;flex-shrink:0;margin-left:auto;
+  border:1.5px solid var(--border);
+}
+.lock-toggle::after{
+  content:'';position:absolute;top:2px;left:2px;
+  width:14px;height:14px;border-radius:50%;background:#fff;
+  box-shadow:0 1px 4px rgba(0,0,0,.2);transition:transform .25s;
+}
+.lock-label input:checked ~ .lock-toggle{ background:var(--caramel); }
+.lock-label input:checked ~ .lock-toggle::after{ transform:translateX(16px); }
+.reset-name-btn{
+  background:rgba(200,149,92,.12);border:1.5px solid rgba(200,149,92,.35);
+  border-radius:10px;padding:6px 12px;font-size:11px;font-weight:700;
+  color:var(--mocha);cursor:pointer;font-family:'Lato',sans-serif;
+  transition:background .2s;white-space:nowrap;flex-shrink:0;
+}
+.reset-name-btn:hover{background:rgba(200,149,92,.28);}
+
+/* ═══════════════════ EXIT BUTTON ═══════════════════ */
+.exit-btn{
+  background:rgba(180,60,40,.15);border:1.5px solid rgba(200,80,60,.35);
+  border-radius:50%;width:35px;height:35px;display:flex;align-items:center;
+  justify-content:center;cursor:pointer;font-size:15px;flex-shrink:0;
+  transition:background .2s,transform .15s;padding:0;color:inherit;
+}
+.exit-btn:hover{background:rgba(200,60,40,.28);transform:scale(1.1);}
+.exit-btn:active{transform:scale(.93);}
+
+/* ═══════════════════ NIGHT MODE — DOOR SCREEN ═══════════════════ */
+@keyframes starTwinkle{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+@keyframes neonFlicker{0%,100%{opacity:1}45%{opacity:.85}47%{opacity:.6}50%{opacity:1}90%{opacity:.95}}
+@keyframes lampPulse{0%,100%{box-shadow:0 0 28px rgba(255,210,80,.35)}50%{box-shadow:0 0 48px rgba(255,210,80,.65),0 0 80px rgba(255,180,40,.25)}}
+
+/* Night sky backdrop */
+#doorScreen.night-mode{
+  background:linear-gradient(180deg,#0a0518 0%,#1a0a2e 25%,#2a0e1a 55%,#1a0808 75%,#0e0505 100%) !important;
+}
+#doorScreen.night-mode .ds-wall{
+  background-color:#5a3a22 !important;
+  filter:brightness(.45);
+}
+/* Stars layer */
+#doorScreen.night-mode::before{
+  content:'★ ✦ ✧ ★ ✦ ✧ ★ ✦ ✧ ★ ✦ ✧ ★ ✦ ★ ✧';
+  position:absolute;top:2%;left:0;right:0;
+  font-size:10px;color:rgba(255,255,255,.55);letter-spacing:18px;
+  text-align:center;z-index:20;
+  animation:starTwinkle 3s ease-in-out infinite;
+  pointer-events:none;line-height:1.8;word-spacing:8px;
+}
+/* Glow halo on the door at night */
+#doorScreen.night-mode .ds-door-body{
+  box-shadow:
+    inset -3px 0 8px rgba(0,0,0,.06),
+    inset 3px 0 8px rgba(0,0,0,.04),
+    0 0 40px rgba(255,220,160,.18),
+    0 0 80px rgba(255,200,120,.10);
+}
+/* Lit windows in the brick wall */
+#doorScreen.night-mode .ds-wall-overlay{
+  background:
+    radial-gradient(ellipse 28% 14% at 25% 38%, rgba(255,220,120,.22) 0%, transparent 70%),
+    radial-gradient(ellipse 28% 14% at 75% 38%, rgba(255,220,120,.22) 0%, transparent 70%),
+    radial-gradient(ellipse 100% 55% at 50% 100%, rgba(255,150,60,.1) 0%, transparent 70%);
+  z-index:2;
+}
+/* Bright lanterns at night */
+#doorScreen.night-mode .ds-lantern-body{
+  box-shadow:0 0 40px rgba(255,190,50,.75),0 4px 12px rgba(0,0,0,.5),0 0 80px rgba(255,160,30,.3) !important;
+  animation:lampPulse 2s ease-in-out infinite;
+}
+#doorScreen.night-mode .ds-lantern-glow{
+  background:radial-gradient(circle,rgba(255,230,100,1) 0%,rgba(255,170,30,.7) 60%,rgba(255,120,10,.2) 100%) !important;
+}
+#doorScreen.night-mode .ds-lantern-cone{
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,210,80,.38) 0%,transparent 75%) !important;
+  filter:blur(3px);
+}
+/* Street lamp at night */
+#doorScreen.night-mode .ds-lamp-head{
+  animation:lampPulse 3s ease-in-out infinite;
+}
+#doorScreen.night-mode .ds-lamp-cone{
+  background:conic-gradient(from 180deg at 50% 0%,transparent 50deg,rgba(255,220,80,.22) 90deg,transparent 130deg) !important;
+}
+/* Pavement neon reflection */
+#doorScreen.night-mode .ds-pavement{
+  background:linear-gradient(180deg,#2a1a10 0%,#1a0c08 50%,#100806 100%) !important;
+}
+#doorScreen.night-mode .ds-pavement::after{
+  background:radial-gradient(ellipse,rgba(255,200,80,.22) 0%,transparent 70%) !important;
+  height:36px;
+}
+
+/* ═══════════════════ TABLE JOINED ANIMATION ═══════════════════ */
+@keyframes tableJoinPop{0%{transform:translateY(-8px)scale(1.06) rotate(-2deg)}30%{transform:translateY(-12px)scale(1.12) rotate(2deg)}60%{transform:translateY(-6px)scale(1.08) rotate(-1deg)}100%{transform:translateY(-8px)scale(1.06) rotate(0)}}
+.rt-outer.table-joined{animation:tableJoinPop .55s cubic-bezier(.34,1.56,.64,1);}
+
+/* ═══════════════════ MORE ANIMATIONS ═══════════════════ */
+@keyframes confettiFall{0%{transform:translateY(-30px)rotate(0);opacity:1}100%{transform:translateY(200px)rotate(720deg);opacity:0}}
+.confetti-piece{position:absolute;pointer-events:none;z-index:700;font-size:14px;animation:confettiFall 1.6s ease-in forwards;}
+
+/* Pulse glow on floor count when people join */
+@keyframes countPop{0%,100%{transform:scale(1)}50%{transform:scale(1.25);color:#ff9940;}}
+.fw-count.popping{animation:countPop .5s ease;}
+
+/* Message clear chats button style in context menu */
+.ctx-clear{color:#7a5010;}
+.ctx-clear:hover{background:rgba(122,80,16,.08);}
 </style>
 </head>
 <body>
@@ -1601,6 +1815,16 @@ button,.hbtn,.back-btn,.tables-btn,.ws-btn,.join-btn,.ctx-btn{
       <label>Your Name</label>
       <input id="nameInput" type="text" placeholder="e.g. Mam, Michael, Bro…" onkeydown="handleJoinKey(event)" autofocus/>
     </div>
+    <!-- Lock name row -->
+    <div class="lock-row">
+      <label class="lock-label" for="lockNameCb">
+        <span class="lock-icon">🔒</span>
+        <span>Remember &amp; lock my name</span>
+        <input type="checkbox" id="lockNameCb"/>
+        <span class="lock-toggle"></span>
+      </label>
+      <button class="reset-name-btn" onclick="resetName()" title="Clear saved name">↺ Reset</button>
+    </div>
     <button class="join-btn" onclick="joinChat()">Step inside ☕</button>
     <div class="l-btns">
       <button class="hbtn amb-btn" onclick="toggleAmbient()" title="Café ambience">🎵</button>
@@ -1638,8 +1862,10 @@ button,.hbtn,.back-btn,.tables-btn,.ws-btn,.join-btn,.ctx-btn{
     </div>
     <div class="ph-actions">
       <button class="tables-btn" onclick="goToTables()"><span>🪑</span><span class="tables-btn-label"> Tables</span></button>
+      <button class="hbtn" onclick="clearMyChats()" title="Clear my messages">🗑</button>
       <button class="hbtn amb-btn" onclick="toggleAmbient()" title="Café ambience">🎵</button>
       <button class="hbtn snd-btn" onclick="toggleSound()" title="Sound">🔔</button>
+      <button class="exit-btn" onclick="logOut()" title="Leave café">🚪</button>
     </div>
     <div class="upill">
       <div class="uav" id="floorUserAv">?</div>
@@ -1719,8 +1945,10 @@ button,.hbtn,.back-btn,.tables-btn,.ws-btn,.join-btn,.ctx-btn{
     </div>
     <button class="back-btn" id="chatBackBtn" onclick="leaveChat()">← Tables</button>
     <div class="ph-actions">
+      <button class="hbtn" onclick="clearMyChats()" title="Clear my messages">🗑</button>
       <button class="hbtn amb-btn" onclick="toggleAmbient()" title="Café ambience">🎵</button>
       <button class="hbtn snd-btn" onclick="toggleSound()"   title="Sound">🔔</button>
+      <button class="exit-btn" onclick="logOut()" title="Leave café">🚪</button>
     </div>
     <div class="upill">
       <div class="uav" id="chatHeaderUser">?</div>
