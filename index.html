@@ -1450,24 +1450,38 @@
     });
   }
 
-  window.submitMemoryNote = () => {
+  window.submitMemoryNote = async () => {
     const inp = document.getElementById('memoryNoteInput');
+    const btn = document.querySelector('.mwp-submit');
     const text = inp ? inp.value.trim() : '';
-    if(!text || !username) return;
+    if(!text){ showVoiceToast('Write something first ❤️'); return; }
+    if(!username){ showVoiceToast('Please join the café first to leave a note'); return; }
     if(text.length > 200){ showVoiceToast('Keep it to 200 characters ❤️'); return; }
-    push(ref(db,'memorywall'), {
-      text, author: username, ts: Date.now()
-    });
-    inp.value = '';
-    // Jane acknowledges
-    if(currentTable){
-      setTimeout(()=> {
-        push(ref(db,`tables/${currentTable}/messages`),{
-          type:'system',
-          text:`👩‍🦱 Jane: ${username} just left a beautiful note on Ronald's Memory Wall ❤️`,
-          ts: serverTimestamp()
-        });
-      }, 1500);
+    
+    // Visual feedback — saving
+    if(btn){ btn.textContent = 'Pinning… ❤️'; btn.disabled = true; }
+    
+    try {
+      await push(ref(db,'memorywall'), {
+        text, author: username, ts: Date.now()
+      });
+      inp.value = '';
+      showVoiceToast('📌 Your note is on the wall forever ❤️');
+      if(btn){ btn.textContent = 'Pinned! 📌'; setTimeout(()=>{ btn.textContent='Pin to the wall 📌'; btn.disabled=false; }, 2000); }
+      // Jane acknowledges
+      if(currentTable){
+        setTimeout(()=> {
+          push(ref(db,`tables/${currentTable}/messages`),{
+            type:'system',
+            text:`👩‍🦱 Jane: ${username} just left a beautiful note on Ronald's Memory Wall ❤️`,
+            ts: serverTimestamp()
+          });
+        }, 1500);
+      }
+    } catch(err) {
+      console.error('Memory wall error:', err);
+      showVoiceToast('Could not save note — check your connection and try again');
+      if(btn){ btn.textContent = 'Pin to the wall 📌'; btn.disabled = false; }
     }
   };
 
@@ -1482,6 +1496,34 @@
     "🍂 *Jane dusts cinnamon over the fresh lattes with a warm smile*",
     "❤️ Jane: Wendy dropped off fresh cinnamon biscuits this morning. They're on the counter! 🍪",
   ];
+
+
+  /* ══ HEADER OVERFLOW MENU ══ */
+  window.toggleOverflow = (btn) => {
+    const wrap = btn.closest('.ph-overflow-wrap');
+    const menu = wrap.querySelector('.ph-overflow-menu');
+    const isOpen = menu.classList.contains('show');
+    // Close all open menus first
+    document.querySelectorAll('.ph-overflow-menu.show').forEach(m => m.classList.remove('show'));
+    document.querySelectorAll('.ph-more-btn.on').forEach(b => b.classList.remove('on'));
+    if(!isOpen){
+      menu.classList.add('show');
+      btn.classList.add('on');
+    }
+  };
+  document.addEventListener('click', e => {
+    if(!e.target.closest('.ph-overflow-wrap')){
+      document.querySelectorAll('.ph-overflow-menu.show').forEach(m => m.classList.remove('show'));
+      document.querySelectorAll('.ph-more-btn.on').forEach(b => b.classList.remove('on'));
+    }
+  });
+  // Keep amb/snd menu btn states in sync with the actual toggles
+  function syncOverflowMenuState(){
+    const ambOn = document.querySelector('.hbtn.amb-btn')?.classList.contains('on');
+    const sndOff = document.querySelector('.hbtn.snd-btn')?.classList.contains('off');
+    document.querySelectorAll('.amb-menu-btn').forEach(b => b.classList.toggle('menu-active', !!ambOn));
+    document.querySelectorAll('.snd-menu-btn').forEach(b => b.classList.toggle('menu-active', !!sndOff));
+  }
 
   function showInstallBanner(prompt){
     const banner=document.getElementById('installBanner');
@@ -3338,6 +3380,55 @@ body.night-mode .cloud,
 /* Pin button active state */
 .memory-wall-btn.on{color:var(--caramel) !important;}
 
+
+/* ═══════════════════ HEADER OVERFLOW MENU ═══════════════════ */
+.ph-overflow-wrap{position:relative;flex-shrink:0;}
+
+.ph-more-btn{
+  font-size:18px !important;font-weight:900;
+  letter-spacing:1px;line-height:1;
+}
+
+.ph-overflow-menu{
+  display:none;position:absolute;top:calc(100% + 8px);right:0;
+  background:var(--foam);
+  border:1.5px solid var(--caramel);
+  border-radius:14px;
+  padding:6px;
+  min-width:180px;
+  box-shadow:0 8px 28px rgba(59,31,14,.22);
+  z-index:9500;
+  flex-direction:column;gap:3px;
+}
+.ph-overflow-menu.show{display:flex;}
+.ph-overflow-menu button{
+  background:none;border:none;
+  padding:9px 14px;border-radius:10px;
+  font-size:13px;font-weight:600;font-family:'Lato',sans-serif;
+  color:var(--ink);text-align:left;cursor:pointer;
+  transition:background .15s;min-height:unset;
+  display:flex;align-items:center;gap:8px;
+  width:100%;
+}
+.ph-overflow-menu button:hover{background:rgba(200,149,92,.12);}
+.ph-overflow-menu button.menu-active{color:var(--caramel);}
+
+/* Tighter header on small phones — max 4 visible items */
+@media(max-width:400px){
+  .ph-actions{gap:4px;}
+  .hbtn{width:30px;height:30px;font-size:13px;}
+  .exit-btn{width:30px;height:30px;font-size:13px;}
+  .back-btn{padding:6px 10px;font-size:11px;}
+  .ph-logo{width:30px;height:30px;font-size:14px;}
+  .ph-title{font-size:12px;}
+  .ph-sub{display:none;}
+}
+/* Very tight — hide the ph-text subtitle on all mobile */
+@media(max-width:480px){
+  .ph-sub{font-size:0;height:0;margin:0;overflow:hidden;}
+  .ph-title{font-size:13px;}
+}
+
 </style>
 </head>
 <body>
@@ -3564,9 +3655,15 @@ body.night-mode .cloud,
     </div>
     <div class="ph-actions">
       <button class="tables-btn" onclick="goToTables()"><span>🪑</span><span class="tables-btn-label"> Tables</span></button>
-      <button class="hbtn" onclick="clearMyChats()" title="Clear my messages">🗑</button>
-      <button class="hbtn amb-btn" onclick="toggleAmbient()" title="Café ambience">🎵</button>
-      <button class="hbtn snd-btn" onclick="toggleSound()" title="Sound">🔔</button>
+      <button class="hbtn memory-wall-btn" onclick="toggleMemoryWall()" title="Memory Wall">📌</button>
+      <div class="ph-overflow-wrap">
+        <button class="hbtn ph-more-btn" onclick="toggleOverflow(this)" title="More">⋯</button>
+        <div class="ph-overflow-menu">
+          <button onclick="clearMyChats();toggleOverflow(this.closest('.ph-overflow-wrap').querySelector('.ph-more-btn'))">🗑 Clear my messages</button>
+          <button onclick="toggleAmbient();toggleOverflow(this.closest('.ph-overflow-wrap').querySelector('.ph-more-btn'))" class="amb-menu-btn">🎵 Ambience</button>
+          <button onclick="toggleSound();toggleOverflow(this.closest('.ph-overflow-wrap').querySelector('.ph-more-btn'))" class="snd-menu-btn">🔔 Sound</button>
+        </div>
+      </div>
       <button class="exit-btn" onclick="logOut()" title="Leave café">🚪</button>
     </div>
     <div class="upill">
@@ -3612,8 +3709,14 @@ body.night-mode .cloud,
     <button class="back-btn" onclick="tablesBackToFloor()">← Floor</button>
     <div class="ph-actions">
       <button class="hbtn order-jane-btn" onclick="toggleOrderMenu()" title="Order from Jane">🛎️</button>
-      <button class="hbtn amb-btn" onclick="toggleAmbient()" title="Café ambience">🎵</button>
-      <button class="hbtn snd-btn" onclick="toggleSound()"   title="Sound">🔔</button>
+      <button class="hbtn memory-wall-btn" onclick="toggleMemoryWall()" title="Memory Wall">📌</button>
+      <div class="ph-overflow-wrap">
+        <button class="hbtn ph-more-btn" onclick="toggleOverflow(this)" title="More">⋯</button>
+        <div class="ph-overflow-menu">
+          <button onclick="toggleAmbient();toggleOverflow(this.closest('.ph-overflow-wrap').querySelector('.ph-more-btn'))" class="amb-menu-btn">🎵 Ambience</button>
+          <button onclick="toggleSound();toggleOverflow(this.closest('.ph-overflow-wrap').querySelector('.ph-more-btn'))" class="snd-menu-btn">🔔 Sound</button>
+        </div>
+      </div>
     </div>
     <div class="upill" style="margin-left:2px;">
       <div class="uav" id="tablesUserAv">?</div>
@@ -3651,10 +3754,15 @@ body.night-mode .cloud,
     <button class="back-btn" id="chatBackBtn" onclick="leaveChat()">← Tables</button>
     <div class="ph-actions">
       <button class="hbtn order-jane-btn" onclick="toggleOrderMenu()" title="Order from Jane">🛎️</button>
-      <button class="hbtn" onclick="clearMyChats()" title="Clear my messages">🗑</button>
       <button class="hbtn memory-wall-btn" onclick="toggleMemoryWall()" title="Memory Wall">📌</button>
-      <button class="hbtn amb-btn" onclick="toggleAmbient()" title="Café ambience">🎵</button>
-      <button class="hbtn snd-btn" onclick="toggleSound()"   title="Sound">🔔</button>
+      <div class="ph-overflow-wrap">
+        <button class="hbtn ph-more-btn" onclick="toggleOverflow(this)" title="More">⋯</button>
+        <div class="ph-overflow-menu">
+          <button onclick="clearMyChats();toggleOverflow(this.closest('.ph-overflow-wrap').querySelector('.ph-more-btn'))">🗑 Clear my messages</button>
+          <button onclick="toggleAmbient();toggleOverflow(this.closest('.ph-overflow-wrap').querySelector('.ph-more-btn'))" class="amb-menu-btn">🎵 Ambience</button>
+          <button onclick="toggleSound();toggleOverflow(this.closest('.ph-overflow-wrap').querySelector('.ph-more-btn'))" class="snd-menu-btn">🔔 Sound</button>
+        </div>
+      </div>
       <button class="exit-btn" onclick="logOut()" title="Leave café">🚪</button>
     </div>
     <div class="upill">
