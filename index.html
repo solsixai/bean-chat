@@ -3384,6 +3384,37 @@ body.night-mode .cloud,
 /* ═══════════════════ HEADER OVERFLOW MENU ═══════════════════ */
 .ph-overflow-wrap{position:relative;flex-shrink:0;}
 
+/* ── Desktop (601px+): hide ⋯, show all buttons inline like normal hbtns ── */
+@media(min-width:601px){
+  .ph-more-btn{ display:none !important; }
+  .ph-overflow-menu{
+    display:flex !important;
+    position:static !important;
+    flex-direction:row !important;
+    background:none !important;
+    border:none !important;
+    border-radius:0 !important;
+    padding:0 !important;
+    min-width:unset !important;
+    box-shadow:none !important;
+    gap:6px !important;
+    z-index:auto !important;
+    animation:none !important;
+  }
+  .ph-overflow-menu button{
+    background:rgba(250,246,240,.10) !important;
+    border:1.5px solid rgba(200,149,92,.35) !important;
+    border-radius:50% !important;
+    width:35px !important;height:35px !important;
+    padding:0 !important;
+    justify-content:center !important;
+    font-size:15px !important;
+    color:inherit !important;font-weight:400 !important;
+  }
+  .ph-overflow-menu button:hover{ background:rgba(200,149,92,.22) !important; transform:scale(1.1); }
+}
+
+/* ── Mobile (≤600px): show ⋯ button, menu hidden until tapped ── */
 .ph-more-btn{
   font-size:18px !important;font-weight:900;
   letter-spacing:1px;line-height:1;
