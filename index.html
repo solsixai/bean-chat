@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bean Chat V6 ☕</title>
+    <title>Bean Chat V6.1 ☕</title>
     <meta name="description" content="Ronald's Coffee Shop - Always Warm">
     <meta name="theme-color" content="#8D6E63">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -264,8 +264,6 @@
             padding: 12px 16px;
             border-radius: 16px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            
-            /* RESPONSIVE FIX: Prevents stretching on large screens */
             max-width: min(85%, 600px);
             width: fit-content;
             word-wrap: break-word;
@@ -401,11 +399,11 @@
         /* --- Bottom Nav --- */
         nav {
             height: var(--nav-height);
-            background: var(--white);
+            background: var(--cream); /* UPDATED: Matches page background */
             display: flex;
             justify-content: space-around;
             align-items: center;
-            border-top: 1px solid var(--accent);
+            border-top: 1px solid var(--accent); /* Soft border */
             padding-bottom: env(safe-area-inset-bottom);
             flex-shrink: 0;
         }
@@ -648,7 +646,7 @@
             </div>
 
             <div style="margin-top: 1.5rem; text-align: center;">
-                <p style="font-size: 0.85rem; color: var(--text-light);">Bean Chat V6</p>
+                <p style="font-size: 0.85rem; color: var(--text-light);">Bean Chat V6.1</p>
                 <p style="font-size: 0.75rem; color: var(--text-light); opacity: 0.7;">Created for Michael Roode</p>
             </div>
         </div>
@@ -660,7 +658,7 @@
                 user: '',
                 locked: false,
                 music: false,
-                hostessReplies: true,  // NEW: Default to ON
+                hostessReplies: true,
                 currentTable: null,
                 currentView: 'view-welcome'
             },
@@ -676,7 +674,6 @@
             ],
 
             init() {
-                // Load User from localStorage
                 const savedUser = localStorage.getItem('beanUser');
                 const savedLock = localStorage.getItem('beanLock');
                 if (savedUser) {
@@ -689,36 +686,29 @@
                     this.updateLockUI();
                 }
 
-                // Load Music State
                 const savedMusic = localStorage.getItem('beanMusic');
                 if (savedMusic === 'true') {
                     this.state.music = true;
                 }
 
-                // Load Hostess Replies State (NEW)
                 const savedHostess = localStorage.getItem('beanHostess');
                 if (savedHostess === 'false') {
                     this.state.hostessReplies = false;
                 }
 
-                // Generate Daily Special based on date
                 const today = new Date().toDateString();
                 const seed = today.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
                 const prompt = this.prompts[seed % this.prompts.length];
                 document.getElementById('special-text').innerText = prompt;
 
-                // Render Tables
                 this.renderTables();
                 
-                // Update Header Name
                 if (this.state.user) {
                     document.getElementById('user-display').innerText = this.state.user;
                 }
 
-                // Update Toggle UI States
                 this.updateToggleUI();
 
-                // Event Listener for Lock Toggle (Welcome Screen)
                 document.getElementById('toggle-lock').addEventListener('click', () => {
                     this.state.locked = !this.state.locked;
                     localStorage.setItem('beanLock', this.state.locked);
@@ -726,7 +716,6 @@
                     this.updateToggleUI();
                 });
 
-                // Enter key support for inputs
                 document.getElementById('username-input').addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') this.enterShop();
                 });
@@ -737,7 +726,6 @@
                     if (e.key === 'Enter') this.sendMessage('table');
                 });
 
-                // Close modal on outside click
                 document.getElementById('settings-modal').addEventListener('click', (e) => {
                     if (e.target.id === 'settings-modal') this.closeSettings();
                 });
@@ -756,7 +744,6 @@
             },
 
             updateToggleUI() {
-                // Hostess Toggle
                 const hostessToggle = document.getElementById('hostess-toggle');
                 if (this.state.hostessReplies) {
                     hostessToggle.classList.add('active');
@@ -764,7 +751,6 @@
                     hostessToggle.classList.remove('active');
                 }
 
-                // Music Toggle
                 const musicToggle = document.getElementById('music-toggle');
                 const musicBtn = document.getElementById('music-btn');
                 if (this.state.music) {
@@ -775,7 +761,6 @@
                     musicBtn.classList.remove('music-playing');
                 }
 
-                // Lock Toggle
                 const lockToggle = document.getElementById('lock-toggle');
                 if (this.state.locked) {
                     lockToggle.classList.add('active');
@@ -803,19 +788,15 @@
             },
 
             navigate(viewId) {
-                // Hide all views
                 document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-                // Show target
                 document.getElementById(viewId).classList.add('active');
                 this.state.currentView = viewId;
                 
-                // Update nav active state
                 document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
                 if (viewId === 'view-lobby') {
                     document.querySelectorAll('.nav-item')[0].classList.add('active');
                 }
                 
-                // Scroll to top
                 document.getElementById('app-container').scrollTop = 0;
             },
 
@@ -865,7 +846,6 @@
                 input.value = '';
                 container.scrollTop = container.scrollHeight;
 
-                // NEW: Only send Hostess reply if toggle is ON
                 if (this.state.hostessReplies) {
                     setTimeout(() => {
                         const replyDiv = document.createElement('div');
@@ -902,7 +882,6 @@
                 }
             },
 
-            // NEW: Toggle Hostess Replies
             toggleHostess() {
                 this.state.hostessReplies = !this.state.hostessReplies;
                 localStorage.setItem('beanHostess', this.state.hostessReplies);
@@ -915,7 +894,6 @@
                 }
             },
 
-            // NEW: Toggle Lock from Settings
             toggleLockFromSettings() {
                 this.state.locked = !this.state.locked;
                 localStorage.setItem('beanLock', this.state.locked);
@@ -938,7 +916,6 @@
             },
 
             showToast(message) {
-                // Remove existing toast if any
                 const existing = document.querySelector('.toast');
                 if (existing) existing.remove();
 
@@ -957,7 +934,6 @@
             }
         };
 
-        // Initialize App when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             app.init();
         });
