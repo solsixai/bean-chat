@@ -510,6 +510,28 @@
             display: inline-block;
         }
 
+        /* --- Typing Indicator --- */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 14px 18px;
+            width: fit-content;
+        }
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: var(--coffee-light);
+            border-radius: 50%;
+            animation: typingBounce 1.2s infinite ease-in-out;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
         /* --- Desktop Optimization --- */
         @media (min-width: 768px) {
             main { padding: 2rem; }
@@ -697,7 +719,10 @@
                 soundEnabled: true,
                 hostessReplies: true,
                 currentTable: null,
-                currentView: 'view-welcome'
+                currentView: 'view-welcome',
+                counterHistory: [],
+                floorHistory: [],
+                tableHistory: []
             },
             prompts: [
                 "Discuss the future of AI in music production 🎵",
@@ -914,7 +939,7 @@
                 ctx.state==='suspended' ? ctx.resume().then(go) : go();
             },
 
-            sendMessage(type) {
+            async sendMessage(type) {
                 const inputId = type === 'floor' ? 'floor-input' : type === 'counter' ? 'counter-input' : 'table-input';
                 const containerId = type === 'floor' ? 'floor-messages' : type === 'counter' ? 'counter-messages' : 'table-messages';
                 const input = document.getElementById(inputId);
@@ -935,38 +960,58 @@
 
                 const shouldReply = type === 'counter' || this.state.hostessReplies;
                 if (shouldReply) {
-                    setTimeout(() => {
-                        const replyDiv = document.createElement('div');
-                        replyDiv.className = 'message';
-                        replyDiv.innerText = (type === 'counter' ? "👩‍🦱 " : "☕ ") + this.generateReply(text, type === 'counter');
-                        container.appendChild(replyDiv);
-                        container.scrollTop = container.scrollHeight;
-                    }, 1200 + Math.random() * 1000);
+                    const typingId = 'typing-' + Date.now();
+                    const typingDiv = document.createElement('div');
+                    typingDiv.className = 'message typing-indicator';
+                    typingDiv.id = typingId;
+                    typingDiv.innerHTML = '<span></span><span></span><span></span>';
+                    container.appendChild(typingDiv);
+                    container.scrollTop = container.scrollHeight;
+
+                    const reply = await this.generateReply(text, type);
+
+                    document.getElementById(typingId)?.remove();
+                    const replyDiv = document.createElement('div');
+                    replyDiv.className = 'message';
+                    replyDiv.innerText = (type === 'counter' ? "👩‍🦱 " : "☕ ") + reply;
+                    container.appendChild(replyDiv);
+                    container.scrollTop = container.scrollHeight;
                 }
             },
 
-            generateReply(input, isCounter = false) {
-                const counterResponses = [
-                    "Hmm, tell me more about that.",
-                    "That's what the quiet ones always say ☕",
-                    "You know, I was thinking the same thing.",
-                    "Sounds like something worth sitting with.",
-                    "Not bad. Want a refill while you think on it?",
-                    "I like that. Keep going.",
-                    "You always come here with the good stuff 🧡",
-                    "Real talk? That makes a lot of sense.",
-                ];
-                const responses = [
-                    "That's interesting, tell me more!",
-                    "I love that vibe ☕",
-                    "Can you prompt me about that?",
-                    "Sounds like a great project 🚀",
-                    "The coffee is warm here, keep talking",
-                    "What got you into that?",
-                    "Very cool! How's it going?"
-                ];
-                const pool = isCounter ? counterResponses : responses;
-                return pool[Math.floor(Math.random() * pool.length)];
+            async generateReply(userText, type) {
+                const isCounter = type === 'counter';
+                const history = isCounter ? this.state.counterHistory : (type === 'floor' ? this.state.floorHistory : this.state.tableHistory);
+
+                const systemPrompt = isCounter
+                    ? `You are Jane, the warm and witty barista at Ronald's Coffee Shop. You're sitting across the counter from a regular. You know their name is ${this.state.user || 'friend'}. You hold real, human conversations — curious, playful, sometimes deep. You remember what's been said in this conversation. You're not a bot, you're a person who genuinely cares. Keep replies short, natural, conversational — like a real barista chatting between orders. 1-3 sentences max. Occasional coffee metaphors welcome but don't overdo it. No emojis unless it really fits.`
+                    : `You are Jane, the friendly hostess at Ronald's Coffee Shop. Someone named ${this.state.user || 'a guest'} is chatting on the ${type === 'floor' ? 'main floor' : 'a private table'}. Respond warmly and briefly, like a barista calling over from the counter. 1-2 sentences. Keep it light and encouraging.`;
+
+                // Build messages array with history
+                const messages = [...history, { role: 'user', content: userText }];
+
+                try {
+                    const response = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            model: 'claude-sonnet-4-20250514',
+                            max_tokens: 1000,
+                            system: systemPrompt,
+                            messages: messages
+                        })
+                    });
+                    const data = await response.json();
+                    const reply = data.content?.[0]?.text || "☕ One sec...";
+
+                    // Save to history
+                    history.push({ role: 'user', content: userText });
+                    history.push({ role: 'assistant', content: reply });
+
+                    return reply;
+                } catch (e) {
+                    return "Sorry, the espresso machine's acting up. Try again in a sec.";
+                }
             },
 
 
