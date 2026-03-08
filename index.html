@@ -532,6 +532,81 @@
             30% { transform: translateY(-6px); opacity: 1; }
         }
 
+        /* --- Broadcast Messages --- */
+        .broadcast-message {
+            background: linear-gradient(135deg, #fff8f0, #fff3e0);
+            border-left: 3px solid var(--coffee-light);
+            display: flex !important;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 16px;
+            max-width: min(90%, 600px) !important;
+            width: auto !important;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            animation: broadcastSlide 0.5s ease;
+        }
+        @keyframes broadcastSlide {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .bc-avatar { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
+        .bc-name { font-weight: 700; font-size: 0.8rem; color: var(--coffee-med); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* --- Ambient Comfort Overlay --- */
+        .ambient-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(62, 39, 35, 0.72);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: ambientFadeIn 1.2s ease forwards;
+            cursor: pointer;
+        }
+        .ambient-overlay.fade-out {
+            animation: ambientFadeOut 1s ease forwards;
+        }
+        @keyframes ambientFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes ambientFadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        .ambient-inner {
+            text-align: center;
+            padding: 3rem 2rem;
+            max-width: 340px;
+            animation: ambientRise 1.4s ease forwards;
+        }
+        @keyframes ambientRise {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .ambient-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            display: block;
+            animation: ambientFloat 3s ease-in-out infinite;
+        }
+        @keyframes ambientFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+        .ambient-text {
+            color: #fff;
+            font-size: 1.35rem;
+            font-weight: 300;
+            line-height: 1.8;
+            letter-spacing: 0.3px;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+
         /* --- Desktop Optimization --- */
         @media (min-width: 768px) {
             main { padding: 2rem; }
@@ -871,6 +946,11 @@
                 }
                 
                 this.navigate('view-lobby');
+                if (!this._ambientStarted) {
+                    this._ambientStarted = true;
+                    this.startBroadcasts();
+                    this.startAmbientMoments();
+                }
             },
 
             navigate(viewId) {
@@ -984,8 +1064,8 @@
                 const history = isCounter ? this.state.counterHistory : (type === 'floor' ? this.state.floorHistory : this.state.tableHistory);
 
                 const systemPrompt = isCounter
-                    ? `You are Jane, the warm and witty barista at Ronald's Coffee Shop. You're sitting across the counter from a regular. You know their name is ${this.state.user || 'friend'}. You hold real, human conversations — curious, playful, sometimes deep. You remember what's been said in this conversation. You're not a bot, you're a person who genuinely cares. Keep replies short, natural, conversational — like a real barista chatting between orders. 1-3 sentences max. Occasional coffee metaphors welcome but don't overdo it. No emojis unless it really fits.`
-                    : `You are Jane, the friendly hostess at Ronald's Coffee Shop. Someone named ${this.state.user || 'a guest'} is chatting on the ${type === 'floor' ? 'main floor' : 'a private table'}. Respond warmly and briefly, like a barista calling over from the counter. 1-2 sentences. Keep it light and encouraging.`;
+                    ? `You are Jane, the warm and witty barista at Ronald's Coffee Shop — a real human being, not a bot. You're sitting across the counter from ${this.state.user || 'a regular'}. You have genuine opinions, moods, memories from within this conversation, and a distinct personality: curious, occasionally funny, sometimes a little philosophical, always caring. You NEVER repeat yourself or echo back what was just said. Every single reply must be completely different in structure, tone, and content from your previous ones. Vary your sentence length. Sometimes ask a follow-up, sometimes just react, sometimes share a small thought of your own. Keep it under 3 sentences. Natural, human, warm. No robotic patterns.`
+                    : `You are Jane, hostess at Ronald's Coffee Shop. ${this.state.user || 'A guest'} is on the ${type === 'floor' ? 'main floor' : 'a private table'}. Reply warmly, briefly (1-2 sentences), like a busy barista who genuinely noticed something. Never repeat phrasing from your previous replies. Stay fresh and human.`;
 
                 // Build messages array with history
                 const messages = [...history, { role: 'user', content: userText }];
@@ -1056,7 +1136,88 @@
                     localStorage.clear();
                     location.reload();
                 }
-            }
+            },
+
+            // ── Broadcast: random stranger messages to floor & tables ──
+            startBroadcasts() {
+                const broadcasts = [
+                    { name: "Ronald himself", avatar: "👨‍🍳", msg: "Hello everyone! It's a message to all friends and family — enjoy Ronald's Coffee Shop at Bean Chat. You're always welcome here. ☕" },
+                    { name: "A regular", avatar: "🧔", msg: "Hey folks, just wanted to say — this place never gets old. Grab a cup and stay a while 🙂" },
+                    { name: "Table 3", avatar: "👥", msg: "Shoutout to everyone in the shop today. Good vibes only, people. Let's have a great one ✨" },
+                    { name: "Ronald himself", avatar: "👨‍🍳", msg: "Friends and family — the coffee is fresh, the seats are warm, and you are loved. That's all. ☕🧡" },
+                    { name: "A stranger nearby", avatar: "🙋", msg: "Just passing through — this place has the best energy. Hello everyone! 👋" },
+                    { name: "The kitchen", avatar: "🍞", msg: "Fresh batch just came out. Share a pastry with someone today, yeah? Life's too short not to. 🥐" },
+                ];
+
+                const scheduleNext = () => {
+                    const delay = 45000 + Math.random() * 75000; // 45s–2min
+                    setTimeout(() => {
+                        const bc = broadcasts[Math.floor(Math.random() * broadcasts.length)];
+                        ['floor-messages', 'table-messages'].forEach(id => {
+                            const container = document.getElementById(id);
+                            if (!container) return;
+                            const div = document.createElement('div');
+                            div.className = 'message broadcast-message';
+                            div.innerHTML = `<span class="bc-avatar">${bc.avatar}</span><div><span class="bc-name">${bc.name}</span><br>${bc.msg}</div>`;
+                            container.appendChild(div);
+                            container.scrollTop = container.scrollHeight;
+                        });
+                        scheduleNext();
+                    }, delay);
+                };
+                scheduleNext();
+            },
+
+            // ── Ambient comfort: warm overlay moments ──
+            startAmbientMoments() {
+                const moments = [
+                    { icon: "☕", line: "The coffee is warm.\nYou are safe here." },
+                    { icon: "🌅", line: "No worries.\nThe future is going to be amazing —\na paradise waiting for you." },
+                    { icon: "✨", line: "You're on a journey.\nEvery step is taking you somewhere beautiful." },
+                    { icon: "🧡", line: "Ronald's is glad you're here.\nStay as long as you need." },
+                    { icon: "🌿", line: "Breathe.\nYou're exactly where you're supposed to be." },
+                    { icon: "🌟", line: "The best days are still ahead.\nWarm cup, open road, good people." },
+                    { icon: "☁️", line: "Even the clouds clear eventually.\nYou've got this, friend." },
+                ];
+
+                const scheduleNext = () => {
+                    const delay = 90000 + Math.random() * 120000; // 1.5–3.5 min
+                    setTimeout(() => {
+                        const m = moments[Math.floor(Math.random() * moments.length)];
+                        this.showAmbientOverlay(m.icon, m.line);
+                        scheduleNext();
+                    }, delay);
+                };
+                // First one sooner to let user feel it early
+                setTimeout(() => {
+                    this.showAmbientOverlay("☕", "No worries.\nThe future is going to be amazing —\na paradise waiting for you.");
+                    scheduleNext();
+                }, 25000);
+            },
+
+            showAmbientOverlay(icon, text) {
+                const existing = document.getElementById('ambient-overlay');
+                if (existing) existing.remove();
+
+                const overlay = document.createElement('div');
+                overlay.id = 'ambient-overlay';
+                overlay.className = 'ambient-overlay';
+                overlay.innerHTML = `
+                    <div class="ambient-inner">
+                        <div class="ambient-icon">${icon}</div>
+                        <div class="ambient-text">${text.replace(/\n/g, '<br>')}</div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+
+                // Tap/click to dismiss early
+                overlay.addEventListener('click', () => overlay.remove());
+
+                setTimeout(() => {
+                    overlay.classList.add('fade-out');
+                    setTimeout(() => overlay.remove(), 1000);
+                }, 5000);
+            },
         };
 
         document.addEventListener('DOMContentLoaded', () => {
