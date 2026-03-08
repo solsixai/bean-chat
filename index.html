@@ -884,6 +884,14 @@
             },
 
 
+            toggleHostess() {
+                this.state.hostessReplies = !this.state.hostessReplies;
+                localStorage.setItem('beanHostess', this.state.hostessReplies);
+                const toggle = document.getElementById('hostess-toggle');
+                toggle.classList.toggle('active', this.state.hostessReplies);
+                this.showToast(this.state.hostessReplies ? '👩‍🦱 Jane replies ON' : '🤫 Jane replies OFF');
+            },
+
             openSettings() {
                 document.getElementById('settings-modal').classList.add('active');
                 history.pushState({ view: this.state.currentView, modal:'settings' }, '', '');
