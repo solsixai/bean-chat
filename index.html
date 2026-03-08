@@ -18,69 +18,219 @@ main{flex:1;overflow-y:auto;padding:1rem}
 .view.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .welcome-card{background:var(--white);padding:2rem;border-radius:var(--radius);text-align:center;box-shadow:var(--shadow);margin:2rem auto;max-width:400px}
-input[type=text]{width:100%;padding:14px;border:2px solid var(--accent);border-radius:12px;font-size:1rem;margin:1rem 0}
-.btn{background:var(--coffee-med);color:#fff;border:none;padding:14px 24px;border-radius:50px;font-size:1rem;cursor:pointer;width:100%;font-weight:600}.input-area .btn{width:50px;height:50px;padding:0;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
-.btn-secondary{background:transparent;color:var(--coffee-light);border:1px solid var(--coffee-light);padding:6px 12px;font-size:.85rem}
+input[type=text]{width:100%;padding:14px;border:2px solid var(--accent);border-radius:12px;font-size:1rem;margin:1rem 0;background:var(--white);color:var(--text-main);font-family:inherit;outline:none}
+input[type=text]:focus{border-color:var(--coffee-light)}
+.btn{background:var(--coffee-med);color:#fff;border:none;padding:14px 24px;border-radius:50px;font-size:1rem;cursor:pointer;width:100%;font-weight:600;font-family:inherit}
+.btn:active{opacity:.85}
+.btn-secondary{background:transparent;color:var(--coffee-light);border:1px solid var(--coffee-light);padding:6px 12px;font-size:.85rem;width:auto}
 .lock-control{display:flex;justify-content:center;gap:10px;margin-top:10px;font-size:.9rem;color:var(--text-light)}
 .chat-container{display:flex;flex-direction:column;height:100%;max-width:800px;margin:0 auto}
 .messages{flex:1;overflow-y:auto;padding:1rem 0;display:flex;flex-direction:column;gap:8px}
-.message{background:var(--white);padding:12px 16px;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.1);max-width:85%}
+.message{background:var(--white);padding:12px 16px;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.1);max-width:85%;word-wrap:break-word}
 .message.mine{background:var(--coffee-light);color:#fff;align-self:flex-end;margin-left:auto}
-.input-area{display:flex;gap:10px;padding:12px 0;border-top:1px solid var(--accent)}
-.input-area input{flex:1;border-radius:25px;padding:12px 18px;border:2px solid var(--accent);background:var(--white);color:var(--text-main);font-size:1rem;outline:none;font-family:inherit}.input-area input:focus{border-color:var(--coffee-light)}
-nav{height:var(--nav-height);background:var(--cream);display:flex;justify-content:space-around;align-items:center;border-top:1px solid var(--accent)}
-.nav-item{background:none;border:none;font-size:1.5rem;color:var(--text-light);cursor:pointer;position:relative}
+.input-area{display:flex;gap:10px;padding:12px 0;border-top:1px solid var(--accent);align-items:center}
+.input-area input{flex:1;border-radius:25px;padding:12px 18px;border:2px solid var(--accent);background:var(--white);color:var(--text-main);font-size:1rem;outline:none;font-family:inherit}
+.input-area input:focus{border-color:var(--coffee-light)}
+.input-area .btn{width:50px;height:50px;padding:0;border-radius:50%;flex-shrink:0;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+nav{height:var(--nav-height);background:var(--cream);display:flex;justify-content:space-around;align-items:center;border-top:1px solid var(--accent);flex-shrink:0}
+.nav-item{background:none;border:none;font-size:1.5rem;color:var(--text-light);cursor:pointer;padding:8px}
 .nav-item.active{color:var(--coffee-med)}
-.music-playing::after{content:'';position:absolute;top:0;right:-2px;width:10px;height:10px;background:var(--success);border-radius:50%;animation:pulse 1.5s infinite}
-@keyframes pulse{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
-footer{text-align:center;font-size:.75rem;color:var(--text-light);padding:12px;background:var(--cream);opacity:.8}
-.toggle-switch{position:relative;width:50px;height:28px;background:var(--accent);border-radius:14px;cursor:pointer}
-.toggle-switch.active{background:var(--success)}
-.toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;background:#fff;border-radius:50%;transition:transform .3s}
-.toggle-switch.active::after{transform:translateX(22px)}
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;justify-content:center;align-items:center}
+footer{text-align:center;font-size:.75rem;color:var(--text-light);padding:12px;background:var(--cream);opacity:.8;flex-shrink:0}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;justify-content:center;align-items:center;z-index:200}
 .modal-overlay.active{display:flex}
-.modal-content{background:#fff;padding:2rem;border-radius:var(--radius);width:90%;max-width:420px}
+.modal-content{background:#fff;padding:2rem;border-radius:var(--radius);width:90%;max-width:420px;position:relative}
+.modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-light);line-height:1}
 .setting-item{display:flex;justify-content:space-between;align-items:center;padding:1rem 0;border-bottom:1px solid var(--accent)}
-.volume-row{display:flex;align-items:center;gap:12px}
-.volume-row input{flex:1}
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--coffee-dark);color:#fff;padding:12px 24px;border-radius:25px}
+.setting-item:last-child{border-bottom:none}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--coffee-dark);color:#fff;padding:12px 24px;border-radius:25px;z-index:300;white-space:nowrap}
 </style>
 </head>
 <body>
 <header><div class="brand">☕ Bean Chat</div><div id="user-display">Guest</div></header>
 <main id="app-container">
-<section id="view-welcome" class="view active"><div class="welcome-card"><h2>Step Inside ☕</h2><p>Welcome to Ronald's Coffee Shop</p><input type="text" id="username-input" placeholder="What should we call you?" maxlength="15"><div class="lock-control"><span id="lock-status">🔓 Unlocked</span><button id="toggle-lock" class="btn-secondary">Toggle Lock</button></div><br><button class="btn" onclick="app.enterShop()">Enter Shop</button></div></section>
-<section id="view-floor" class="view"><div class="chat-container"><div class="messages" id="floor-messages"><div class="message">Welcome to the Main Floor! ☕</div></div><div class="input-area"><input type="text" id="floor-input" placeholder="Say something..."><button class="btn" onclick="app.sendMessage()">➤</button></div></div></section>
+
+<section id="view-welcome" class="view active">
+  <div class="welcome-card">
+    <h2>Step Inside ☕</h2>
+    <p>Welcome to Ronald's Coffee Shop</p>
+    <input type="text" id="username-input" placeholder="What should we call you?" maxlength="15">
+    <div class="lock-control"><span id="lock-status">🔓 Unlocked</span><button id="toggle-lock" class="btn-secondary">Toggle Lock</button></div>
+    <br>
+    <button class="btn" onclick="app.enterShop()">Enter Shop</button>
+  </div>
+</section>
+
+<section id="view-floor" class="view">
+  <div class="chat-container">
+    <div class="messages" id="floor-messages">
+      <div class="message">Welcome to the Main Floor! ☕</div>
+    </div>
+    <div class="input-area">
+      <input type="text" id="floor-input" placeholder="Say something..." autocomplete="off">
+      <button class="btn" onclick="app.sendMessage()">➤</button>
+    </div>
+  </div>
+</section>
+
 </main>
-<nav><button class="nav-item active" onclick="app.navigate('view-floor')">🏠</button><button class="nav-item" id="music-btn" onclick="app.toggleMusic()">🎵</button><button class="nav-item" onclick="app.openSettings()">⚙️</button></nav>
+<nav>
+  <button class="nav-item active" id="nav-home" onclick="app.navigate('view-floor')">🏠</button>
+  <button class="nav-item" onclick="app.openSettings()">⚙️</button>
+</nav>
 <footer>In loving memory of Dad · Always warm</footer>
-<div class="modal-overlay" id="settings-modal"><div class="modal-content"><h3>⚙️ Settings</h3>
-<div class="setting-item"><div>Ambient Music</div><div class="toggle-switch" id="music-toggle" onclick="app.toggleMusic()"></div></div>
-<div class="setting-item"><div>Volume</div><div class="volume-row"><span>🔉</span><input type="range" id="volume-slider" min="0" max="100"></div></div>
-</div></div>
+
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="app.closeSettings()">✕</button>
+    <h3 style="color:var(--coffee-med);margin-bottom:1rem">⚙️ Settings</h3>
+    <div class="setting-item">
+      <div>
+        <div style="font-weight:600">Name Lock</div>
+        <div style="font-size:.85rem;color:var(--text-light)">Prevent name changes</div>
+      </div>
+      <div class="toggle-switch" id="lock-toggle" onclick="app.toggleLock()"></div>
+    </div>
+    <div style="margin-top:1.5rem;text-align:center">
+      <button class="btn" style="background:var(--coffee-dark);max-width:200px" onclick="app.clearData()">🗑 Reset Data</button>
+    </div>
+  </div>
+</div>
+
 <script>
-const app={state:{user:'',locked:false,music:false,volume:.7},
-init(){const u=localStorage.getItem('beanUser');if(u){this.state.user=u;userDisplay.innerText=u;usernameInput.value=u}
-const m=localStorage.getItem('beanMusic');if(m==='true')this.state.music=true
-const v=localStorage.getItem('beanVolume');if(v!==null)this.state.volume=Number(v)
-volumeSlider.value=this.state.volume*100
-volumeSlider.oninput=e=>{this.state.volume=e.target.value/100;localStorage.setItem('beanVolume',this.state.volume);if(this._ambMaster)this._ambMaster.gain.setValueAtTime(0.12*this.state.volume,this.getCtx().currentTime)}
-if(this.state.music){musicToggle.classList.add('active');musicBtn.classList.add('music-playing');document.addEventListener('click',()=>this.startMusic(),{once:true})}},
-navigate(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active')},
-enterShop(){const n=usernameInput.value.trim();if(!n)return;this.state.user=n;localStorage.setItem('beanUser',n);userDisplay.innerText=n;this.navigate('view-floor')},
-sendMessage(){const t=floorInput.value.trim();if(!t)return;this.playPing();const d=document.createElement('div');d.className='message mine';d.innerText=t;floorMessages.appendChild(d);floorInput.value='';floorMessages.scrollTop=floorMessages.scrollHeight},
-getCtx(){if(!this._ctx)this._ctx=new(window.AudioContext||window.webkitAudioContext)();return this._ctx},
-playPing(){const ctx=this.getCtx();const go=()=>{const now=ctx.currentTime;const mg=ctx.createGain();mg.connect(ctx.destination);mg.gain.setValueAtTime(0,now);mg.gain.linearRampToValueAtTime(0.55,now+.003);mg.gain.exponentialRampToValueAtTime(.001,now+1.1);const o1=ctx.createOscillator();o1.type='sine';o1.frequency.setValueAtTime(1396,now);o1.connect(mg);o1.start(now);o1.stop(now+1.1);const g2=ctx.createGain();g2.connect(ctx.destination);g2.gain.setValueAtTime(.25,now);g2.gain.exponentialRampToValueAtTime(.001,now+.55);const o2=ctx.createOscillator();o2.type='sine';o2.frequency.setValueAtTime(2093,now);o2.connect(g2);o2.start(now);o2.stop(now+.55);const g3=ctx.createGain();g3.connect(ctx.destination);g3.gain.setValueAtTime(.1,now);g3.gain.exponentialRampToValueAtTime(.001,now+.25);const o3=ctx.createOscillator();o3.type='sine';o3.frequency.setValueAtTime(3136,now);o3.connect(g3);o3.start(now);o3.stop(now+.25)};ctx.state==='suspended'?ctx.resume().then(go):go()},
-startMusic(){const ctx=this.getCtx();const go=()=>{this._ambNodes=[];const mg=ctx.createGain();mg.gain.setValueAtTime(0,ctx.currentTime);mg.gain.linearRampToValueAtTime(0.12*this.state.volume,ctx.currentTime+2.5);mg.connect(ctx.destination);this._ambMaster=mg;const notes=[130.81,196,261.63,329.63];notes.forEach((freq,i)=>{const osc=ctx.createOscillator();osc.type='sine';osc.frequency.setValueAtTime(freq,ctx.currentTime);const lfo=ctx.createOscillator();const lg=ctx.createGain();lfo.type='sine';lfo.frequency.setValueAtTime(.08+i*.04,ctx.currentTime);lg.gain.setValueAtTime(freq*.004,ctx.currentTime);lfo.connect(lg);lg.connect(osc.frequency);lfo.start();const g=ctx.createGain();g.gain.setValueAtTime(.07-i*.01,ctx.currentTime);osc.connect(g);g.connect(mg);osc.start();this._ambNodes.push(osc,lfo)});const sr=ctx.sampleRate;const buf=ctx.createBuffer(1,sr*3,sr);const d=buf.getChannelData(0);let last=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;d[i]=(last+.02*w)/1.02;last=d[i];d[i]*=3.5};const ns=ctx.createBufferSource();ns.buffer=buf;ns.loop=true;const nf=ctx.createBiquadFilter();nf.type='lowpass';nf.frequency.setValueAtTime(380,ctx.currentTime);const ng=ctx.createGain();ng.gain.setValueAtTime(.022,ctx.currentTime);ns.connect(nf);nf.connect(ng);ng.connect(mg);ns.start();this._ambNodes.push(ns)};ctx.state==='suspended'?ctx.resume().then(go):go()},
-stopMusic(){if(this._ambMaster){const ctx=this.getCtx();this._ambMaster.gain.linearRampToValueAtTime(0,ctx.currentTime+1.5);setTimeout(()=>{if(this._ambNodes){this._ambNodes.forEach(n=>{try{n.stop()}catch(e){}});this._ambNodes=[]}this._ambMaster=null},1600)}},
-toggleMusic(){this.state.music=!this.state.music;localStorage.setItem('beanMusic',this.state.music);musicToggle.classList.toggle('active',this.state.music);musicBtn.classList.toggle('music-playing',this.state.music);if(this.state.music){this.startMusic();this.toast('🎵 Ambient music started')}else{this.stopMusic();this.toast('🔇 Music paused')}},
-openSettings(){settingsModal.classList.add('active')},
-toast(m){const t=document.createElement('div');t.className='toast';t.innerText=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2000)}}
-const usernameInput=document.getElementById('username-input'),userDisplay=document.getElementById('user-display'),floorInput=document.getElementById('floor-input'),floorMessages=document.getElementById('floor-messages'),musicBtn=document.getElementById('music-btn'),musicToggle=document.getElementById('music-toggle'),settingsModal=document.getElementById('settings-modal'),volumeSlider=document.getElementById('volume-slider');
-document.getElementById('toggle-lock').onclick=()=>{};
-floorInput.addEventListener('keypress',e=>{if(e.key==='Enter')app.sendMessage()});
-document.addEventListener('DOMContentLoaded',()=>app.init());
+const app = {
+  state: { user:'', locked:false, currentView:'view-welcome' },
+
+  init() {
+    const u = localStorage.getItem('beanUser');
+    if (u) { this.state.user=u; userDisplay.innerText=u; usernameInput.value=u; }
+    const lk = localStorage.getItem('beanLock');
+    if (lk==='true') { this.state.locked=true; this.updateLockUI(); }
+
+    // Enter key support
+    usernameInput.addEventListener('keypress', e => { if(e.key==='Enter') this.enterShop(); });
+    floorInput.addEventListener('keypress', e => { if(e.key==='Enter') this.sendMessage(); });
+
+    // Close settings when tapping backdrop
+    settingsModal.addEventListener('click', e => { if(e.target===settingsModal) this.closeSettings(); });
+
+    // History API - back/forward arrow navigation
+    window.addEventListener('popstate', e => {
+      const view = (e.state && e.state.view) ? e.state.view : 'view-welcome';
+      this._showView(view);
+    });
+
+    // Push initial state
+    history.replaceState({ view: this.state.currentView }, '', '');
+  },
+
+  _showView(id) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+    this.state.currentView = id;
+    // Close modal if open
+    settingsModal.classList.remove('active');
+  },
+
+  navigate(id) {
+    if (id === this.state.currentView) return;
+    this._showView(id);
+    history.pushState({ view: id }, '', '');
+  },
+
+  enterShop() {
+    const n = usernameInput.value.trim();
+    if (!n) { this.toast('Tell us your name ☕'); usernameInput.focus(); return; }
+    if (!this.state.locked) {
+      this.state.user = n;
+      localStorage.setItem('beanUser', n);
+      userDisplay.innerText = n;
+    }
+    this.navigate('view-floor');
+  },
+
+  sendMessage() {
+    const t = floorInput.value.trim();
+    if (!t) return;
+    this.playPing();
+    const d = document.createElement('div');
+    d.className = 'message mine';
+    d.innerText = t;
+    floorMessages.appendChild(d);
+    floorInput.value = '';
+    floorMessages.scrollTop = floorMessages.scrollHeight;
+  },
+
+  getCtx() {
+    if (!this._ctx) this._ctx = new (window.AudioContext || window.webkitAudioContext)();
+    return this._ctx;
+  },
+
+  playPing() {
+    const ctx = this.getCtx();
+    const go = () => {
+      const now = ctx.currentTime;
+      const mg = ctx.createGain();
+      mg.connect(ctx.destination);
+      mg.gain.setValueAtTime(0, now);
+      mg.gain.linearRampToValueAtTime(0.55, now + .003);
+      mg.gain.exponentialRampToValueAtTime(.001, now + 1.1);
+      const o1 = ctx.createOscillator(); o1.type='sine'; o1.frequency.setValueAtTime(1396,now); o1.connect(mg); o1.start(now); o1.stop(now+1.1);
+      const g2 = ctx.createGain(); g2.connect(ctx.destination); g2.gain.setValueAtTime(.25,now); g2.gain.exponentialRampToValueAtTime(.001,now+.55);
+      const o2 = ctx.createOscillator(); o2.type='sine'; o2.frequency.setValueAtTime(2093,now); o2.connect(g2); o2.start(now); o2.stop(now+.55);
+      const g3 = ctx.createGain(); g3.connect(ctx.destination); g3.gain.setValueAtTime(.1,now); g3.gain.exponentialRampToValueAtTime(.001,now+.25);
+      const o3 = ctx.createOscillator(); o3.type='sine'; o3.frequency.setValueAtTime(3136,now); o3.connect(g3); o3.start(now); o3.stop(now+.25);
+    };
+    ctx.state==='suspended' ? ctx.resume().then(go) : go();
+  },
+
+  openSettings() {
+    settingsModal.classList.add('active');
+    // Push a history state so back arrow closes modal
+    history.pushState({ view: this.state.currentView, modal:'settings' }, '', '');
+  },
+
+  closeSettings() {
+    settingsModal.classList.remove('active');
+  },
+
+  toggleLock() {
+    this.state.locked = !this.state.locked;
+    localStorage.setItem('beanLock', this.state.locked);
+    this.updateLockUI();
+    this.toast(this.state.locked ? '🔒 Name locked' : '🔓 Name unlocked');
+  },
+
+  updateLockUI() {
+    lockStatus.innerText = this.state.locked ? '🔒 Locked' : '🔓 Unlocked';
+    usernameInput.disabled = this.state.locked;
+    lockToggle.classList.toggle('active', this.state.locked);
+  },
+
+  clearData() {
+    if (confirm('Reset all data? This cannot be undone.')) { localStorage.clear(); location.reload(); }
+  },
+
+  toast(m) {
+    const existing = document.querySelector('.toast');
+    if (existing) existing.remove();
+    const t = document.createElement('div'); t.className='toast'; t.innerText=m;
+    document.body.appendChild(t); setTimeout(()=>t.remove(), 2000);
+  }
+};
+
+const usernameInput = document.getElementById('username-input'),
+      userDisplay   = document.getElementById('user-display'),
+      floorInput    = document.getElementById('floor-input'),
+      floorMessages = document.getElementById('floor-messages'),
+      settingsModal = document.getElementById('settings-modal'),
+      lockStatus    = document.getElementById('lock-status'),
+      lockToggle    = document.getElementById('lock-toggle');
+
+// Toggle lock button on welcome screen
+document.getElementById('toggle-lock').onclick = () => app.toggleLock();
+
+document.addEventListener('DOMContentLoaded', () => app.init());
 </script>
 </body>
 </html>
