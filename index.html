@@ -482,6 +482,34 @@
             white-space: nowrap;
         }
 
+        .choice-card-counter {
+            grid-column: 1 / -1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            text-align: left;
+            padding: 1.25rem 1.5rem;
+        }
+        .choice-card-counter .choice-icon {
+            font-size: 2rem;
+            margin-bottom: 0;
+        }
+        .counter-chat-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--accent);
+            margin-bottom: 10px;
+            flex-shrink: 0;
+        }
+        .jane-counter-avatar {
+            font-size: 1.8rem;
+            animation: bounce 2s infinite;
+            display: inline-block;
+        }
+
         /* --- Desktop Optimization --- */
         @media (min-width: 768px) {
             main { padding: 2rem; }
@@ -552,6 +580,11 @@
                         <strong>Book a Table</strong>
                         <div>Private Vibe</div>
                     </div>
+                    <div class="choice-card choice-card-counter" onclick="app.navigate('view-counter')">
+                        <span class="choice-icon">🧍‍♀️</span>
+                        <strong>The Counter</strong>
+                        <div>Just You & Jane</div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -598,6 +631,26 @@
             </div>
         </section>
 
+        <!-- VIEW 6: The Counter (Solo with Jane) -->
+        <section id="view-counter" class="view">
+            <div class="chat-container">
+                <div class="chat-header counter-chat-header">
+                    <span class="jane-counter-avatar">👩‍🦱</span>
+                    <div>
+                        <strong style="color: var(--coffee-med);">Jane</strong>
+                        <div style="font-size:0.8rem; color:var(--text-light);">The Counter · Just the two of you</div>
+                    </div>
+                </div>
+                <div class="messages" id="counter-messages">
+                    <div class="message">☕ Hey, pull up a stool. It's quieter here. What's on your mind?</div>
+                </div>
+                <div class="input-area">
+                    <input type="text" id="counter-input" placeholder="Talk to Jane..." autocomplete="off">
+                    <button class="btn" onclick="app.sendMessage('counter')">➤</button>
+                </div>
+            </div>
+        </section>
+
     </main>
 
     <!-- Bottom Navigation -->
@@ -627,15 +680,21 @@
                 </div>
                 <div class="toggle-switch" id="hostess-toggle" onclick="app.toggleHostess()"></div>
             </div>
-            
-            
+
+            <div class="setting-item">
+                <div>
+                    <div class="setting-label">🔔 Message Sound</div>
+                    <div class="setting-desc">Ping when you send a message</div>
+                </div>
+                <div class="toggle-switch" id="sound-toggle" onclick="app.toggleSound()"></div>
+            </div>
 
     <script>
         const app = {
             state: {
                 user: '',
                 locked: false,
-                
+                soundEnabled: true,
                 hostessReplies: true,
                 currentTable: null,
                 currentView: 'view-welcome'
@@ -674,6 +733,11 @@
                     this.state.hostessReplies = false;
                 }
 
+                const savedSound = localStorage.getItem('beanSound');
+                if (savedSound === 'false') {
+                    this.state.soundEnabled = false;
+                }
+
                 const today = new Date().toDateString();
                 const seed = today.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
                 const prompt = this.prompts[seed % this.prompts.length];
@@ -703,6 +767,9 @@
                 document.getElementById('table-input').addEventListener('keypress', (e) => {
                     if (e.key === 'Enter') this.sendMessage('table');
                 });
+                document.getElementById('counter-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage('counter');
+                });
 
                 document.getElementById('settings-modal').addEventListener('click', (e) => {
                     if (e.target.id === 'settings-modal') this.closeSettings();
@@ -720,7 +787,7 @@
                         document.getElementById(view).classList.add('active');
                         this.state.currentView = view;
                         const homeBtn = document.getElementById('nav-home');
-                        if (homeBtn) homeBtn.classList.toggle('active', view==='view-lobby'||view==='view-floor'||view==='view-tables'||view==='view-table-chat');
+                        if (homeBtn) homeBtn.classList.toggle('active', view==='view-lobby'||view==='view-floor'||view==='view-tables'||view==='view-table-chat'||view==='view-counter');
                     }
                 });
                 history.replaceState({ view: this.state.currentView }, '', '');
@@ -744,6 +811,13 @@
                     hostessToggle.classList.add('active');
                 } else {
                     hostessToggle.classList.remove('active');
+                }
+
+                const soundToggle = document.getElementById('sound-toggle');
+                if (this.state.soundEnabled) {
+                    soundToggle.classList.add('active');
+                } else {
+                    soundToggle.classList.remove('active');
                 }
 
                 const musicToggle = document.getElementById('music-toggle');
@@ -781,7 +855,7 @@
                 this.state.currentView = viewId;
                 document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
                 const homeBtn = document.getElementById('nav-home');
-                if (homeBtn && (viewId==='view-lobby'||viewId==='view-floor'||viewId==='view-tables'||viewId==='view-table-chat')) {
+                if (homeBtn && (viewId==='view-lobby'||viewId==='view-floor'||viewId==='view-tables'||viewId==='view-table-chat'||viewId==='view-counter')) {
                     homeBtn.classList.add('active');
                 }
                 document.getElementById('app-container').scrollTop = 0;
@@ -841,14 +915,14 @@
             },
 
             sendMessage(type) {
-                const inputId = type === 'floor' ? 'floor-input' : 'table-input';
-                const containerId = type === 'floor' ? 'floor-messages' : 'table-messages';
+                const inputId = type === 'floor' ? 'floor-input' : type === 'counter' ? 'counter-input' : 'table-input';
+                const containerId = type === 'floor' ? 'floor-messages' : type === 'counter' ? 'counter-messages' : 'table-messages';
                 const input = document.getElementById(inputId);
                 const text = input.value.trim();
                 
                 if (!text) return;
 
-                this.playPing();
+                if (this.state.soundEnabled) this.playPing();
 
                 const container = document.getElementById(containerId);
                 const msgDiv = document.createElement('div');
@@ -859,18 +933,29 @@
                 input.value = '';
                 container.scrollTop = container.scrollHeight;
 
-                if (this.state.hostessReplies) {
+                const shouldReply = type === 'counter' || this.state.hostessReplies;
+                if (shouldReply) {
                     setTimeout(() => {
                         const replyDiv = document.createElement('div');
                         replyDiv.className = 'message';
-                        replyDiv.innerText = "☕ " + this.generateReply(text);
+                        replyDiv.innerText = (type === 'counter' ? "👩‍🦱 " : "☕ ") + this.generateReply(text, type === 'counter');
                         container.appendChild(replyDiv);
                         container.scrollTop = container.scrollHeight;
                     }, 1200 + Math.random() * 1000);
                 }
             },
 
-            generateReply(input) {
+            generateReply(input, isCounter = false) {
+                const counterResponses = [
+                    "Hmm, tell me more about that.",
+                    "That's what the quiet ones always say ☕",
+                    "You know, I was thinking the same thing.",
+                    "Sounds like something worth sitting with.",
+                    "Not bad. Want a refill while you think on it?",
+                    "I like that. Keep going.",
+                    "You always come here with the good stuff 🧡",
+                    "Real talk? That makes a lot of sense.",
+                ];
                 const responses = [
                     "That's interesting, tell me more!",
                     "I love that vibe ☕",
@@ -880,7 +965,8 @@
                     "What got you into that?",
                     "Very cool! How's it going?"
                 ];
-                return responses[Math.floor(Math.random() * responses.length)];
+                const pool = isCounter ? counterResponses : responses;
+                return pool[Math.floor(Math.random() * pool.length)];
             },
 
 
@@ -890,6 +976,14 @@
                 const toggle = document.getElementById('hostess-toggle');
                 toggle.classList.toggle('active', this.state.hostessReplies);
                 this.showToast(this.state.hostessReplies ? '👩‍🦱 Jane replies ON' : '🤫 Jane replies OFF');
+            },
+
+            toggleSound() {
+                this.state.soundEnabled = !this.state.soundEnabled;
+                localStorage.setItem('beanSound', this.state.soundEnabled);
+                const toggle = document.getElementById('sound-toggle');
+                toggle.classList.toggle('active', this.state.soundEnabled);
+                this.showToast(this.state.soundEnabled ? '🔔 Sound ON' : '🔕 Sound OFF');
             },
 
             openSettings() {
