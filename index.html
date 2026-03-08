@@ -829,40 +829,53 @@
                 this.navigate('view-table-chat');
             },
 
-            playMessageSound() {
+            getAudioCtx() {
                 if (!this._audioCtx) {
                     this._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 }
-                const ctx = this._audioCtx;
+                return this._audioCtx;
+            },
+
+            playMessageSound() {
+                const ctx = this.getAudioCtx();
                 const resume = ctx.state === 'suspended' ? ctx.resume() : Promise.resolve();
                 resume.then(() => {
                     const now = ctx.currentTime;
-
-                    const gain1 = ctx.createGain();
-                    gain1.connect(ctx.destination);
-                    gain1.gain.setValueAtTime(0.0, now);
-                    gain1.gain.linearRampToValueAtTime(0.22, now + 0.01);
-                    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                    // Meta Messenger metallic ping - sharp attack, long ring, 3 partials
+                    const masterGain = ctx.createGain();
+                    masterGain.connect(ctx.destination);
+                    masterGain.gain.setValueAtTime(0.0, now);
+                    masterGain.gain.linearRampToValueAtTime(0.55, now + 0.003);
+                    masterGain.gain.exponentialRampToValueAtTime(0.001, now + 1.1);
+                    // Fundamental - bright metallic
                     const osc1 = ctx.createOscillator();
                     osc1.type = 'sine';
-                    osc1.frequency.setValueAtTime(1046, now);
-                    osc1.frequency.exponentialRampToValueAtTime(784, now + 0.12);
-                    osc1.connect(gain1);
+                    osc1.frequency.setValueAtTime(1396, now);
+                    osc1.connect(masterGain);
                     osc1.start(now);
-                    osc1.stop(now + 0.22);
-
-                    const gain2 = ctx.createGain();
-                    gain2.connect(ctx.destination);
-                    gain2.gain.setValueAtTime(0.0, now + 0.06);
-                    gain2.gain.linearRampToValueAtTime(0.15, now + 0.08);
-                    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+                    osc1.stop(now + 1.1);
+                    // 2nd partial - metal shimmer
+                    const g2 = ctx.createGain();
+                    g2.connect(ctx.destination);
+                    g2.gain.setValueAtTime(0.25, now);
+                    g2.gain.exponentialRampToValueAtTime(0.001, now + 0.55);
                     const osc2 = ctx.createOscillator();
                     osc2.type = 'sine';
-                    osc2.frequency.setValueAtTime(1318, now + 0.06);
-                    osc2.frequency.exponentialRampToValueAtTime(1046, now + 0.22);
-                    osc2.connect(gain2);
-                    osc2.start(now + 0.06);
-                    osc2.stop(now + 0.28);
+                    osc2.frequency.setValueAtTime(2093, now);
+                    osc2.connect(g2);
+                    osc2.start(now);
+                    osc2.stop(now + 0.55);
+                    // 3rd partial - top sparkle
+                    const g3 = ctx.createGain();
+                    g3.connect(ctx.destination);
+                    g3.gain.setValueAtTime(0.1, now);
+                    g3.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+                    const osc3 = ctx.createOscillator();
+                    osc3.type = 'sine';
+                    osc3.frequency.setValueAtTime(3136, now);
+                    osc3.connect(g3);
+                    osc3.start(now);
+                    osc3.stop(now + 0.25);
                 });
             },
 
@@ -909,14 +922,87 @@
                 return responses[Math.floor(Math.random() * responses.length)];
             },
 
+            startAmbientMusic() {
+                const ctx = this.getAudioCtx();
+                const resume = ctx.state === 'suspended' ? ctx.resume() : Promise.resolve();
+                resume.then(() => {
+                    this._ambientNodes = [];
+                    const masterGain = ctx.createGain();
+                    masterGain.gain.setValueAtTime(0.0, ctx.currentTime);
+                    masterGain.gain.linearRampToValueAtTime(0.12, ctx.currentTime + 2.5);
+                    masterGain.connect(ctx.destination);
+                    this._ambientMaster = masterGain;
+                    // Lo-fi coffee shop chord: C3 G3 C4 E4
+                    const notes = [130.81, 196.00, 261.63, 329.63];
+                    notes.forEach((freq, i) => {
+                        const osc = ctx.createOscillator();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                        const lfo = ctx.createOscillator();
+                        const lfoGain = ctx.createGain();
+                        lfo.type = 'sine';
+                        lfo.frequency.setValueAtTime(0.08 + i * 0.04, ctx.currentTime);
+                        lfoGain.gain.setValueAtTime(freq * 0.004, ctx.currentTime);
+                        lfo.connect(lfoGain);
+                        lfoGain.connect(osc.frequency);
+                        lfo.start();
+                        const gain = ctx.createGain();
+                        gain.gain.setValueAtTime(0.07 - i * 0.01, ctx.currentTime);
+                        osc.connect(gain);
+                        gain.connect(masterGain);
+                        osc.start();
+                        this._ambientNodes.push(osc, lfo);
+                    });
+                    // Brown noise - cafe background murmur
+                    const sr = ctx.sampleRate;
+                    const buf = ctx.createBuffer(1, sr * 3, sr);
+                    const d = buf.getChannelData(0);
+                    let last = 0;
+                    for (let i = 0; i < d.length; i++) {
+                        const w = Math.random() * 2 - 1;
+                        d[i] = (last + 0.02 * w) / 1.02;
+                        last = d[i];
+                        d[i] *= 3.5;
+                    }
+                    const noise = ctx.createBufferSource();
+                    noise.buffer = buf;
+                    noise.loop = true;
+                    const nf = ctx.createBiquadFilter();
+                    nf.type = 'lowpass';
+                    nf.frequency.setValueAtTime(380, ctx.currentTime);
+                    const ng = ctx.createGain();
+                    ng.gain.setValueAtTime(0.022, ctx.currentTime);
+                    noise.connect(nf);
+                    nf.connect(ng);
+                    ng.connect(masterGain);
+                    noise.start();
+                    this._ambientNodes.push(noise);
+                });
+            },
+
+            stopAmbientMusic() {
+                if (this._ambientMaster) {
+                    const ctx = this.getAudioCtx();
+                    this._ambientMaster.gain.linearRampToValueAtTime(0.0, ctx.currentTime + 1.5);
+                    setTimeout(() => {
+                        if (this._ambientNodes) {
+                            this._ambientNodes.forEach(n => { try { n.stop(); } catch(e) {} });
+                            this._ambientNodes = [];
+                        }
+                        this._ambientMaster = null;
+                    }, 1600);
+                }
+            },
+
             toggleMusic() {
                 this.state.music = !this.state.music;
                 localStorage.setItem('beanMusic', this.state.music);
                 this.updateToggleUI();
-                
                 if (this.state.music) {
+                    this.startAmbientMusic();
                     this.showToast("🎵 Ambient music started");
                 } else {
+                    this.stopAmbientMusic();
                     this.showToast("🔇 Music paused");
                 }
             },
