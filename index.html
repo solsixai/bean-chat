@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bean Chat V6.2 ☕</title>
+    <title>Bean Chat V6.1 ☕</title>
     <meta name="description" content="Ronald's Coffee Shop - Always Warm">
     <meta name="theme-color" content="#8D6E63">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -399,11 +399,11 @@
         /* --- Bottom Nav --- */
         nav {
             height: var(--nav-height);
-            background: var(--cream); /* Matches page background */
+            background: var(--cream); /* UPDATED: Matches page background */
             display: flex;
             justify-content: space-around;
             align-items: center;
-            border-top: none; /* REMOVED: No border line */
+            border-top: 1px solid var(--accent); /* Soft border */
             padding-bottom: env(safe-area-inset-bottom);
             flex-shrink: 0;
         }
@@ -646,7 +646,7 @@
             </div>
 
             <div style="margin-top: 1.5rem; text-align: center;">
-                <p style="font-size: 0.85rem; color: var(--text-light);">Bean Chat V6.2</p>
+                <p style="font-size: 0.85rem; color: var(--text-light);">Bean Chat V6.1</p>
                 <p style="font-size: 0.75rem; color: var(--text-light); opacity: 0.7;">Created for Michael Roode</p>
             </div>
         </div>
@@ -829,6 +829,24 @@
                 this.navigate('view-table-chat');
             },
 
+            playMessageSound() {
+                try {
+                    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(880, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.18);
+                    osc.start(ctx.currentTime);
+                    osc.stop(ctx.currentTime + 0.18);
+                    osc.onended = () => ctx.close();
+                } catch(e) {}
+            },
+
             sendMessage(type) {
                 const inputId = type === 'floor' ? 'floor-input' : 'table-input';
                 const containerId = type === 'floor' ? 'floor-messages' : 'table-messages';
@@ -836,6 +854,8 @@
                 const text = input.value.trim();
                 
                 if (!text) return;
+
+                this.playMessageSound();
 
                 const container = document.getElementById(containerId);
                 const msgDiv = document.createElement('div');
