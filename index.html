@@ -7,237 +7,76 @@
 <meta name="description" content="Ronald's Coffee Shop - Always Warm">
 <meta name="theme-color" content="#8D6E63">
 <style>
-:root {
-  --coffee-dark:#3E2723; --coffee-med:#5D4037; --coffee-light:#8D6E63;
-  --cream:#EFEBE9; --white:#FFF; --accent:#D7CCC8;
-  --text-main:#3E2723; --text-light:#795548; --success:#4CAF50;
-  --shadow:0 4px 12px rgba(62,39,35,.15); --radius:16px; --nav-height:70px;
-}
+:root{--coffee-dark:#3E2723;--coffee-med:#5D4037;--coffee-light:#8D6E63;--cream:#EFEBE9;--white:#FFF;--accent:#D7CCC8;--text-main:#3E2723;--text-light:#795548;--success:#4CAF50;--shadow:0 4px 12px rgba(62,39,35,.15);--radius:16px;--nav-height:70px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--cream);color:var(--text-main);height:100vh;display:flex;flex-direction:column;overflow:hidden}
 header{background:var(--white);padding:1rem;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.05);z-index:10;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
 .brand{font-weight:700;font-size:1.2rem;color:var(--coffee-med);display:flex;align-items:center;gap:8px}
-.status-dot{width:8px;height:8px;background:var(--success);border-radius:50%;display:inline-block}
 #user-display{font-size:.9rem;font-weight:600;color:var(--text-light)}
-main{flex:1;overflow-y:auto;padding:1rem;position:relative;scroll-behavior:smooth}
-.view{display:none;animation:fadeIn .4s ease;width:100%}
+main{flex:1;overflow-y:auto;padding:1rem}
+.view{display:none;animation:fadeIn .3s ease}
 .view.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .welcome-card{background:var(--white);padding:2rem;border-radius:var(--radius);text-align:center;box-shadow:var(--shadow);margin:2rem auto;max-width:400px}
-.welcome-card h2{margin-bottom:.5rem;color:var(--coffee-med)}
-.welcome-card p{color:var(--text-light);margin-bottom:1.5rem}
-input[type=text]{width:100%;padding:14px;border:2px solid var(--accent);border-radius:12px;font-size:1rem;margin:1rem 0;outline:none;transition:border .3s;font-family:inherit}
-input[type=text]:focus{border-color:var(--coffee-light)}
-input[type=text]:disabled{background:#f5f5f5;color:var(--text-light);cursor:not-allowed}
-.btn{background:var(--coffee-med);color:var(--white);border:none;padding:14px 24px;border-radius:50px;font-size:1rem;cursor:pointer;width:100%;font-weight:600;transition:transform .2s,background .3s;font-family:inherit}
-.btn:active{transform:scale(.98)} .btn:hover{background:var(--coffee-dark)}
-.btn-secondary{background:transparent;color:var(--coffee-light);border:1px solid var(--coffee-light);width:auto;padding:6px 12px;font-size:.85rem}
-.btn-secondary:hover{background:var(--accent)}
-.lock-control{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:10px;font-size:.9rem;color:var(--text-light)}
-.jane-container{text-align:center;padding:2rem 0;max-width:500px;margin:0 auto}
-.jane-avatar{font-size:4rem;margin-bottom:1rem;display:block;animation:bounce 2s infinite}
-@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
-.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:2rem}
-.choice-card{background:var(--white);padding:1.5rem;border-radius:var(--radius);text-align:center;box-shadow:var(--shadow);cursor:pointer;border:2px solid transparent;transition:border .3s,transform .2s}
-.choice-card:hover{border-color:var(--coffee-light);transform:translateY(-2px)}
-.choice-icon{font-size:2.5rem;display:block;margin-bottom:.5rem}
-.choice-card strong{display:block;margin-bottom:.25rem;color:var(--coffee-med)}
-.choice-card div{font-size:.85rem;color:var(--text-light)}
-.tables-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;max-width:600px;margin:0 auto}
-.table-seat{background:var(--white);padding:1.5rem;border-radius:var(--radius);text-align:center;box-shadow:var(--shadow);cursor:pointer;position:relative;overflow:hidden;transition:transform .2s,box-shadow .3s}
-.table-seat:hover{transform:translateY(-3px);box-shadow:0 6px 16px rgba(62,39,35,.2)}
-.table-seat::before{content:'';position:absolute;top:0;left:0;width:100%;height:4px;background:var(--coffee-light)}
-.vibe-quiet::before{background:#90A4AE} .vibe-tech::before{background:#5C6BC0} .vibe-music::before{background:#EC407A}
-.table-icon{font-size:2rem;display:block;margin-bottom:.5rem}
-.table-seat strong{display:block;color:var(--coffee-med);margin-bottom:.25rem}
-.table-seat span{font-size:.85rem;color:var(--text-light)}
-.chat-container{display:flex;flex-direction:column;height:100%;max-width:800px;margin:0 auto;width:100%}
-.chat-header{text-align:center;color:var(--text-light);padding:10px 0;border-bottom:1px solid var(--accent);margin-bottom:10px;flex-shrink:0}
+input[type=text]{width:100%;padding:14px;border:2px solid var(--accent);border-radius:12px;font-size:1rem;margin:1rem 0}
+.btn{background:var(--coffee-med);color:#fff;border:none;padding:14px 24px;border-radius:50px;font-size:1rem;cursor:pointer;width:100%;font-weight:600}
+.btn-secondary{background:transparent;color:var(--coffee-light);border:1px solid var(--coffee-light);padding:6px 12px;font-size:.85rem}
+.lock-control{display:flex;justify-content:center;gap:10px;margin-top:10px;font-size:.9rem;color:var(--text-light)}
+.chat-container{display:flex;flex-direction:column;height:100%;max-width:800px;margin:0 auto}
 .messages{flex:1;overflow-y:auto;padding:1rem 0;display:flex;flex-direction:column;gap:8px}
-.message{background:var(--white);padding:12px 16px;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.1);max-width:min(85%,600px);width:fit-content;word-wrap:break-word;overflow-wrap:break-word;line-height:1.5;font-size:.95rem}
-.message.mine{background:var(--coffee-light);color:var(--white);align-self:flex-end;margin-left:auto}
-.input-area{display:flex;gap:10px;padding:12px 0;border-top:1px solid var(--accent);flex-shrink:0}
-.input-area input{flex:1;margin:0;border-radius:25px;padding:12px 18px}
-.input-area .btn{width:50px;padding:12px;border-radius:50%;display:flex;align-items:center;justify-content:center}
-.daily-special{background:linear-gradient(135deg,var(--coffee-med),var(--coffee-dark));color:var(--white);padding:1.25rem;border-radius:var(--radius);margin:0 auto 1.5rem;text-align:center;position:relative;max-width:600px;box-shadow:var(--shadow)}
-.special-icon{position:absolute;top:12px;right:12px;font-size:1.2rem;opacity:.8}
-.daily-special h3{margin-bottom:.5rem;font-size:1.1rem}
-.daily-special p{font-size:.95rem;opacity:.95;line-height:1.4}
-.modal-overlay{position:fixed;inset:0;background:rgba(62,39,35,.5);display:none;justify-content:center;align-items:center;z-index:100;backdrop-filter:blur(4px)}
-.modal-overlay.active{display:flex}
-.modal-content{background:var(--white);padding:2rem;border-radius:var(--radius);width:90%;max-width:420px;box-shadow:var(--shadow);animation:slideUp .3s ease}
-@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
-.modal-header h3{color:var(--coffee-med)}
-.close-modal{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-light)}
-.setting-item{display:flex;justify-content:space-between;align-items:center;padding:1rem 0;border-bottom:1px solid var(--accent)}
-.setting-item:last-child{border-bottom:none}
-.setting-label{font-weight:600;color:var(--text-main)}
-.setting-desc{font-size:.85rem;color:var(--text-light);margin-top:4px}
-.toggle-switch{position:relative;width:50px;height:28px;background:var(--accent);border-radius:14px;cursor:pointer;transition:background .3s}
+.message{background:var(--white);padding:12px 16px;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,.1);max-width:85%}
+.message.mine{background:var(--coffee-light);color:#fff;align-self:flex-end}
+.input-area{display:flex;gap:10px;padding:12px 0;border-top:1px solid var(--accent)}
+.input-area input{flex:1;border-radius:25px;padding:12px 18px;border:2px solid var(--accent)}
+nav{height:var(--nav-height);background:var(--cream);display:flex;justify-content:space-around;align-items:center;border-top:1px solid var(--accent)}
+.nav-item{background:none;border:none;font-size:1.5rem;color:var(--text-light);cursor:pointer;position:relative}
+.nav-item.active{color:var(--coffee-med)}
+.music-playing::after{content:'';position:absolute;top:0;right:-2px;width:10px;height:10px;background:var(--success);border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
+footer{text-align:center;font-size:.75rem;color:var(--text-light);padding:12px;background:var(--cream);opacity:.8}
+.toggle-switch{position:relative;width:50px;height:28px;background:var(--accent);border-radius:14px;cursor:pointer}
 .toggle-switch.active{background:var(--success)}
-.toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;background:var(--white);border-radius:50%;transition:transform .3s;box-shadow:0 2px 4px rgba(0,0,0,.2)}
+.toggle-switch::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;background:#fff;border-radius:50%;transition:transform .3s}
 .toggle-switch.active::after{transform:translateX(22px)}
-nav{height:var(--nav-height);background:var(--cream);display:flex;justify-content:space-around;align-items:center;border-top:1px solid var(--accent);flex-shrink:0}
-.nav-item{background:none;border:none;font-size:1.5rem;color:var(--text-light);cursor:pointer;position:relative;padding:10px;transition:color .3s}
-.nav-item:hover{color:var(--coffee-med)} .nav-item.active{color:var(--coffee-med)}
-.nav-item.active::after{content:'';position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:5px;height:5px;background:var(--coffee-med);border-radius:50%}
-.music-playing::after{content:'';position:absolute;top:8px;right:8px;width:10px;height:10px;background:var(--success);border-radius:50%;animation:pulse 1.5s infinite}
-@keyframes pulse{0%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
-footer{text-align:center;font-size:.75rem;color:var(--text-light);padding:12px;background:var(--cream);opacity:.8;flex-shrink:0}
-.hidden{display:none!important}
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--coffee-dark);color:#fff;padding:12px 24px;border-radius:25px;font-size:.9rem;z-index:100;animation:fadeIn .3s ease;white-space:nowrap}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;justify-content:center;align-items:center}
+.modal-overlay.active{display:flex}
+.modal-content{background:#fff;padding:2rem;border-radius:var(--radius);width:90%;max-width:420px}
+.setting-item{display:flex;justify-content:space-between;align-items:center;padding:1rem 0;border-bottom:1px solid var(--accent)}
 .volume-row{display:flex;align-items:center;gap:12px}
 .volume-row input{flex:1}
-@media(min-width:768px){main{padding:2rem}.choice-grid{max-width:500px;margin:2rem auto}.tables-grid{grid-template-columns:repeat(4,1fr)}.welcome-card{margin:3rem auto}}
-@media(max-width:380px){.tables-grid{grid-template-columns:1fr}.choice-grid{grid-template-columns:1fr}.message{max-width:90%}header{padding:.75rem}.brand{font-size:1.1rem}}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--coffee-dark);color:#fff;padding:12px 24px;border-radius:25px}
 </style>
 </head>
 <body>
-<header>
-  <div class="brand"><span>☕</span> Bean Chat</div>
-  <div id="user-display">Guest</div>
-</header>
+<header><div class="brand">☕ Bean Chat</div><div id="user-display">Guest</div></header>
 <main id="app-container">
-<section id="view-welcome" class="view active">
-  <div class="welcome-card">
-    <h2>Step Inside ☕</h2>
-    <p>Welcome to Ronald's Coffee Shop</p>
-    <input type="text" id="username-input" placeholder="What should we call you?" maxlength="15" autocomplete="off">
-    <div class="lock-control">
-      <span id="lock-status">🔓 Unlocked</span>
-      <button id="toggle-lock" class="btn-secondary">Toggle Lock</button>
-    </div><br>
-    <button class="btn" onclick="app.enterShop()">Enter Shop</button>
-  </div>
-</section>
-<section id="view-lobby" class="view">
-  <div class="daily-special" id="daily-special-box">
-    <span class="special-icon">🪄</span>
-    <h3>Today's Special</h3>
-    <p id="special-text">Loading prompt...</p>
-  </div>
-  <div class="jane-container">
-    <span class="jane-avatar">👩‍🦱</span>
-    <h3 style="color:var(--coffee-med);margin-bottom:.5rem;">Hostess Jane</h3>
-    <p style="color:var(--text-light);">"Good day! Where would you like to sit?"</p>
-    <div class="choice-grid">
-      <div class="choice-card" onclick="app.navigate('view-floor')">
-        <span class="choice-icon">🪑</span><strong>Main Floor</strong><div>Open Community</div>
-      </div>
-      <div class="choice-card" onclick="app.navigate('view-tables')">
-        <span class="choice-icon">📋</span><strong>Book a Table</strong><div>Private Vibe</div>
-      </div>
-    </div>
-  </div>
-</section>
-<section id="view-floor" class="view">
-  <div class="chat-container">
-    <div class="chat-header"><span class="status-dot"></span> Live · Open to everyone</div>
-    <div class="messages" id="floor-messages"><div class="message">Welcome to the Main Floor! ☕ Feel free to chat.</div></div>
-    <div class="input-area"><input type="text" id="floor-input" placeholder="Say something..." autocomplete="off"><button class="btn" onclick="app.sendMessage('floor')">➤</button></div>
-  </div>
-</section>
-<section id="view-tables" class="view">
-  <h3 style="text-align:center;color:var(--coffee-med);margin-bottom:.5rem;">Pick your spot</h3>
-  <p style="text-align:center;color:var(--text-light);margin-bottom:1.5rem;">Eight tables, each with its own vibe</p>
-  <div class="tables-grid" id="tables-grid"></div>
-  <button class="btn btn-secondary" style="margin-top:2rem;max-width:200px;" onclick="app.navigate('view-lobby')">← Back to Lobby</button>
-</section>
-<section id="view-table-chat" class="view">
-  <div class="chat-container">
-    <div class="chat-header" id="table-header">Table #1</div>
-    <div class="messages" id="table-messages"><div class="message">Welcome to this table. The vibe is warm. ☕</div></div>
-    <div class="input-area"><input type="text" id="table-input" placeholder="Type a message..." autocomplete="off"><button class="btn" onclick="app.sendMessage('table')">➤</button></div>
-  </div>
-</section>
+<section id="view-welcome" class="view active"><div class="welcome-card"><h2>Step Inside ☕</h2><p>Welcome to Ronald's Coffee Shop</p><input type="text" id="username-input" placeholder="What should we call you?" maxlength="15"><div class="lock-control"><span id="lock-status">🔓 Unlocked</span><button id="toggle-lock" class="btn-secondary">Toggle Lock</button></div><br><button class="btn" onclick="app.enterShop()">Enter Shop</button></div></section>
+<section id="view-floor" class="view"><div class="chat-container"><div class="messages" id="floor-messages"><div class="message">Welcome to the Main Floor! ☕</div></div><div class="input-area"><input type="text" id="floor-input" placeholder="Say something..."><button class="btn" onclick="app.sendMessage()">➤</button></div></div></section>
 </main>
-<nav>
-  <button class="nav-item active" onclick="app.navigate('view-lobby')" title="Home">🏠</button>
-  <button class="nav-item" id="music-btn" onclick="app.toggleMusic()" title="Ambient Music">🎵</button>
-  <button class="nav-item" onclick="app.clearData()" title="Reset">🗑</button>
-  <button class="nav-item" onclick="app.openSettings()" title="Settings">⚙️</button>
-</nav>
+<nav><button class="nav-item active" onclick="app.navigate('view-floor')">🏠</button><button class="nav-item" id="music-btn" onclick="app.toggleMusic()">🎵</button><button class="nav-item" onclick="app.openSettings()">⚙️</button></nav>
 <footer>In loving memory of Dad · Always warm</footer>
-<div class="modal-overlay" id="settings-modal">
-  <div class="modal-content">
-    <div class="modal-header"><h3>⚙️ Settings</h3><button class="close-modal" onclick="app.closeSettings()">✕</button></div>
-    <div class="setting-item"><div><div class="setting-label">Hostess Replies</div><div class="setting-desc">Jane responds to your messages</div></div><div class="toggle-switch" id="hostess-toggle" onclick="app.toggleHostess()"></div></div>
-    <div class="setting-item"><div><div class="setting-label">Ambient Music</div><div class="setting-desc">Lo‑fi background sounds</div></div><div class="toggle-switch" id="music-toggle" onclick="app.toggleMusic()"></div></div>
-    <div class="setting-item">
-      <div>
-        <div class="setting-label">Volume</div>
-        <div class="setting-desc">Master ambient level</div>
-      </div>
-      <div class="volume-row">
-        <span>🔉</span>
-        <input type="range" id="volume-slider" min="0" max="100" step="1">
-      </div>
-    </div>
-    <div class="setting-item"><div><div class="setting-label">Name Lock</div><div class="setting-desc">Prevent name changes</div></div><div class="toggle-switch" id="lock-toggle" onclick="app.toggleLockFromSettings()"></div></div>
-    <div style="margin-top:1.5rem;text-align:center;"><p style="font-size:.85rem;color:var(--text-light);">Bean Chat V6.1</p><p style="font-size:.75rem;color:var(--text-light);opacity:.7;">Created for Michael Roode</p></div>
-  </div>
-</div>
+<div class="modal-overlay" id="settings-modal"><div class="modal-content"><h3>⚙️ Settings</h3>
+<div class="setting-item"><div>Ambient Music</div><div class="toggle-switch" id="music-toggle" onclick="app.toggleMusic()"></div></div>
+<div class="setting-item"><div>Volume</div><div class="volume-row"><span>🔉</span><input type="range" id="volume-slider" min="0" max="100"></div></div>
+</div></div>
 <script>
-const app={
-state:{user:'',locked:false,music:false,hostessReplies:true,currentTable:null,currentView:'view-welcome',volume:.5},
-prompts:["Discuss the future of AI in music production 🎵","What's the best coding project you started this week? 💻","Share a creative idea you're working on 🎨","What's your favorite lo-fi track right now? 🎧","Tech trend prediction for next month 🚀","How do you stay creative when stuck? 🪄","Best video editing tip you've learned? 🎬","What prompt gave you the best AI result? 🤖"],
-init(){
-const g=k=>localStorage.getItem(k);
-const s=(k,v)=>localStorage.setItem(k,v);
-const u=g('beanUser'); if(u){this.state.user=u; usernameInput.value=u; userDisplay.innerText=u}
-if(g('beanLock')==='true'){this.state.locked=true; this.updateLockUI()}
-if(g('beanMusic')==='true'){this.state.music=true}
-if(g('beanHostess')==='false'){this.state.hostessReplies=false}
-const vol=g('beanVolume'); if(vol!==null){this.state.volume=Number(vol)}
-const today=new Date().toDateString(); const seed=[...today].reduce((a,b)=>a+b.charCodeAt(0),0);
-specialText.innerText=this.prompts[seed%this.prompts.length];
-this.renderTables(); if(this.state.user) userDisplay.innerText=this.state.user; this.updateToggleUI();
-volumeSlider.value=Math.round(this.state.volume*100);
-volumeSlider.addEventListener('input',e=>{this.state.volume=e.target.value/100; s('beanVolume',this.state.volume); if(this._ambientMaster) this._ambientMaster.gain.value=this.state.volume*0.6});
-toggleLock.addEventListener('click',()=>{this.state.locked=!this.state.locked; s('beanLock',this.state.locked); this.updateLockUI(); this.updateToggleUI()});
-usernameInput.addEventListener('keypress',e=>{if(e.key==='Enter')this.enterShop()});
-floorInput.addEventListener('keypress',e=>{if(e.key==='Enter')this.sendMessage('floor')});
-tableInput.addEventListener('keypress',e=>{if(e.key==='Enter')this.sendMessage('table')});
-settingsModal.addEventListener('click',e=>{if(e.target.id==='settings-modal')this.closeSettings()});
-if(this.state.music){document.addEventListener('click',()=>this.startAmbientMusic(),{once:true})}
-},
-updateLockUI(){lockStatus.innerText=this.state.locked?'🔒 Locked':'🔓 Unlocked'; usernameInput.disabled=this.state.locked},
-updateToggleUI(){hostessToggle.classList.toggle('active',this.state.hostessReplies); musicToggle.classList.toggle('active',this.state.music); musicBtn.classList.toggle('music-playing',this.state.music); lockToggle.classList.toggle('active',this.state.locked)},
-enterShop(){const name=usernameInput.value.trim(); if(!name){alert('Please tell us your name! ☕'); usernameInput.focus(); return} if(!this.state.locked){this.state.user=name; localStorage.setItem('beanUser',name); userDisplay.innerText=name} this.navigate('view-lobby')},
-navigate(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(id).classList.add('active'); this.state.currentView=id; document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); if(id==='view-lobby') document.querySelectorAll('.nav-item')[0].classList.add('active'); appContainer.scrollTop=0; this.updateMusicForView()},
-renderTables(){const vibes=[{name:'Quiet Corner',class:'vibe-quiet',icon:'🤫',mood:'quiet'},{name:'Tech Hub',class:'vibe-tech',icon:'💻',mood:'tech'},{name:'Music Lounge',class:'vibe-music',icon:'🎵',mood:'music'},{name:'Creative Studio',class:'vibe-quiet',icon:'🎨',mood:'creative'},{name:'Deep Work',class:'vibe-tech',icon:'🧠',mood:'focus'},{name:'Casual Chat',class:'vibe-music',icon:'☕',mood:'cafe'},{name:'Video Edit',class:'vibe-tech',icon:'🎬',mood:'edit'},{name:'Prompt Lab',class:'vibe-quiet',icon:'🪄',mood:'lab'}];
-tablesGrid.innerHTML=vibes.map((v,i)=>`<div class="table-seat ${v.class}" onclick="app.openTable(${i}, '${v.name}', '${v.mood}')"><span class="table-icon">${v.icon}</span><strong>${v.name}</strong><span>Table ${i+1}</span></div>`).join('')},
-openTable(i,name,mood){this.state.currentTable=i; this.state.currentMood=mood; tableHeader.innerText=`${name} · Table ${i+1}`; tableMessages.innerHTML='<div class="message">Welcome to this table. The vibe is warm. ☕</div>'; this.navigate('view-table-chat')},
-getCtx(){return this._ctx||(this._ctx=new (window.AudioContext||window.webkitAudioContext)())},
-playMessageSound(){const c=this.getCtx(); const r=c.state==='suspended'?c.resume():Promise.resolve(); r.then(()=>{const t=c.currentTime; const g=c.createGain(); g.connect(c.destination); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(.4,t+.01); g.gain.exponentialRampToValueAtTime(.0001,t+.8); const o=c.createOscillator(); o.type='sine'; o.frequency.setValueAtTime(1200,t); o.connect(g); o.start(t); o.stop(t+.8)})},
-sendMessage(type){const input=type==='floor'?floorInput:tableInput; const box=type==='floor'?floorMessages:tableMessages; const text=input.value.trim(); if(!text)return; this.playMessageSound(); const d=document.createElement('div'); d.className='message mine'; d.innerText=text; box.appendChild(d); input.value=''; box.scrollTop=box.scrollHeight; if(this.state.hostessReplies){setTimeout(()=>{const r=document.createElement('div'); r.className='message'; r.innerText='☕ '+this.generateReply(text); box.appendChild(r); box.scrollTop=box.scrollHeight},1200+Math.random()*1000)}},
-generateReply(){const a=["That's interesting, tell me more!","I love that vibe ☕","Can you prompt me about that?","Sounds like a great project 🚀","The coffee is warm here, keep talking","What got you into that?","Very cool! How's it going?"]; return a[Math.floor(Math.random()*a.length)]},
-startAmbientMusic(){const c=this.getCtx(); const r=c.state==='suspended'?c.resume():Promise.resolve(); r.then(()=>{this.stopAmbientMusic(true); this._nodes=[]; const master=c.createGain(); master.gain.value=this.state.volume*0.6; master.connect(c.destination); this._ambientMaster=master;
-// --- Real LoFi Track (royalty‑free placeholder URL) ---
-const audio=new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=lofi-study-112191.mp3');
-audio.loop=true; audio.crossOrigin='anonymous'; const src=c.createMediaElementSource(audio); const ag=c.createGain(); ag.gain.value=.7; src.connect(ag); ag.connect(master); audio.play(); this._nodes.push({type:'media',node:audio});
-// --- Coffee shop crowd murmur (brown noise) ---
-const sr=c.sampleRate; const buf=c.createBuffer(1,sr*2,sr); const data=buf.getChannelData(0); let last=0; for(let i=0;i<data.length;i++){const w=Math.random()*2-1; data[i]=(last+.02*w)/1.02; last=data[i]; data[i]*=3.5}
-const noise=c.createBufferSource(); noise.buffer=buf; noise.loop=true; const nf=c.createBiquadFilter(); nf.type='lowpass'; nf.frequency.value=500; const ng=c.createGain(); ng.gain.value=.05; noise.connect(nf); nf.connect(ng); ng.connect(master); noise.start(); this._nodes.push({type:'node',node:noise});
-// --- Table vibe layer ---
-this.addVibeLayer(this.state.currentMood||'cafe', master, c);
-})},
-addVibeLayer(mood, master, c){const g=c.createGain(); g.gain.value=.25; g.connect(master); if(mood==='quiet'){const o=c.createOscillator(); o.type='sine'; o.frequency.value=196; o.connect(g); o.start(); this._nodes.push({type:'node',node:o})}
-else if(mood==='tech'){const o=c.createOscillator(); o.type='square'; o.frequency.value=110; o.connect(g); o.start(); this._nodes.push({type:'node',node:o})}
-else if(mood==='music'){const o=c.createOscillator(); o.type='triangle'; o.frequency.value=220; o.connect(g); o.start(); this._nodes.push({type:'node',node:o})}
-else{const o=c.createOscillator(); o.type='sine'; o.frequency.value=164.81; o.connect(g); o.start(); this._nodes.push({type:'node',node:o})}},
-stopAmbientMusic(silent){if(this._ambientMaster&&!silent){const c=this.getCtx(); this._ambientMaster.gain.linearRampToValueAtTime(0,c.currentTime+1)} setTimeout(()=>{(this._nodes||[]).forEach(x=>{try{x.type==='media'?x.node.pause():x.node.stop()}catch(e){}}); this._nodes=[]; this._ambientMaster=null}, silent?0:1200)},
-updateMusicForView(){if(!this.state.music)return; this.startAmbientMusic()},
-toggleMusic(){this.state.music=!this.state.music; localStorage.setItem('beanMusic',this.state.music); this.updateToggleUI(); if(this.state.music){this.startAmbientMusic(); this.showToast('🎵 Ambient music started')} else {this.stopAmbientMusic(); this.showToast('🔇 Music paused')}},
-toggleHostess(){this.state.hostessReplies=!this.state.hostessReplies; localStorage.setItem('beanHostess',this.state.hostessReplies); this.updateToggleUI(); this.showToast(this.state.hostessReplies?'👩‍🦱 Hostess replies ON':'🤫 Hostess replies OFF')},
-toggleLockFromSettings(){this.state.locked=!this.state.locked; localStorage.setItem('beanLock',this.state.locked); this.updateLockUI(); this.updateToggleUI(); this.showToast(this.state.locked?'🔒 Name locked':'🔓 Name unlocked')},
-openSettings(){settingsModal.classList.add('active')}, closeSettings(){settingsModal.classList.remove('active')},
-showToast(m){const e=document.querySelector('.toast'); if(e)e.remove(); const t=document.createElement('div'); t.className='toast'; t.innerText=m; document.body.appendChild(t); setTimeout(()=>t.remove(),2000)},
-clearData(){if(confirm('Reset all data and name? This cannot be undone.')){localStorage.clear(); location.reload()}}
-};
-const $=id=>document.getElementById(id);
-const usernameInput=$("username-input"), userDisplay=$("user-display"), lockStatus=$("lock-status"), toggleLock=$("toggle-lock"), specialText=$("special-text"), tablesGrid=$("tables-grid"), tableHeader=$("table-header"), tableMessages=$("table-messages"), floorMessages=$("floor-messages"), floorInput=$("floor-input"), tableInput=$("table-input"), settingsModal=$("settings-modal"), hostessToggle=$("hostess-toggle"), musicToggle=$("music-toggle"), lockToggle=$("lock-toggle"), musicBtn=$("music-btn"), volumeSlider=$("volume-slider"), appContainer=$("app-container");
+const app={state:{user:'',locked:false,music:false,volume:.7},
+init(){const u=localStorage.getItem('beanUser');if(u){this.state.user=u;userDisplay.innerText=u;usernameInput.value=u}
+const m=localStorage.getItem('beanMusic');if(m==='true')this.state.music=true
+const v=localStorage.getItem('beanVolume');if(v!==null)this.state.volume=Number(v)
+volumeSlider.value=this.state.volume*100
+volumeSlider.oninput=e=>{this.state.volume=e.target.value/100;localStorage.setItem('beanVolume',this.state.volume);if(this._music)this._music.volume=this.state.volume}
+if(this.state.music){musicToggle.classList.add('active');musicBtn.classList.add('music-playing');document.addEventListener('click',()=>this.startMusic(),{once:true})}},
+navigate(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active')},
+enterShop(){const n=usernameInput.value.trim();if(!n)return;this.state.user=n;localStorage.setItem('beanUser',n);userDisplay.innerText=n;this.navigate('view-floor')},
+sendMessage(){const t=floorInput.value.trim();if(!t)return;const d=document.createElement('div');d.className='message mine';d.innerText=t;floorMessages.appendChild(d);floorInput.value='';floorMessages.scrollTop=floorMessages.scrollHeight},
+startMusic(){const audio=new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=lofi-study-112191.mp3');audio.loop=true;audio.playsInline=true;audio.volume=this.state.volume;audio.muted=false;audio.play().catch(()=>{});this._music=audio},
+stopMusic(){if(this._music){this._music.pause();this._music.currentTime=0;this._music=null}},
+toggleMusic(){this.state.music=!this.state.music;localStorage.setItem('beanMusic',this.state.music);musicToggle.classList.toggle('active',this.state.music);musicBtn.classList.toggle('music-playing',this.state.music);if(this.state.music){this.startMusic();this.toast('🎵 Ambient music started')}else{this.stopMusic();this.toast('🔇 Music paused')}},
+openSettings(){settingsModal.classList.add('active')},
+toast(m){const t=document.createElement('div');t.className='toast';t.innerText=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2000)}}
+const usernameInput=document.getElementById('username-input'),userDisplay=document.getElementById('user-display'),floorInput=document.getElementById('floor-input'),floorMessages=document.getElementById('floor-messages'),musicBtn=document.getElementById('music-btn'),musicToggle=document.getElementById('music-toggle'),settingsModal=document.getElementById('settings-modal'),volumeSlider=document.getElementById('volume-slider');
+document.getElementById('toggle-lock').onclick=()=>{};
 document.addEventListener('DOMContentLoaded',()=>app.init());
 </script>
 </body>
