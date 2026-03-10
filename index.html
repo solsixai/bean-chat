@@ -1,1228 +1,1871 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Bean Chat V6.1 ☕</title>
-    <meta name="description" content="Ronald's Coffee Shop - Always Warm">
-    <meta name="theme-color" content="#8D6E63">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <style>
-        :root {
-            --coffee-dark: #3E2723;
-            --coffee-med: #5D4037;
-            --coffee-light: #8D6E63;
-            --cream: #EFEBE9;
-            --white: #FFFFFF;
-            --accent: #D7CCC8;
-            --text-main: #3E2723;
-            --text-light: #795548;
-            --success: #4CAF50;
-            --shadow: 0 4px 12px rgba(62, 39, 35, 0.15);
-            --radius: 16px;
-            --nav-height: 70px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Bean Chat V8 ☕ Ronald's Coffee Shop</title>
+<meta name="description" content="Ronald's Coffee Shop — Always Warm">
+<meta name="theme-color" content="#6B3F2A">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --espresso:    #2C1A0E;
+  --roast:       #4A2810;
+  --coffee:      #6B3F2A;
+  --latte:       #A0674A;
+  --cream:       #F5EFE7;
+  --milk:        #FBF7F3;
+  --gold:        #C8963E;
+  --gold-light:  #E8C17A;
+  --cinnamon:    #9B4A1A;
+  --sage:        #7A9A78;
+  --blush:       #C4846A;
+  --sky:         #7BA7BC;
+  --text:        #2C1A0E;
+  --text-soft:   #7A5C48;
+  --shadow-sm:   0 2px 8px rgba(44,26,14,.12);
+  --shadow-md:   0 6px 20px rgba(44,26,14,.16);
+  --shadow-lg:   0 12px 40px rgba(44,26,14,.2);
+  --r:           16px;
+  --r-sm:        10px;
+  --nav-h:       72px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  font-family:'Lato',sans-serif;
+  background:var(--cream);
+  color:var(--text);
+  display:flex;flex-direction:column;
+  height:100vh;
+}
 
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--cream);
-            color: var(--text-main);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+/* ─── HEADER ─── */
+header{
+  background:var(--espresso);
+  padding:.85rem 1.2rem;
+  display:flex;justify-content:space-between;align-items:center;
+  flex-shrink:0;
+  box-shadow:0 2px 12px rgba(0,0,0,.3);
+  z-index:20;
+}
+.brand{
+  font-family:'Playfair Display',serif;
+  font-size:1.3rem;color:var(--gold-light);
+  display:flex;align-items:center;gap:8px;letter-spacing:.3px;
+}
+.brand-sub{font-size:.65rem;color:var(--latte);font-family:'Lato',sans-serif;letter-spacing:1.5px;text-transform:uppercase;display:block;line-height:1}
+#user-display{
+  font-size:.85rem;font-weight:700;color:var(--cream);
+  display:flex;align-items:center;gap:6px;
+}
+#user-avatar-display{font-size:1.4rem;line-height:1}
+.live-dot{width:7px;height:7px;background:#4CAF50;border-radius:50%;display:inline-block;animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.3)}}
 
-        /* --- Header --- */
-        header {
-            background: var(--white);
-            padding: 1rem;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            z-index: 10;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-        }
-        .brand { 
-            font-weight: 700; 
-            font-size: 1.2rem; 
-            color: var(--coffee-med); 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-        }
-        .status-dot { 
-            width: 8px; 
-            height: 8px; 
-            background: var(--success); 
-            border-radius: 50%; 
-            display: inline-block; 
-        }
-        #user-display {
-            font-size: 0.9rem; 
-            font-weight: 600;
-            color: var(--text-light);
-        }
-        
-        /* --- Main Content Area --- */
-        main {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1rem;
-            position: relative;
-            scroll-behavior: smooth;
-        }
+/* ─── MAIN ─── */
+main{flex:1;overflow-y:auto;padding:1rem;position:relative;scroll-behavior:smooth}
 
-        /* --- Views (Screens) --- */
-        .view { 
-            display: none; 
-            animation: fadeIn 0.4s ease; 
-            width: 100%;
-        }
-        .view.active { display: block; }
-        @keyframes fadeIn { 
-            from { opacity: 0; transform: translateY(10px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
+/* ─── VIEWS ─── */
+.view{display:none;animation:fadeUp .4s ease;width:100%}
+.view.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
-        /* --- Welcome & Lock --- */
-        .welcome-card {
-            background: var(--white);
-            padding: 2rem;
-            border-radius: var(--radius);
-            text-align: center;
-            box-shadow: var(--shadow);
-            margin: 2rem auto;
-            max-width: 400px;
-        }
-        .welcome-card h2 { margin-bottom: 0.5rem; color: var(--coffee-med); }
-        .welcome-card p { color: var(--text-light); margin-bottom: 1.5rem; }
-        input[type="text"] {
-            width: 100%;
-            padding: 14px;
-            border: 2px solid var(--accent);
-            border-radius: 12px;
-            font-size: 1rem;
-            margin: 1rem 0;
-            outline: none;
-            transition: border 0.3s;
-            font-family: inherit;
-        }
-        input[type="text"]:focus { border-color: var(--coffee-light); }
-        input[type="text"]:disabled { 
-            background: #f5f5f5; 
-            color: var(--text-light);
-            cursor: not-allowed;
-        }
-        .btn {
-            background: var(--coffee-med);
-            color: var(--white);
-            border: none;
-            padding: 14px 24px;
-            border-radius: 50px;
-            font-size: 1rem;
-            cursor: pointer;
-            width: 100%;
-            font-weight: 600;
-            transition: transform 0.2s, background 0.3s;
-            font-family: inherit;
-        }
-        .btn:active { transform: scale(0.98); }
-        .btn:hover { background: var(--coffee-dark); }
-        .btn-secondary { 
-            background: transparent; 
-            color: var(--coffee-light); 
-            border: 1px solid var(--coffee-light); 
-            width: auto;
-            padding: 6px 12px;
-            font-size: 0.85rem;
-        }
-        .btn-secondary:hover { background: var(--accent); }
-        .lock-control { 
-            display: flex; 
-            justify-content: center; 
-            align-items: center;
-            gap: 10px; 
-            margin-top: 10px; 
-            font-size: 0.9rem; 
-            color: var(--text-light); 
-        }
+/* ─── WELCOME ─── */
+.welcome-wrap{
+  min-height:calc(100vh - 160px);
+  display:flex;align-items:center;justify-content:center;
+  padding:1rem;
+}
+.welcome-card{
+  background:var(--milk);
+  border-radius:var(--r);
+  padding:2.5rem 2rem;
+  box-shadow:var(--shadow-lg);
+  max-width:420px;width:100%;text-align:center;
+  border:1px solid rgba(200,150,62,.2);
+}
+.welcome-steam{font-size:3rem;display:block;margin-bottom:.5rem;animation:steam 3s ease-in-out infinite}
+@keyframes steam{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-8px) rotate(2deg)}}
+.welcome-card h2{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--roast);margin-bottom:.3rem}
+.welcome-card p{color:var(--text-soft);margin-bottom:1.5rem;font-size:.95rem}
+.input-field{
+  width:100%;padding:13px 16px;
+  border:2px solid #E0D6CC;border-radius:50px;
+  font-size:1rem;font-family:'Lato',sans-serif;
+  outline:none;transition:border .3s,box-shadow .3s;
+  background:#fff;color:var(--text);
+  margin-bottom:.75rem;
+}
+.input-field:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,150,62,.15)}
+.btn{
+  background:var(--coffee);color:#fff;
+  border:none;padding:14px 24px;border-radius:50px;
+  font-size:1rem;cursor:pointer;width:100%;
+  font-weight:700;font-family:'Lato',sans-serif;
+  transition:transform .2s,background .3s,box-shadow .3s;
+  box-shadow:var(--shadow-sm);
+}
+.btn:hover{background:var(--roast);box-shadow:var(--shadow-md)}
+.btn:active{transform:scale(.97)}
+.btn-gold{background:var(--gold);color:var(--espresso)}
+.btn-gold:hover{background:var(--gold-light)}
+.btn-outline{background:transparent;color:var(--coffee);border:2px solid var(--coffee);width:auto;padding:8px 18px;font-size:.85rem}
+.btn-outline:hover{background:var(--cream)}
+.lock-row{display:flex;justify-content:center;align-items:center;gap:8px;font-size:.85rem;color:var(--text-soft);margin:.5rem 0}
 
-        /* --- Hostess Jane (Lobby) --- */
-        .jane-container {
-            text-align: center;
-            padding: 2rem 0;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-        .jane-avatar { 
-            font-size: 4rem; 
-            margin-bottom: 1rem; 
-            display: block; 
-            animation: bounce 2s infinite; 
-        }
-        @keyframes bounce { 
-            0%, 100% { transform: translateY(0); } 
-            50% { transform: translateY(-10px); } 
-        }
-        .choice-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 1rem; 
-            margin-top: 2rem; 
-        }
-        .choice-card {
-            background: var(--white);
-            padding: 1.5rem;
-            border-radius: var(--radius);
-            text-align: center;
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: border 0.3s, transform 0.2s;
-        }
-        .choice-card:hover { 
-            border-color: var(--coffee-light); 
-            transform: translateY(-2px);
-        }
-        .choice-icon { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
-        .choice-card strong { display: block; margin-bottom: 0.25rem; color: var(--coffee-med); }
-        .choice-card div { font-size: 0.85rem; color: var(--text-light); }
+/* ─── AVATAR CREATOR ─── */
+.avatar-creator{
+  background:var(--milk);border-radius:var(--r);
+  padding:2rem 1.5rem;box-shadow:var(--shadow-lg);
+  max-width:480px;margin:0 auto;text-align:center;
+  border:1px solid rgba(200,150,62,.2);
+}
+.avatar-creator h2{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--roast);margin-bottom:.25rem}
+.avatar-creator p{color:var(--text-soft);margin-bottom:1.5rem;font-size:.9rem}
+.avatar-preview{
+  font-size:4.5rem;display:inline-block;margin-bottom:1rem;
+  background:var(--cream);border-radius:50%;width:90px;height:90px;
+  line-height:90px;box-shadow:var(--shadow-md);
+  border:3px solid var(--gold-light);
+  animation:avatarBob 3s ease-in-out infinite;
+}
+@keyframes avatarBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.avatar-section{margin-bottom:1.2rem;text-align:left}
+.avatar-section label{font-weight:700;font-size:.8rem;color:var(--text-soft);text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:.6rem}
+.avatar-grid{display:flex;flex-wrap:wrap;gap:.5rem}
+.avatar-opt{
+  font-size:1.6rem;cursor:pointer;padding:.3rem;
+  border-radius:8px;border:2px solid transparent;
+  transition:border .2s,transform .15s;line-height:1;
+}
+.avatar-opt:hover{border-color:var(--gold-light);transform:scale(1.1)}
+.avatar-opt.selected{border-color:var(--gold);background:rgba(200,150,62,.1);transform:scale(1.1)}
+.avatar-name-row{display:grid;grid-template-columns:1fr auto;gap:.5rem;align-items:center;margin-top:.5rem}
 
-        /* --- Tables Grid --- */
-        .tables-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .table-seat {
-            background: var(--white);
-            padding: 1.5rem;
-            border-radius: var(--radius);
-            text-align: center;
-            box-shadow: var(--shadow);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.3s;
-        }
-        .table-seat:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(62, 39, 35, 0.2);
-        }
-        .table-seat::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 4px;
-            background: var(--coffee-light);
-        }
-        .table-seat.vibe-quiet::before { background: #90A4AE; }
-        .table-seat.vibe-tech::before { background: #5C6BC0; }
-        .table-seat.vibe-music::before { background: #EC407A; }
-        .table-seat .table-icon { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
-        .table-seat strong { display: block; color: var(--coffee-med); margin-bottom: 0.25rem; }
-        .table-seat span { font-size: 0.85rem; color: var(--text-light); }
+/* ─── SHOP MAP / LOBBY ─── */
+.lobby-hero{
+  text-align:center;padding:1.5rem 0 .5rem;
+}
+.lobby-hero h2{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--roast)}
+.lobby-hero p{color:var(--text-soft);font-size:.9rem;margin-top:.25rem}
+.daily-card{
+  background:linear-gradient(135deg,var(--roast),var(--espresso));
+  color:#fff;padding:1.1rem 1.3rem;border-radius:var(--r);
+  margin:.75rem auto 1.25rem;max-width:600px;
+  box-shadow:var(--shadow-md);position:relative;overflow:hidden;
+}
+.daily-card::before{
+  content:'☕';position:absolute;right:1rem;top:50%;transform:translateY(-50%);
+  font-size:3rem;opacity:.1;
+}
+.daily-card h4{font-size:.7rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold-light);margin-bottom:.3rem}
+.daily-card p{font-size:.95rem;opacity:.95;line-height:1.5}
 
-        /* --- Chat Interface --- */
-        .chat-container { 
-            display: flex; 
-            flex-direction: column; 
-            height: 100%;
-            max-width: 800px;
-            margin: 0 auto;
-            width: 100%;
-        }
-        .chat-header {
-            text-align: center; 
-            color: var(--text-light); 
-            padding: 10px 0;
-            border-bottom: 1px solid var(--accent);
-            margin-bottom: 10px;
-            flex-shrink: 0;
-        }
-        .messages { 
-            flex: 1; 
-            overflow-y: auto; 
-            padding: 1rem 0;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .message {
-            background: var(--white);
-            padding: 12px 16px;
-            border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            max-width: min(85%, 600px);
-            width: fit-content;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            line-height: 1.5;
-            font-size: 0.95rem;
-        }
-        .message.mine {
-            background: var(--coffee-light);
-            color: var(--white);
-            align-self: flex-end;
-            margin-left: auto;
-        }
-        .input-area {
-            display: flex;
-            gap: 10px;
-            padding: 12px 0;
-            border-top: 1px solid var(--accent);
-            flex-shrink: 0;
-        }
-        .input-area input {
-            flex: 1;
-            margin: 0;
-            border-radius: 25px;
-            padding: 12px 18px;
-            background: #fff;
-            color: #3E2723;
-            font-size: 1rem;
-            outline: none;
-            font-family: inherit;
-        }
-        .input-area .btn {
-            width: 50px;
-            height: 50px;
-            padding: 0;
-            border-radius: 50%;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-        }
+/* Shop Map Grid */
+.shop-map{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:.85rem;
+  max-width:640px;margin:0 auto;
+}
+.room-card{
+  background:var(--milk);
+  border-radius:var(--r);
+  padding:1.4rem 1rem;
+  text-align:center;
+  cursor:pointer;
+  border:2px solid transparent;
+  box-shadow:var(--shadow-sm);
+  transition:border .25s,transform .2s,box-shadow .25s;
+  position:relative;overflow:hidden;
+}
+.room-card::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:4px;
+  background:var(--latte);
+  transition:height .25s;
+}
+.room-card:hover{border-color:var(--gold-light);transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.room-card:hover::before{height:5px}
+.room-card.main-floor::before{background:var(--latte)}
+.room-card.bakery-room::before{background:#D4915A}
+.room-card.lounge-room::before{background:var(--sky)}
+.room-card.counter-room::before{background:var(--blush)}
+.room-card.origins-room::before{background:var(--sage)}
+.room-card.news-room::before{background:#8B7355}
+.room-card.memorial-room::before{background:var(--gold)}
+.room-card.tables-room::before{background:var(--cinnamon)}
+.room-icon{font-size:2.2rem;display:block;margin-bottom:.5rem}
+.room-card strong{display:block;color:var(--roast);font-size:1rem;margin-bottom:.2rem}
+.room-card span{font-size:.78rem;color:var(--text-soft)}
+.room-wide{grid-column:1/-1}
 
-        /* --- Daily Special (Prompting) --- */
-        .daily-special {
-            background: linear-gradient(135deg, var(--coffee-med), var(--coffee-dark));
-            color: var(--white);
-            padding: 1.25rem;
-            border-radius: var(--radius);
-            margin: 0 auto 1.5rem auto;
-            text-align: center;
-            position: relative;
-            max-width: 600px;
-            box-shadow: var(--shadow);
-        }
-        .special-icon { 
-            position: absolute; 
-            top: 12px; 
-            right: 12px; 
-            font-size: 1.2rem; 
-            opacity: 0.8; 
-        }
-        .daily-special h3 { margin-bottom: 0.5rem; font-size: 1.1rem; }
-        .daily-special p { font-size: 0.95rem; opacity: 0.95; line-height: 1.4; }
+/* ─── CHAT INTERFACE ─── */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 160px);max-width:760px;margin:0 auto;width:100%}
+.chat-head{
+  background:var(--milk);border-radius:var(--r) var(--r) 0 0;
+  padding:.85rem 1rem;border-bottom:1px solid #E8DDD5;
+  display:flex;align-items:center;gap:.75rem;flex-shrink:0;
+}
+.chat-head-icon{font-size:1.8rem}
+.chat-head-title{font-family:'Playfair Display',serif;font-size:1.1rem;color:var(--roast)}
+.chat-head-sub{font-size:.75rem;color:var(--text-soft)}
+.messages-area{
+  flex:1;overflow-y:auto;padding:1rem;
+  background:var(--milk);
+  display:flex;flex-direction:column;gap:8px;
+}
+.msg{
+  background:#fff;padding:11px 15px;border-radius:14px;
+  box-shadow:0 1px 3px rgba(0,0,0,.07);
+  max-width:min(82%,560px);width:fit-content;
+  word-wrap:break-word;line-height:1.5;font-size:.93rem;
+}
+.msg.mine{background:var(--coffee);color:#fff;align-self:flex-end;margin-left:auto}
+.msg.broadcast{
+  background:linear-gradient(135deg,#fff8f0,#fff3e0);
+  border-left:3px solid var(--gold-light);
+  display:flex!important;align-items:flex-start;gap:8px;
+  max-width:min(90%,600px)!important;width:auto!important;font-size:.88rem;
+}
+.bc-av{font-size:1.3rem;flex-shrink:0;margin-top:2px}
+.bc-nm{font-weight:700;font-size:.75rem;color:var(--latte);text-transform:uppercase;letter-spacing:.5px}
+.typing-dots{display:flex;align-items:center;gap:5px;padding:14px 16px;width:fit-content}
+.typing-dots span{width:7px;height:7px;background:var(--latte);border-radius:50%;animation:typeBounce 1.2s infinite ease-in-out}
+.typing-dots span:nth-child(2){animation-delay:.2s}
+.typing-dots span:nth-child(3){animation-delay:.4s}
+@keyframes typeBounce{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-6px);opacity:1}}
+.input-row{
+  display:flex;gap:.6rem;padding:.85rem;
+  background:var(--milk);border-top:1px solid #E8DDD5;
+  border-radius:0 0 var(--r) var(--r);flex-shrink:0;
+}
+.input-row .input-field{margin:0;border-radius:25px;padding:10px 16px}
+.send-btn{
+  width:46px;height:46px;min-width:46px;
+  border-radius:50%;background:var(--coffee);color:#fff;
+  border:none;cursor:pointer;font-size:1rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s,transform .15s;box-shadow:var(--shadow-sm);
+}
+.send-btn:hover{background:var(--roast)}
+.send-btn:active{transform:scale(.94)}
+.back-link{
+  display:inline-flex;align-items:center;gap:.4rem;
+  color:var(--text-soft);font-size:.85rem;cursor:pointer;
+  margin-bottom:.75rem;padding:.4rem .8rem;
+  border-radius:50px;background:var(--milk);box-shadow:var(--shadow-sm);
+  border:1px solid #E8DDD5;transition:background .2s;
+}
+.back-link:hover{background:#fff}
 
-        /* --- Settings Modal --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(62, 39, 35, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            backdrop-filter: blur(4px);
-        }
-        .modal-overlay.active { display: flex; }
-        .modal-content {
-            background: var(--white);
-            padding: 2rem;
-            border-radius: var(--radius);
-            width: 90%;
-            max-width: 400px;
-            box-shadow: var(--shadow);
-            animation: slideUp 0.3s ease;
-        }
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-        .modal-header h3 { color: var(--coffee-med); }
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-light);
-        }
-        .setting-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--accent);
-        }
-        .setting-item:last-child { border-bottom: none; }
-        .setting-label { font-weight: 600; color: var(--text-main); }
-        .setting-desc { font-size: 0.85rem; color: var(--text-light); margin-top: 4px; }
-        
-        /* Toggle Switch */
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 28px;
-            background: var(--accent);
-            border-radius: 14px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .toggle-switch.active { background: var(--success); }
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 22px;
-            height: 22px;
-            background: var(--white);
-            border-radius: 50%;
-            transition: transform 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        .toggle-switch.active::after { transform: translateX(22px); }
+/* ─── BAKERY ─── */
+.bakery-wrap{max-width:600px;margin:0 auto}
+.bakery-header{text-align:center;margin-bottom:1.25rem}
+.bakery-header h2{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--roast)}
+.bakery-header p{color:var(--text-soft);font-size:.9rem}
+.menu-board{
+  background:var(--espresso);border-radius:var(--r);
+  padding:1.5rem;margin-bottom:1.25rem;
+  box-shadow:var(--shadow-lg);
+}
+.menu-board h3{font-family:'Playfair Display',serif;color:var(--gold-light);text-align:center;font-size:1.2rem;margin-bottom:1rem;letter-spacing:.5px}
+.menu-items{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.menu-item{
+  background:rgba(255,255,255,.05);border-radius:10px;
+  padding:.85rem .75rem;cursor:pointer;
+  border:1px solid rgba(200,150,62,.15);
+  transition:background .2s,transform .15s;text-align:center;
+}
+.menu-item:hover{background:rgba(200,150,62,.1);transform:translateY(-2px)}
+.menu-item .item-icon{font-size:1.8rem;display:block;margin-bottom:.3rem}
+.menu-item .item-name{color:var(--gold-light);font-weight:700;font-size:.85rem;display:block}
+.menu-item .item-desc{color:rgba(255,255,255,.6);font-size:.72rem;margin-top:.2rem;display:block}
+.menu-item .item-price{color:var(--gold);font-weight:700;font-size:.8rem;margin-top:.3rem;display:block}
+.item-detail-modal{
+  position:fixed;inset:0;background:rgba(44,26,14,.7);
+  backdrop-filter:blur(6px);z-index:200;
+  display:none;align-items:center;justify-content:center;padding:1rem;
+}
+.item-detail-modal.active{display:flex;animation:fadeUp .3s ease}
+.item-detail-card{
+  background:var(--milk);border-radius:var(--r);
+  padding:2rem;max-width:380px;width:100%;text-align:center;
+  box-shadow:var(--shadow-lg);
+}
+.item-detail-card .big-icon{font-size:4rem;display:block;margin-bottom:.75rem}
+.item-detail-card h3{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--roast);margin-bottom:.5rem}
+.item-detail-card p{color:var(--text-soft);line-height:1.6;margin-bottom:.5rem}
+.item-detail-card .tag{background:var(--cream);color:var(--cinnamon);padding:.3rem .8rem;border-radius:50px;font-size:.75rem;font-weight:700;display:inline-block}
 
-        /* --- Bottom Nav --- */
-        nav {
-            height: var(--nav-height);
-            background: var(--cream); /* UPDATED: Matches page background */
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            border-top: 1px solid var(--accent); /* Soft border */
-            padding-bottom: env(safe-area-inset-bottom);
-            flex-shrink: 0;
-        }
-        .nav-item {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            color: var(--text-light);
-            cursor: pointer;
-            position: relative;
-            padding: 10px;
-            transition: color 0.3s;
-        }
-        .nav-item:hover { color: var(--coffee-med); }
-        .nav-item.active { color: var(--coffee-med); }
-        .nav-item.active::after {
-            content: '';
-            position: absolute;
-            bottom: 4px; left: 50%; transform: translateX(-50%);
-            width: 5px; height: 5px;
-            background: var(--coffee-med);
-            border-radius: 50%;
-        }
-        
-        @keyframes pulse { 
-            0% { opacity: 1; transform: scale(1); } 
-            50% { opacity: 0.5; transform: scale(1.2); } 
-            100% { opacity: 1; transform: scale(1); } 
-        }
+/* ─── LOUNGE ─── */
+.lounge-wrap{max-width:640px;margin:0 auto}
+.lounge-header{text-align:center;margin-bottom:1.25rem}
+.lounge-header h2{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--roast)}
+.jukebox{
+  background:linear-gradient(135deg,var(--espresso),#1a0f06);
+  border-radius:var(--r);padding:1.5rem;margin-bottom:1rem;
+  box-shadow:var(--shadow-lg);text-align:center;
+  border:1px solid rgba(200,150,62,.2);
+}
+.jukebox h3{font-family:'Playfair Display',serif;color:var(--gold-light);margin-bottom:.75rem;font-size:1.1rem}
+.now-playing{
+  background:rgba(255,255,255,.06);border-radius:10px;
+  padding:1rem;margin-bottom:.75rem;
+}
+.np-label{font-size:.7rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--gold);margin-bottom:.4rem}
+.np-track{color:#fff;font-size:1rem;font-weight:700;margin-bottom:.2rem}
+.np-artist{color:rgba(255,255,255,.6);font-size:.8rem}
+.vinyl{
+  font-size:2.5rem;display:inline-block;
+  animation:spin-vinyl 4s linear infinite;
+}
+@keyframes spin-vinyl{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.jukebox-controls{display:flex;justify-content:center;gap:.75rem}
+.jk-btn{
+  background:rgba(200,150,62,.15);color:var(--gold-light);
+  border:1px solid rgba(200,150,62,.3);
+  padding:.5rem 1.2rem;border-radius:50px;
+  cursor:pointer;font-size:.85rem;transition:background .2s;
+  font-family:'Lato',sans-serif;
+}
+.jk-btn:hover{background:rgba(200,150,62,.3)}
+.track-list{
+  background:var(--milk);border-radius:var(--r);
+  padding:1rem;margin-bottom:1rem;box-shadow:var(--shadow-sm);
+}
+.track-list h4{font-weight:700;color:var(--roast);margin-bottom:.75rem;font-size:.9rem;text-transform:uppercase;letter-spacing:.5px}
+.track-row{
+  display:flex;align-items:center;gap:.75rem;padding:.6rem 0;
+  border-bottom:1px solid var(--cream);cursor:pointer;transition:background .15s;
+  border-radius:8px;padding:.5rem .5rem;
+}
+.track-row:last-child{border-bottom:none}
+.track-row:hover{background:var(--cream)}
+.track-row.playing{color:var(--coffee);font-weight:700}
+.track-num{font-size:.75rem;color:var(--text-soft);width:18px;text-align:right;flex-shrink:0}
+.track-info{flex:1}
+.track-name{font-size:.88rem;color:var(--text)}
+.track-mood{font-size:.72rem;color:var(--text-soft)}
+.track-dur{font-size:.75rem;color:var(--text-soft)}
+.mood-badge{
+  padding:.25rem .6rem;border-radius:50px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+}
+.mood-jazz{background:#e8f4f8;color:var(--sky)}
+.mood-lo-fi{background:#f0ece8;color:var(--latte)}
+.mood-soul{background:#fdeee8;color:var(--cinnamon)}
+.mood-bossa{background:#edf5ec;color:var(--sage)}
 
-        /* --- Footer (Memorial) --- */
-        footer {
-            text-align: center;
-            font-size: 0.75rem;
-            color: var(--text-light);
-            padding: 12px;
-            background: var(--cream);
-            opacity: 0.8;
-            flex-shrink: 0;
-        }
+/* ─── COFFEE ORIGINS ─── */
+.origins-wrap{max-width:640px;margin:0 auto}
+.origins-header{text-align:center;margin-bottom:1.25rem}
+.origins-header h2{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--roast)}
+.origins-header p{color:var(--text-soft);font-size:.9rem}
+.globe-banner{
+  background:linear-gradient(135deg,var(--sage),#4A6E47);
+  border-radius:var(--r);padding:1.2rem;text-align:center;
+  color:#fff;margin-bottom:1rem;box-shadow:var(--shadow-md);
+}
+.globe-banner h3{font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:.25rem}
+.globe-banner p{font-size:.85rem;opacity:.9}
+.country-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.country-card{
+  background:var(--milk);border-radius:var(--r);
+  padding:1.2rem 1rem;cursor:pointer;
+  box-shadow:var(--shadow-sm);border:2px solid transparent;
+  transition:border .2s,transform .2s,box-shadow .2s;
+  text-align:center;
+}
+.country-card:hover{border-color:var(--sage);transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.country-flag{font-size:2.2rem;display:block;margin-bottom:.4rem}
+.country-name{font-weight:700;color:var(--roast);font-size:.95rem;display:block}
+.country-roast{font-size:.72rem;color:var(--text-soft);display:block;margin-top:.15rem}
+.flavor-tags{display:flex;flex-wrap:wrap;justify-content:center;gap:.25rem;margin-top:.5rem}
+.flavor-tag{background:var(--cream);color:var(--cinnamon);padding:.15rem .5rem;border-radius:50px;font-size:.65rem;font-weight:700}
+.country-modal{
+  position:fixed;inset:0;background:rgba(44,26,14,.75);
+  backdrop-filter:blur(8px);z-index:200;
+  display:none;align-items:center;justify-content:center;padding:1rem;
+}
+.country-modal.active{display:flex;animation:fadeUp .35s ease}
+.country-modal-card{
+  background:var(--milk);border-radius:var(--r);
+  padding:2rem 1.5rem;max-width:440px;width:100%;
+  box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto;
+}
+.country-modal-flag{font-size:3.5rem;display:block;text-align:center;margin-bottom:.5rem}
+.country-modal-card h2{font-family:'Playfair Display',serif;font-size:1.6rem;color:var(--roast);text-align:center;margin-bottom:.25rem}
+.country-modal-card .roast-badge{text-align:center;margin-bottom:1rem}
+.origin-fact{
+  background:var(--cream);border-radius:10px;
+  padding:1rem;margin:1rem 0;border-left:4px solid var(--sage);
+}
+.origin-fact h4{font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--sage);margin-bottom:.4rem}
+.origin-fact p{font-size:.9rem;color:var(--text);line-height:1.6}
+.origin-story{font-size:.9rem;color:var(--text-soft);line-height:1.7;margin-bottom:.75rem}
+.loading-brew{
+  text-align:center;padding:1.5rem;
+  color:var(--text-soft);font-size:.9rem;
+}
+.brew-spinner{
+  width:28px;height:28px;border:3px solid var(--cream);
+  border-top-color:var(--coffee);border-radius:50%;
+  animation:spin 1s linear infinite;margin:.5rem auto;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.flavor-section{margin-top:1rem}
+.flavor-section h4{font-weight:700;color:var(--roast);margin-bottom:.5rem;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px}
+.flavor-bar-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem}
+.flavor-bar-label{width:70px;font-size:.78rem;color:var(--text-soft)}
+.flavor-bar-track{flex:1;background:var(--cream);border-radius:50px;height:6px}
+.flavor-bar-fill{height:6px;border-radius:50px;background:var(--sage);transition:width .8s ease}
 
-        /* --- Utilities --- */
-        .hidden { display: none !important; }
-        .brewing-loader {
-            border: 4px solid var(--accent);
-            border-top: 4px solid var(--coffee-med);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 30px auto;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+/* ─── NEWSPAPER ─── */
+.news-wrap{max-width:680px;margin:0 auto}
+.newspaper-header{
+  background:var(--espresso);color:var(--gold-light);
+  text-align:center;padding:1.2rem;border-radius:var(--r) var(--r) 0 0;
+  border-bottom:3px solid var(--gold);
+  margin-bottom:0;
+}
+.paper-title{font-family:'Playfair Display',serif;font-size:1.8rem;letter-spacing:.5px}
+.paper-sub{font-size:.7rem;text-transform:uppercase;letter-spacing:2px;color:var(--gold);margin-top:.2rem}
+.paper-date{font-size:.75rem;color:rgba(255,255,255,.5);margin-top:.2rem}
+.paper-divider{border:none;border-top:1px solid var(--gold-light);opacity:.3;margin:.5rem 0}
+.news-body{
+  background:var(--milk);border-radius:0 0 var(--r) var(--r);
+  padding:1.25rem;box-shadow:var(--shadow-md);
+}
+.news-section{margin-bottom:1.5rem}
+.news-section h4{
+  font-family:'Playfair Display',serif;font-size:1rem;
+  color:var(--roast);border-bottom:2px solid var(--gold);
+  padding-bottom:.4rem;margin-bottom:.85rem;
+  display:flex;align-items:center;gap:.5rem;
+}
+.news-card{
+  background:#fff;border-radius:10px;
+  padding:1rem;margin-bottom:.75rem;
+  box-shadow:0 1px 4px rgba(0,0,0,.07);
+  border-left:4px solid var(--cream);
+  cursor:pointer;transition:border-color .2s,transform .15s;
+}
+.news-card:hover{border-left-color:var(--gold);transform:translateX(3px)}
+.news-card h5{font-size:.92rem;color:var(--roast);margin-bottom:.3rem;line-height:1.4}
+.news-card p{font-size:.82rem;color:var(--text-soft);line-height:1.5}
+.news-card .news-tag{font-size:.68rem;color:var(--latte);font-weight:700;text-transform:uppercase;margin-bottom:.3rem;display:block;letter-spacing:.5px}
+.trivia-card{
+  background:linear-gradient(135deg,#fff8ee,#fff3e0);
+  border-radius:var(--r);padding:1.25rem;
+  box-shadow:var(--shadow-sm);border:2px solid var(--gold-light);text-align:center;
+}
+.trivia-q{font-size:.95rem;color:var(--text);margin-bottom:.75rem;font-weight:700;line-height:1.5}
+.trivia-ans{
+  background:var(--espresso);color:var(--gold-light);
+  padding:.85rem;border-radius:10px;font-size:.88rem;
+  display:none;margin-top:.5rem;line-height:1.5;
+}
+.trivia-ans.revealed{display:block;animation:fadeUp .3s ease}
+.this-day-card{
+  background:var(--cream);border-radius:10px;padding:1rem;
+  font-size:.88rem;color:var(--text);line-height:1.6;
+  border-left:4px solid var(--cinnamon);
+}
 
-        /* --- Toast Notification --- */
-        .toast {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--coffee-dark);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 0.9rem;
-            z-index: 100;
-            animation: fadeIn 0.3s ease;
-            white-space: nowrap;
-        }
+/* ─── RONALD'S CORNER / MEMORIAL ─── */
+.memorial-wrap{max-width:600px;margin:0 auto;text-align:center}
+.memorial-hero{
+  background:linear-gradient(180deg,var(--espresso) 0%,#3A1F0A 100%);
+  border-radius:var(--r);padding:2.5rem 1.5rem 2rem;
+  margin-bottom:1rem;box-shadow:var(--shadow-lg);
+  position:relative;overflow:hidden;
+}
+.memorial-hero::before{
+  content:'☕';position:absolute;font-size:8rem;opacity:.05;
+  bottom:-1rem;right:-1rem;transform:rotate(-15deg);
+}
+.memorial-photo{
+  width:90px;height:90px;border-radius:50%;
+  background:rgba(200,150,62,.2);border:3px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-size:3.5rem;margin:0 auto 1rem;
+}
+.memorial-hero h2{font-family:'Playfair Display',serif;color:var(--gold-light);font-size:1.8rem;margin-bottom:.25rem}
+.memorial-hero .dates{font-size:.8rem;color:rgba(255,255,255,.5);letter-spacing:1px}
+.memorial-hero .tagline{color:rgba(255,255,255,.8);font-size:.95rem;margin-top:.75rem;font-style:italic;line-height:1.5}
+.memorial-cards{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:1rem}
+.mem-card{
+  background:var(--milk);border-radius:var(--r);
+  padding:1.25rem 1rem;box-shadow:var(--shadow-sm);text-align:center;
+  border-top:3px solid var(--gold-light);
+}
+.mem-card-icon{font-size:2rem;display:block;margin-bottom:.4rem}
+.mem-card h4{font-weight:700;color:var(--roast);font-size:.9rem;margin-bottom:.4rem}
+.mem-card p{font-size:.8rem;color:var(--text-soft);line-height:1.5}
+.quote-carousel{
+  background:var(--espresso);color:var(--gold-light);
+  border-radius:var(--r);padding:1.5rem;margin-bottom:1rem;
+  box-shadow:var(--shadow-md);font-family:'Playfair Display',serif;
+  font-style:italic;font-size:1.05rem;line-height:1.7;text-align:center;
+  position:relative;min-height:80px;
+}
+.quote-carousel::before{content:'"';font-size:3rem;opacity:.2;position:absolute;top:.5rem;left:1rem}
+.quote-attr{font-family:'Lato',sans-serif;font-size:.75rem;margin-top:.5rem;opacity:.6;font-style:normal;color:#fff}
+.memory-wall{
+  background:var(--milk);border-radius:var(--r);
+  padding:1.25rem;box-shadow:var(--shadow-sm);margin-bottom:1rem;
+  text-align:left;
+}
+.memory-wall h4{font-weight:700;color:var(--roast);margin-bottom:1rem;font-size:.95rem;display:flex;align-items:center;gap:.5rem}
+.wall-note{
+  background:linear-gradient(135deg,#fff8f0,#fff3e0);
+  border-radius:10px;padding:.85rem;margin-bottom:.6rem;
+  border-left:3px solid var(--gold-light);
+  font-size:.85rem;color:var(--text);line-height:1.5;
+  animation:fadeUp .4s ease;
+}
+.wall-note .note-author{font-size:.72rem;color:var(--latte);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.25rem;display:block}
+.wall-input-row{display:flex;gap:.5rem;margin-top:.75rem}
+.wall-input-row .input-field{margin:0;font-size:.9rem}
+.wall-btn{white-space:nowrap;width:auto;padding:.6rem 1.1rem;font-size:.85rem}
 
-        .choice-card-counter {
-            grid-column: 1 / -1;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            text-align: left;
-            padding: 1.25rem 1.5rem;
-        }
-        .choice-card-counter .choice-icon {
-            font-size: 2rem;
-            margin-bottom: 0;
-        }
-        .counter-chat-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            justify-content: center;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--accent);
-            margin-bottom: 10px;
-            flex-shrink: 0;
-        }
-        .jane-counter-avatar {
-            font-size: 1.8rem;
-            animation: bounce 2s infinite;
-            display: inline-block;
-        }
+/* ─── TABLES ─── */
+.tables-wrap{max-width:640px;margin:0 auto}
+.tables-wrap h2{font-family:'Playfair Display',serif;text-align:center;color:var(--roast);margin-bottom:.25rem;font-size:1.5rem}
+.tables-wrap p{text-align:center;color:var(--text-soft);margin-bottom:1.25rem;font-size:.9rem}
+.tables-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.85rem}
+.table-seat{
+  background:var(--milk);border-radius:var(--r);
+  padding:1.4rem 1rem;text-align:center;cursor:pointer;
+  box-shadow:var(--shadow-sm);border:2px solid transparent;
+  position:relative;overflow:hidden;
+  transition:border .2s,transform .2s,box-shadow .2s;
+}
+.table-seat::before{content:'';position:absolute;top:0;left:0;right:0;height:4px}
+.table-seat.vibe-quiet::before{background:#90A4AE}
+.table-seat.vibe-tech::before{background:#5C6BC0}
+.table-seat.vibe-music::before{background:#EC407A}
+.table-seat.vibe-creative::before{background:var(--gold)}
+.table-seat:hover{border-color:var(--gold-light);transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.table-icon{font-size:2rem;display:block;margin-bottom:.4rem}
+.table-seat strong{display:block;color:var(--roast);margin-bottom:.2rem}
+.table-seat span{font-size:.8rem;color:var(--text-soft)}
 
-        /* --- Typing Indicator --- */
-        .typing-indicator {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 14px 18px;
-            width: fit-content;
-        }
-        .typing-indicator span {
-            width: 8px;
-            height: 8px;
-            background: var(--coffee-light);
-            border-radius: 50%;
-            animation: typingBounce 1.2s infinite ease-in-out;
-        }
-        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typingBounce {
-            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-            30% { transform: translateY(-6px); opacity: 1; }
-        }
+/* ─── SETTINGS MODAL ─── */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(44,26,14,.55);
+  backdrop-filter:blur(4px);z-index:150;
+  display:none;align-items:center;justify-content:center;padding:1rem;
+}
+.modal-bg.active{display:flex;animation:fadeUp .3s ease}
+.modal-box{
+  background:var(--milk);border-radius:var(--r);
+  padding:1.75rem;max-width:400px;width:100%;
+  box-shadow:var(--shadow-lg);
+}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem}
+.modal-head h3{font-family:'Playfair Display',serif;color:var(--roast);font-size:1.2rem}
+.modal-close{background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-soft);padding:.25rem}
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:.9rem 0;border-bottom:1px solid var(--cream)}
+.setting-row:last-child{border-bottom:none}
+.setting-lbl{font-weight:700;color:var(--text);font-size:.9rem}
+.setting-desc{font-size:.78rem;color:var(--text-soft);margin-top:.2rem}
+.toggle{
+  position:relative;width:48px;height:26px;
+  background:#D5CCC4;border-radius:13px;cursor:pointer;
+  transition:background .3s;flex-shrink:0;
+}
+.toggle.on{background:var(--sage)}
+.toggle::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:20px;height:20px;background:#fff;border-radius:50%;
+  transition:transform .3s;box-shadow:0 1px 4px rgba(0,0,0,.2);
+}
+.toggle.on::after{transform:translateX(22px)}
 
-        /* --- Broadcast Messages --- */
-        .broadcast-message {
-            background: linear-gradient(135deg, #fff8f0, #fff3e0);
-            border-left: 3px solid var(--coffee-light);
-            display: flex !important;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 12px 16px;
-            max-width: min(90%, 600px) !important;
-            width: auto !important;
-            font-size: 0.9rem;
-            color: var(--text-main);
-            animation: broadcastSlide 0.5s ease;
-        }
-        @keyframes broadcastSlide {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        .bc-avatar { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
-        .bc-name { font-weight: 700; font-size: 0.8rem; color: var(--coffee-med); text-transform: uppercase; letter-spacing: 0.5px; }
+/* ─── NAV ─── */
+nav{
+  height:var(--nav-h);background:var(--espresso);
+  display:flex;justify-content:space-around;align-items:center;
+  flex-shrink:0;padding-bottom:env(safe-area-inset-bottom);
+  border-top:1px solid rgba(200,150,62,.2);
+}
+.nav-btn{
+  background:none;border:none;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  cursor:pointer;padding:.4rem .6rem;border-radius:10px;
+  transition:background .2s;
+  font-family:'Lato',sans-serif;
+}
+.nav-btn:hover{background:rgba(255,255,255,.07)}
+.nav-btn.active{background:rgba(200,150,62,.12)}
+.nav-btn .nav-icon{font-size:1.4rem;line-height:1}
+.nav-btn .nav-lbl{font-size:.6rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;transition:color .2s}
+.nav-btn.active .nav-lbl{color:var(--gold)}
 
-        /* --- Ambient Comfort Overlay --- */
-        .ambient-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(62, 39, 35, 0.72);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            z-index: 200;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: ambientFadeIn 1.2s ease forwards;
-            cursor: pointer;
-        }
-        .ambient-overlay.fade-out {
-            animation: ambientFadeOut 1s ease forwards;
-        }
-        @keyframes ambientFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes ambientFadeOut {
-            from { opacity: 1; }
-            to { opacity: 0; }
-        }
-        .ambient-inner {
-            text-align: center;
-            padding: 3rem 2rem;
-            max-width: 340px;
-            animation: ambientRise 1.4s ease forwards;
-        }
-        @keyframes ambientRise {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .ambient-icon {
-            font-size: 4rem;
-            margin-bottom: 1.5rem;
-            display: block;
-            animation: ambientFloat 3s ease-in-out infinite;
-        }
-        @keyframes ambientFloat {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-        .ambient-text {
-            color: #fff;
-            font-size: 1.35rem;
-            font-weight: 300;
-            line-height: 1.8;
-            letter-spacing: 0.3px;
-            text-shadow: 0 2px 12px rgba(0,0,0,0.3);
-        }
+/* ─── FOOTER ─── */
+footer{
+  text-align:center;font-size:.7rem;
+  color:rgba(255,255,255,.4);padding:.6rem;
+  background:var(--espresso);flex-shrink:0;
+  font-family:'Playfair Display',serif;letter-spacing:.3px;
+}
 
-        /* --- Desktop Optimization --- */
-        @media (min-width: 768px) {
-            main { padding: 2rem; }
-            .choice-grid { max-width: 500px; margin: 2rem auto; }
-            .tables-grid { grid-template-columns: repeat(4, 1fr); }
-            .welcome-card { margin: 3rem auto; }
-        }
+/* ─── AMBIENT OVERLAY ─── */
+.ambient-overlay{
+  position:fixed;inset:0;background:rgba(44,26,14,.78);
+  backdrop-filter:blur(10px);z-index:300;
+  display:flex;align-items:center;justify-content:center;
+  animation:fadeIn .8s ease;cursor:pointer;
+}
+.ambient-overlay.fade-out{animation:fadeOut .8s ease forwards}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeOut{from{opacity:1}to{opacity:0}}
+.ambient-inner{text-align:center;padding:3rem 2rem;max-width:320px;animation:ambientRise 1.2s ease}
+@keyframes ambientRise{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.ambient-icon{font-size:4rem;display:block;margin-bottom:1.5rem;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.ambient-text{color:#fff;font-family:'Playfair Display',serif;font-size:1.3rem;line-height:1.8;font-style:italic;text-shadow:0 2px 12px rgba(0,0,0,.3)}
 
-        /* --- Small Screen Optimization --- */
-        @media (max-width: 380px) {
-            .tables-grid { grid-template-columns: 1fr; }
-            .choice-grid { grid-template-columns: 1fr; }
-            .message { max-width: 90%; }
-            header { padding: 0.75rem; }
-            .brand { font-size: 1.1rem; }
-        }
-    </style>
+/* ─── TOAST ─── */
+.toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:var(--espresso);color:var(--cream);
+  padding:10px 22px;border-radius:25px;font-size:.85rem;
+  z-index:400;white-space:nowrap;box-shadow:var(--shadow-lg);
+  animation:fadeUp .3s ease;
+}
+
+/* ─── REGULARS BOARD ─── */
+.regulars-board{
+  background:var(--milk);border-radius:var(--r);
+  padding:1rem;box-shadow:var(--shadow-sm);margin-bottom:1rem;
+  max-width:640px;
+}
+.regulars-board h4{font-weight:700;color:var(--roast);margin-bottom:.75rem;font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:.4rem}
+.regulars-avatars{display:flex;flex-wrap:wrap;gap:.4rem}
+.reg-chip{
+  background:var(--cream);border-radius:50px;
+  padding:.3rem .75rem;display:flex;align-items:center;gap:.3rem;
+  font-size:.8rem;color:var(--text-soft);
+}
+.reg-chip-av{font-size:1rem}
+
+/* ─── RESPONSIVE ─── */
+@media(min-width:640px){
+  .shop-map{grid-template-columns:repeat(3,1fr)}
+  .country-grid{grid-template-columns:repeat(3,1fr)}
+  .tables-grid{grid-template-columns:repeat(4,1fr)}
+  .memorial-cards{grid-template-columns:repeat(4,1fr)}
+  .menu-items{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:380px){
+  .shop-map{grid-template-columns:1fr}
+  .country-grid{grid-template-columns:1fr 1fr}
+  .memorial-cards{grid-template-columns:1fr 1fr}
+  .brand{font-size:1.1rem}
+}
+</style>
 </head>
 <body>
 
-    <!-- Header -->
-    <header>
-        <div class="brand">
-            <span>☕</span> Bean Chat
+<!-- HEADER -->
+<header>
+  <div class="brand">
+    <span>☕</span>
+    <div>
+      Bean Chat
+      <span class="brand-sub">Ronald's Coffee Shop</span>
+    </div>
+  </div>
+  <div id="user-display">
+    <span id="user-avatar-display"></span>
+    <span id="user-name-display">Guest</span>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main id="app-main">
+
+  <!-- VIEW: WELCOME -->
+  <section id="view-welcome" class="view active">
+    <div class="welcome-wrap">
+      <div class="welcome-card">
+        <span class="welcome-steam">☕</span>
+        <h2>Step Inside</h2>
+        <p>Ronald's Coffee Shop is always warm.<br>Pull up a chair — you belong here.</p>
+        <input type="text" class="input-field" id="username-input" placeholder="What should we call you?" maxlength="18" autocomplete="off">
+        <div class="lock-row">
+          <span id="lock-status">🔓 Unlocked</span>
+          <button class="btn btn-outline" id="toggle-lock" style="margin-left:.5rem">Toggle Lock</button>
         </div>
-        <div id="user-display">Guest</div>
-    </header>
-
-    <!-- Main Content -->
-    <main id="app-container">
-        
-        <!-- VIEW 1: Welcome / Identity -->
-        <section id="view-welcome" class="view active">
-            <div class="welcome-card">
-                <h2>Step Inside ☕</h2>
-                <p>Welcome to Ronald's Coffee Shop</p>
-                <input type="text" id="username-input" placeholder="What should we call you?" maxlength="15" autocomplete="off">
-                <div class="lock-control">
-                    <span id="lock-status">🔓 Unlocked</span>
-                    <button id="toggle-lock" class="btn-secondary">Toggle Lock</button>
-                </div>
-                <br>
-                <button class="btn" onclick="app.enterShop()">Enter Shop</button>
-            </div>
-        </section>
-
-        <!-- VIEW 2: Lobby (Hostess Jane) -->
-        <section id="view-lobby" class="view">
-            <div class="daily-special" id="daily-special-box">
-                <span class="special-icon">🪄</span>
-                <h3>Today's Special</h3>
-                <p id="special-text">Loading prompt...</p>
-            </div>
-
-            <div class="jane-container">
-                <span class="jane-avatar">👩‍🦱</span>
-                <h3 style="color: var(--coffee-med); margin-bottom: 0.5rem;">Hostess Jane</h3>
-                <p style="color: var(--text-light);">"Good day! Where would you like to sit?"</p>
-                
-                <div class="choice-grid">
-                    <div class="choice-card" onclick="app.navigate('view-floor')">
-                        <span class="choice-icon">🪑</span>
-                        <strong>Main Floor</strong>
-                        <div>Open Community</div>
-                    </div>
-                    <div class="choice-card" onclick="app.navigate('view-tables')">
-                        <span class="choice-icon">📋</span>
-                        <strong>Book a Table</strong>
-                        <div>Private Vibe</div>
-                    </div>
-                    <div class="choice-card choice-card-counter" onclick="app.navigate('view-counter')">
-                        <span class="choice-icon">🧍‍♀️</span>
-                        <strong>The Counter</strong>
-                        <div>Just You & Jane</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW 3: Main Floor -->
-        <section id="view-floor" class="view">
-            <div class="chat-container">
-                <div class="chat-header">
-                    <span class="status-dot"></span> Live · Open to everyone
-                </div>
-                <div class="messages" id="floor-messages">
-                    <div class="message">Welcome to the Main Floor! ☕ Feel free to chat.</div>
-                </div>
-                <div class="input-area">
-                    <input type="text" id="floor-input" placeholder="Say something..." autocomplete="off">
-                    <button class="btn" onclick="app.sendMessage('floor')">➤</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW 4: Tables Selection -->
-        <section id="view-tables" class="view">
-            <h3 style="text-align:center; color: var(--coffee-med); margin-bottom: 0.5rem;">Pick your spot</h3>
-            <p style="text-align:center; color:var(--text-light); margin-bottom: 1.5rem;">Eight tables, each with its own vibe</p>
-            <div class="tables-grid" id="tables-grid">
-                <!-- Tables injected via JS -->
-            </div>
-            <button class="btn btn-secondary" style="margin-top:2rem; max-width: 200px;" onclick="app.navigate('view-lobby')">← Back to Lobby</button>
-        </section>
-
-        <!-- VIEW 5: Specific Table Chat -->
-        <section id="view-table-chat" class="view">
-            <div class="chat-container">
-                <div class="chat-header" id="table-header">
-                    Table #1
-                </div>
-                <div class="messages" id="table-messages">
-                    <div class="message">Welcome to this table. The vibe is warm. ☕</div>
-                </div>
-                <div class="input-area">
-                    <input type="text" id="table-input" placeholder="Type a message..." autocomplete="off">
-                    <button class="btn" onclick="app.sendMessage('table')">➤</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW 6: The Counter (Solo with Jane) -->
-        <section id="view-counter" class="view">
-            <div class="chat-container">
-                <div class="chat-header counter-chat-header">
-                    <span class="jane-counter-avatar">👩‍🦱</span>
-                    <div>
-                        <strong style="color: var(--coffee-med);">Jane</strong>
-                        <div style="font-size:0.8rem; color:var(--text-light);">The Counter · Just the two of you</div>
-                    </div>
-                </div>
-                <div class="messages" id="counter-messages">
-                    <div class="message">☕ Hey, pull up a stool. It's quieter here. What's on your mind?</div>
-                </div>
-                <div class="input-area">
-                    <input type="text" id="counter-input" placeholder="Talk to Jane..." autocomplete="off">
-                    <button class="btn" onclick="app.sendMessage('counter')">➤</button>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Bottom Navigation -->
-    <nav>
-        <button class="nav-item active" id="nav-home" onclick="app.navigate('view-lobby')" title="Home">🏠</button>
-        <button class="nav-item" onclick="app.clearData()" title="Reset">🗑</button>
-        <button class="nav-item" onclick="app.openSettings()" title="Settings">⚙️</button>
-    </nav>
-
-    <!-- Footer Memorial -->
-    <footer>
-        In loving memory of Dad · Always warm
-    </footer>
-
-    <!-- Settings Modal -->
-    <div class="modal-overlay" id="settings-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>⚙️ Settings</h3>
-                <button class="close-modal" onclick="app.closeSettings()">✕</button>
-            </div>
-            
-            <div class="setting-item">
-                <div>
-                    <div class="setting-label">Hostess Replies</div>
-                    <div class="setting-desc">Jane responds to your messages</div>
-                </div>
-                <div class="toggle-switch" id="hostess-toggle" onclick="app.toggleHostess()"></div>
-            </div>
-
-            <div class="setting-item">
-                <div>
-                    <div class="setting-label">🔔 Message Sound</div>
-                    <div class="setting-desc">Ping when you send a message</div>
-                </div>
-                <div class="toggle-switch" id="sound-toggle" onclick="app.toggleSound()"></div>
-            </div>
-
-    <script>
-        const app = {
-            state: {
-                user: '',
-                locked: false,
-                soundEnabled: true,
-                hostessReplies: true,
-                currentTable: null,
-                currentView: 'view-welcome',
-                counterHistory: [],
-                floorHistory: [],
-                tableHistory: []
-            },
-            prompts: [
-                "Discuss the future of AI in music production 🎵",
-                "What's the best coding project you started this week? 💻",
-                "Share a creative idea you're working on 🎨",
-                "What's your favorite lo-fi track right now? 🎧",
-                "Tech trend prediction for next month 🚀",
-                "How do you stay creative when stuck? 🪄",
-                "Best video editing tip you've learned? 🎬",
-                "What prompt gave you the best AI result? 🤖"
-            ],
-
-            init() {
-                const savedUser = localStorage.getItem('beanUser');
-                const savedLock = localStorage.getItem('beanLock');
-                if (savedUser) {
-                    this.state.user = savedUser;
-                    document.getElementById('username-input').value = savedUser;
-                    document.getElementById('user-display').innerText = savedUser;
-                }
-                if (savedLock === 'true') {
-                    this.state.locked = true;
-                    this.updateLockUI();
-                }
-
-                const savedMusic = localStorage.getItem('beanMusic');
-                if (savedMusic === 'true') {
-                    this.state.music = true;
-                }
-
-                const savedHostess = localStorage.getItem('beanHostess');
-                if (savedHostess === 'false') {
-                    this.state.hostessReplies = false;
-                }
-
-                const savedSound = localStorage.getItem('beanSound');
-                if (savedSound === 'false') {
-                    this.state.soundEnabled = false;
-                }
-
-                const today = new Date().toDateString();
-                const seed = today.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-                const prompt = this.prompts[seed % this.prompts.length];
-                document.getElementById('special-text').innerText = prompt;
-
-                this.renderTables();
-                
-                if (this.state.user) {
-                    document.getElementById('user-display').innerText = this.state.user;
-                }
-
-                this.updateToggleUI();
-
-                document.getElementById('toggle-lock').addEventListener('click', () => {
-                    this.state.locked = !this.state.locked;
-                    localStorage.setItem('beanLock', this.state.locked);
-                    this.updateLockUI();
-                    this.updateToggleUI();
-                });
-
-                document.getElementById('username-input').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.enterShop();
-                });
-                document.getElementById('floor-input').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.sendMessage('floor');
-                });
-                document.getElementById('table-input').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.sendMessage('table');
-                });
-                document.getElementById('counter-input').addEventListener('keypress', (e) => {
-                    if (e.key === 'Enter') this.sendMessage('counter');
-                });
-
-                document.getElementById('settings-modal').addEventListener('click', (e) => {
-                    if (e.target.id === 'settings-modal') this.closeSettings();
-                });
-
-                // Back/forward arrow navigation
-                window.addEventListener('popstate', (e) => {
-                    const state = e.state || {};
-                    if (state.modal === 'settings') {
-                        this.openSettings();
-                    } else {
-                        this.closeSettings();
-                        const view = state.view || 'view-lobby';
-                        document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-                        document.getElementById(view).classList.add('active');
-                        this.state.currentView = view;
-                        const homeBtn = document.getElementById('nav-home');
-                        if (homeBtn) homeBtn.classList.toggle('active', view==='view-lobby'||view==='view-floor'||view==='view-tables'||view==='view-table-chat'||view==='view-counter');
-                    }
-                });
-                history.replaceState({ view: this.state.currentView }, '', '');
-            },
-
-            updateLockUI() {
-                const status = document.getElementById('lock-status');
-                const input = document.getElementById('username-input');
-                if (this.state.locked) {
-                    status.innerText = '🔒 Locked';
-                    input.disabled = true;
-                } else {
-                    status.innerText = '🔓 Unlocked';
-                    input.disabled = false;
-                }
-            },
-
-            updateToggleUI() {
-                const hostessToggle = document.getElementById('hostess-toggle');
-                if (this.state.hostessReplies) {
-                    hostessToggle.classList.add('active');
-                } else {
-                    hostessToggle.classList.remove('active');
-                }
-
-                const soundToggle = document.getElementById('sound-toggle');
-                if (this.state.soundEnabled) {
-                    soundToggle.classList.add('active');
-                } else {
-                    soundToggle.classList.remove('active');
-                }
-
-                const musicToggle = document.getElementById('music-toggle');
-
-                const lockToggle = document.getElementById('lock-toggle');
-                if (this.state.locked) {
-                    lockToggle.classList.add('active');
-                } else {
-                    lockToggle.classList.remove('active');
-                }
-            },
-
-            enterShop() {
-                const input = document.getElementById('username-input');
-                const name = input.value.trim();
-                if (!name) {
-                    alert("Please tell us your name! ☕");
-                    input.focus();
-                    return;
-                }
-                
-                if (!this.state.locked) {
-                    this.state.user = name;
-                    localStorage.setItem('beanUser', name);
-                    document.getElementById('user-display').innerText = name;
-                }
-                
-                this.navigate('view-lobby');
-                if (!this._ambientStarted) {
-                    this._ambientStarted = true;
-                    this.startBroadcasts();
-                    this.startAmbientMoments();
-                }
-            },
-
-            navigate(viewId) {
-                if (viewId === this.state.currentView) return;
-                document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-                document.getElementById(viewId).classList.add('active');
-                this.state.currentView = viewId;
-                document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-                const homeBtn = document.getElementById('nav-home');
-                if (homeBtn && (viewId==='view-lobby'||viewId==='view-floor'||viewId==='view-tables'||viewId==='view-table-chat'||viewId==='view-counter')) {
-                    homeBtn.classList.add('active');
-                }
-                document.getElementById('app-container').scrollTop = 0;
-                history.pushState({ view: viewId }, '', '');
-            },
-
-            renderTables() {
-                const grid = document.getElementById('tables-grid');
-                const vibes = [
-                    { name: 'Quiet Corner', class: 'vibe-quiet', icon: '🤫' },
-                    { name: 'Tech Hub', class: 'vibe-tech', icon: '💻' },
-                    { name: 'Music Lounge', class: 'vibe-music', icon: '🎵' },
-                    { name: 'Creative Studio', class: 'vibe-quiet', icon: '🎨' },
-                    { name: 'Deep Work', class: 'vibe-tech', icon: '🧠' },
-                    { name: 'Casual Chat', class: 'vibe-music', icon: '☕' },
-                    { name: 'Video Edit', class: 'vibe-tech', icon: '🎬' },
-                    { name: 'Prompt Lab', class: 'vibe-quiet', icon: '🪄' }
-                ];
-
-                grid.innerHTML = vibes.map((v, i) => `
-                    <div class="table-seat ${v.class}" onclick="app.openTable(${i}, '${v.name}')">
-                        <span class="table-icon">${v.icon}</span>
-                        <strong>${v.name}</strong>
-                        <span>Table ${i+1}</span>
-                    </div>
-                `).join('');
-            },
-
-            openTable(index, name) {
-                this.state.currentTable = index;
-                document.getElementById('table-header').innerText = `${name} · Table ${index+1}`;
-                document.getElementById('table-messages').innerHTML = '<div class="message">Welcome to this table. The vibe is warm. ☕</div>';
-                this.navigate('view-table-chat');
-            },
-
-            getCtx() {
-                if (!this._ctx) this._ctx = new (window.AudioContext || window.webkitAudioContext)();
-                return this._ctx;
-            },
-
-            playPing() {
-                const ctx = this.getCtx();
-                const go = () => {
-                    const now = ctx.currentTime;
-                    const mg = ctx.createGain();
-                    mg.connect(ctx.destination);
-                    mg.gain.setValueAtTime(0, now);
-                    mg.gain.linearRampToValueAtTime(0.55, now + .003);
-                    mg.gain.exponentialRampToValueAtTime(.001, now + 1.1);
-                    const o1 = ctx.createOscillator(); o1.type='sine'; o1.frequency.setValueAtTime(1396,now); o1.connect(mg); o1.start(now); o1.stop(now+1.1);
-                    const g2 = ctx.createGain(); g2.connect(ctx.destination); g2.gain.setValueAtTime(.25,now); g2.gain.exponentialRampToValueAtTime(.001,now+.55);
-                    const o2 = ctx.createOscillator(); o2.type='sine'; o2.frequency.setValueAtTime(2093,now); o2.connect(g2); o2.start(now); o2.stop(now+.55);
-                    const g3 = ctx.createGain(); g3.connect(ctx.destination); g3.gain.setValueAtTime(.1,now); g3.gain.exponentialRampToValueAtTime(.001,now+.25);
-                    const o3 = ctx.createOscillator(); o3.type='sine'; o3.frequency.setValueAtTime(3136,now); o3.connect(g3); o3.start(now); o3.stop(now+.25);
-                };
-                ctx.state==='suspended' ? ctx.resume().then(go) : go();
-            },
-
-            async sendMessage(type) {
-                const inputId = type === 'floor' ? 'floor-input' : type === 'counter' ? 'counter-input' : 'table-input';
-                const containerId = type === 'floor' ? 'floor-messages' : type === 'counter' ? 'counter-messages' : 'table-messages';
-                const input = document.getElementById(inputId);
-                const text = input.value.trim();
-                
-                if (!text) return;
-
-                if (this.state.soundEnabled) this.playPing();
-
-                const container = document.getElementById(containerId);
-                const msgDiv = document.createElement('div');
-                msgDiv.className = 'message mine';
-                msgDiv.innerText = text;
-                container.appendChild(msgDiv);
-                
-                input.value = '';
-                container.scrollTop = container.scrollHeight;
-
-                const shouldReply = type === 'counter' || this.state.hostessReplies;
-                if (shouldReply) {
-                    const typingId = 'typing-' + Date.now();
-                    const typingDiv = document.createElement('div');
-                    typingDiv.className = 'message typing-indicator';
-                    typingDiv.id = typingId;
-                    typingDiv.innerHTML = '<span></span><span></span><span></span>';
-                    container.appendChild(typingDiv);
-                    container.scrollTop = container.scrollHeight;
-
-                    const reply = await this.generateReply(text, type);
-
-                    document.getElementById(typingId)?.remove();
-                    const replyDiv = document.createElement('div');
-                    replyDiv.className = 'message';
-                    replyDiv.innerText = (type === 'counter' ? "👩‍🦱 " : "☕ ") + reply;
-                    container.appendChild(replyDiv);
-                    container.scrollTop = container.scrollHeight;
-                }
-            },
-
-            async generateReply(userText, type) {
-                const isCounter = type === 'counter';
-                const history = isCounter ? this.state.counterHistory : (type === 'floor' ? this.state.floorHistory : this.state.tableHistory);
-
-                const systemPrompt = isCounter
-                    ? `You are Jane, the warm and witty barista at Ronald's Coffee Shop — a real human being, not a bot. You're sitting across the counter from ${this.state.user || 'a regular'}. You have genuine opinions, moods, memories from within this conversation, and a distinct personality: curious, occasionally funny, sometimes a little philosophical, always caring. You NEVER repeat yourself or echo back what was just said. Every single reply must be completely different in structure, tone, and content from your previous ones. Vary your sentence length. Sometimes ask a follow-up, sometimes just react, sometimes share a small thought of your own. Keep it under 3 sentences. Natural, human, warm. No robotic patterns.`
-                    : `You are Jane, hostess at Ronald's Coffee Shop. ${this.state.user || 'A guest'} is on the ${type === 'floor' ? 'main floor' : 'a private table'}. Reply warmly, briefly (1-2 sentences), like a busy barista who genuinely noticed something. Never repeat phrasing from your previous replies. Stay fresh and human.`;
-
-                // Build messages array with history
-                const messages = [...history, { role: 'user', content: userText }];
-
-                try {
-                    const response = await fetch('https://api.anthropic.com/v1/messages', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            model: 'claude-sonnet-4-20250514',
-                            max_tokens: 1000,
-                            system: systemPrompt,
-                            messages: messages
-                        })
-                    });
-                    const data = await response.json();
-                    const reply = data.content?.[0]?.text || "☕ One sec...";
-
-                    // Save to history
-                    history.push({ role: 'user', content: userText });
-                    history.push({ role: 'assistant', content: reply });
-
-                    return reply;
-                } catch (e) {
-                    return "Sorry, the espresso machine's acting up. Try again in a sec.";
-                }
-            },
-
-
-            toggleHostess() {
-                this.state.hostessReplies = !this.state.hostessReplies;
-                localStorage.setItem('beanHostess', this.state.hostessReplies);
-                const toggle = document.getElementById('hostess-toggle');
-                toggle.classList.toggle('active', this.state.hostessReplies);
-                this.showToast(this.state.hostessReplies ? '👩‍🦱 Jane replies ON' : '🤫 Jane replies OFF');
-            },
-
-            toggleSound() {
-                this.state.soundEnabled = !this.state.soundEnabled;
-                localStorage.setItem('beanSound', this.state.soundEnabled);
-                const toggle = document.getElementById('sound-toggle');
-                toggle.classList.toggle('active', this.state.soundEnabled);
-                this.showToast(this.state.soundEnabled ? '🔔 Sound ON' : '🔕 Sound OFF');
-            },
-
-            openSettings() {
-                document.getElementById('settings-modal').classList.add('active');
-                history.pushState({ view: this.state.currentView, modal:'settings' }, '', '');
-            },
-
-            closeSettings() {
-                document.getElementById('settings-modal').classList.remove('active');
-            },
-
-            showToast(message) {
-                const existing = document.querySelector('.toast');
-                if (existing) existing.remove();
-
-                const toast = document.createElement('div');
-                toast.className = 'toast';
-                toast.innerText = message;
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 2000);
-            },
-
-            clearData() {
-                if(confirm("Reset all data and name? This cannot be undone.")) {
-                    localStorage.clear();
-                    location.reload();
-                }
-            },
-
-            // ── Broadcast: random stranger messages to floor & tables ──
-            startBroadcasts() {
-                const broadcasts = [
-                    { name: "Ronald himself", avatar: "👨‍🍳", msg: "Hello everyone! It's a message to all friends and family — enjoy Ronald's Coffee Shop at Bean Chat. You're always welcome here. ☕" },
-                    { name: "A regular", avatar: "🧔", msg: "Hey folks, just wanted to say — this place never gets old. Grab a cup and stay a while 🙂" },
-                    { name: "Table 3", avatar: "👥", msg: "Shoutout to everyone in the shop today. Good vibes only, people. Let's have a great one ✨" },
-                    { name: "Ronald himself", avatar: "👨‍🍳", msg: "Friends and family — the coffee is fresh, the seats are warm, and you are loved. That's all. ☕🧡" },
-                    { name: "A stranger nearby", avatar: "🙋", msg: "Just passing through — this place has the best energy. Hello everyone! 👋" },
-                    { name: "The kitchen", avatar: "🍞", msg: "Fresh batch just came out. Share a pastry with someone today, yeah? Life's too short not to. 🥐" },
-                ];
-
-                const scheduleNext = () => {
-                    const delay = 45000 + Math.random() * 75000; // 45s–2min
-                    setTimeout(() => {
-                        const bc = broadcasts[Math.floor(Math.random() * broadcasts.length)];
-                        ['floor-messages', 'table-messages'].forEach(id => {
-                            const container = document.getElementById(id);
-                            if (!container) return;
-                            const div = document.createElement('div');
-                            div.className = 'message broadcast-message';
-                            div.innerHTML = `<span class="bc-avatar">${bc.avatar}</span><div><span class="bc-name">${bc.name}</span><br>${bc.msg}</div>`;
-                            container.appendChild(div);
-                            container.scrollTop = container.scrollHeight;
-                        });
-                        scheduleNext();
-                    }, delay);
-                };
-                scheduleNext();
-            },
-
-            // ── Ambient comfort: warm overlay moments ──
-            startAmbientMoments() {
-                const moments = [
-                    { icon: "☕", line: "The coffee is warm.\nYou are safe here." },
-                    { icon: "🌅", line: "No worries.\nThe future is going to be amazing —\na paradise waiting for you." },
-                    { icon: "✨", line: "You're on a journey.\nEvery step is taking you somewhere beautiful." },
-                    { icon: "🧡", line: "Ronald's is glad you're here.\nStay as long as you need." },
-                    { icon: "🌿", line: "Breathe.\nYou're exactly where you're supposed to be." },
-                    { icon: "🌟", line: "The best days are still ahead.\nWarm cup, open road, good people." },
-                    { icon: "☁️", line: "Even the clouds clear eventually.\nYou've got this, friend." },
-                ];
-
-                const scheduleNext = () => {
-                    const delay = 90000 + Math.random() * 120000; // 1.5–3.5 min
-                    setTimeout(() => {
-                        const m = moments[Math.floor(Math.random() * moments.length)];
-                        this.showAmbientOverlay(m.icon, m.line);
-                        scheduleNext();
-                    }, delay);
-                };
-                // First one sooner to let user feel it early
-                setTimeout(() => {
-                    this.showAmbientOverlay("☕", "No worries.\nThe future is going to be amazing —\na paradise waiting for you.");
-                    scheduleNext();
-                }, 25000);
-            },
-
-            showAmbientOverlay(icon, text) {
-                const existing = document.getElementById('ambient-overlay');
-                if (existing) existing.remove();
-
-                const overlay = document.createElement('div');
-                overlay.id = 'ambient-overlay';
-                overlay.className = 'ambient-overlay';
-                overlay.innerHTML = `
-                    <div class="ambient-inner">
-                        <div class="ambient-icon">${icon}</div>
-                        <div class="ambient-text">${text.replace(/\n/g, '<br>')}</div>
-                    </div>
-                `;
-                document.body.appendChild(overlay);
-
-                // Tap/click to dismiss early
-                overlay.addEventListener('click', () => overlay.remove());
-
-                setTimeout(() => {
-                    overlay.classList.add('fade-out');
-                    setTimeout(() => overlay.remove(), 1000);
-                }, 5000);
-            },
-        };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            app.init();
+        <br>
+        <button class="btn btn-gold" onclick="app.enterShop()">Enter the Shop →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: AVATAR CREATOR -->
+  <section id="view-avatar" class="view">
+    <div style="max-width:480px;margin:0 auto">
+      <div class="avatar-creator">
+        <h2>Design Your Look</h2>
+        <p>Every regular at Ronald's has their own style. What's yours?</p>
+        <div class="avatar-preview" id="av-preview">☕</div>
+
+        <div class="avatar-section">
+          <label>Your Base ✨</label>
+          <div class="avatar-grid" id="av-base">
+            <span class="avatar-opt selected" data-val="☕" data-part="base">☕</span>
+            <span class="avatar-opt" data-val="🧑" data-part="base">🧑</span>
+            <span class="avatar-opt" data-val="👩" data-part="base">👩</span>
+            <span class="avatar-opt" data-val="👨" data-part="base">👨</span>
+            <span class="avatar-opt" data-val="🧓" data-part="base">🧓</span>
+            <span class="avatar-opt" data-val="👴" data-part="base">👴</span>
+            <span class="avatar-opt" data-val="👵" data-part="base">👵</span>
+            <span class="avatar-opt" data-val="🧑‍🍳" data-part="base">🧑‍🍳</span>
+            <span class="avatar-opt" data-val="🧑‍💻" data-part="base">🧑‍💻</span>
+            <span class="avatar-opt" data-val="🧑‍🎨" data-part="base">🧑‍🎨</span>
+          </div>
+        </div>
+
+        <div class="avatar-section">
+          <label>Your Vibe 🎯</label>
+          <div class="avatar-grid" id="av-vibe">
+            <span class="avatar-opt" data-val="" data-part="vibe">—</span>
+            <span class="avatar-opt" data-val="🎧" data-part="vibe">🎧</span>
+            <span class="avatar-opt" data-val="☕" data-part="vibe">☕</span>
+            <span class="avatar-opt" data-val="📚" data-part="vibe">📚</span>
+            <span class="avatar-opt" data-val="🌿" data-part="vibe">🌿</span>
+            <span class="avatar-opt" data-val="🎨" data-part="vibe">🎨</span>
+            <span class="avatar-opt" data-val="💻" data-part="vibe">💻</span>
+            <span class="avatar-opt" data-val="🎵" data-part="vibe">🎵</span>
+            <span class="avatar-opt" data-val="✍️" data-part="vibe">✍️</span>
+          </div>
+        </div>
+
+        <button class="btn btn-gold" style="margin-top:1rem" onclick="app.saveAvatar()">Take Your Seat ☕</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: LOBBY -->
+  <section id="view-lobby" class="view">
+    <div class="daily-card" id="daily-card">
+      <h4>☕ Today's Special</h4>
+      <p id="daily-text">Loading today's brew...</p>
+    </div>
+
+    <div id="regulars-section" class="regulars-board" style="max-width:640px;margin:0 auto 1rem;">
+      <h4><span class="live-dot"></span> In the Shop Today</h4>
+      <div class="regulars-avatars" id="regulars-chips"></div>
+    </div>
+
+    <div class="lobby-hero">
+      <h2>Where would you like to sit?</h2>
+      <p>Explore the shop — every corner has something warm.</p>
+    </div>
+
+    <div class="shop-map">
+      <div class="room-card main-floor" onclick="app.goTo('view-floor')">
+        <span class="room-icon">🪑</span>
+        <strong>Main Floor</strong>
+        <span>Open community chat</span>
+      </div>
+      <div class="room-card counter-room" onclick="app.goTo('view-counter')">
+        <span class="room-icon">👩‍🦱</span>
+        <strong>The Counter</strong>
+        <span>Just you & Jane</span>
+      </div>
+      <div class="room-card bakery-room" onclick="app.goTo('view-bakery')">
+        <span class="room-icon">🥐</span>
+        <strong>The Bakery</strong>
+        <span>Menu & warm bites</span>
+      </div>
+      <div class="room-card lounge-room" onclick="app.goTo('view-lounge')">
+        <span class="room-icon">🛋️</span>
+        <strong>The Lounge</strong>
+        <span>Music & slow vibes</span>
+      </div>
+      <div class="room-card origins-room" onclick="app.goTo('view-origins')">
+        <span class="room-icon">🌍</span>
+        <strong>Coffee Origins</strong>
+        <span>Where the bean comes from</span>
+      </div>
+      <div class="room-card news-room" onclick="app.goTo('view-news')">
+        <span class="room-icon">📰</span>
+        <strong>Daily Digest</strong>
+        <span>Coffee facts & trivia</span>
+      </div>
+      <div class="room-card memorial-room" onclick="app.goTo('view-memorial')">
+        <span class="room-icon">🕯️</span>
+        <strong>Ronald's Corner</strong>
+        <span>Dad's legacy & memory wall</span>
+      </div>
+      <div class="room-card tables-room" onclick="app.goTo('view-tables')">
+        <span class="room-icon">📋</span>
+        <strong>Book a Table</strong>
+        <span>Private vibes</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: MAIN FLOOR -->
+  <section id="view-floor" class="view">
+    <span class="back-link" onclick="app.goTo('view-lobby')">← Back to Shop</span>
+    <div class="chat-wrap">
+      <div class="chat-head">
+        <span class="chat-head-icon">🪑</span>
+        <div>
+          <div class="chat-head-title">Main Floor</div>
+          <div class="chat-head-sub"><span class="live-dot"></span> Live · Open to everyone</div>
+        </div>
+      </div>
+      <div class="messages-area" id="floor-messages">
+        <div class="msg">Welcome to the Main Floor! ☕ Feel free to chat with everyone.</div>
+      </div>
+      <div class="input-row">
+        <input type="text" class="input-field" id="floor-input" placeholder="Say something..." autocomplete="off">
+        <button class="send-btn" onclick="app.sendMsg('floor')">➤</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: THE COUNTER -->
+  <section id="view-counter" class="view">
+    <span class="back-link" onclick="app.goTo('view-lobby')">← Back to Shop</span>
+    <div class="chat-wrap">
+      <div class="chat-head">
+        <span class="chat-head-icon" style="animation:bounce 2s infinite;display:inline-block">👩‍🦱</span>
+        <div>
+          <div class="chat-head-title">Jane · The Counter</div>
+          <div class="chat-head-sub">Just the two of you</div>
+        </div>
+      </div>
+      <div class="messages-area" id="counter-messages">
+        <div class="msg">Hey, pull up a stool. ☕ It's quieter here. What's on your mind?</div>
+      </div>
+      <div class="input-row">
+        <input type="text" class="input-field" id="counter-input" placeholder="Talk to Jane..." autocomplete="off">
+        <button class="send-btn" onclick="app.sendMsg('counter')">➤</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: TABLES LIST -->
+  <section id="view-tables" class="view">
+    <span class="back-link" onclick="app.goTo('view-lobby')">← Back to Shop</span>
+    <div class="tables-wrap">
+      <h2>Pick Your Spot</h2>
+      <p>Eight tables, each with its own vibe</p>
+      <div class="tables-grid" id="tables-grid"></div>
+    </div>
+  </section>
+
+  <!-- VIEW: TABLE CHAT -->
+  <section id="view-table-chat" class="view">
+    <span class="back-link" onclick="app.goTo('view-tables')">← Back to Tables</span>
+    <div class="chat-wrap">
+      <div class="chat-head">
+        <span class="chat-head-icon" id="table-chat-icon">📋</span>
+        <div>
+          <div class="chat-head-title" id="table-chat-title">Table #1</div>
+          <div class="chat-head-sub" id="table-chat-sub">Private vibe</div>
+        </div>
+      </div>
+      <div class="messages-area" id="table-messages">
+        <div class="msg">Welcome to this table. The vibe is warm. ☕</div>
+      </div>
+      <div class="input-row">
+        <input type="text" class="input-field" id="table-input" placeholder="Type a message..." autocomplete="off">
+        <button class="send-btn" onclick="app.sendMsg('table')">➤</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: BAKERY -->
+  <section id="view-bakery" class="view">
+    <span class="back-link" onclick="app.goTo('view-lobby')">← Back to Shop</span>
+    <div class="bakery-wrap">
+      <div class="bakery-header">
+        <h2>🥐 The Bakery</h2>
+        <p>Ronald loved a good pastry with his coffee. These are his favourites.</p>
+      </div>
+      <div class="menu-board">
+        <h3>☕ Ronald's Menu Board</h3>
+        <div class="menu-items" id="menu-grid"></div>
+      </div>
+      <!-- Bakery chat -->
+      <div class="chat-wrap" style="height:260px">
+        <div class="chat-head">
+          <span class="chat-head-icon">🧁</span>
+          <div>
+            <div class="chat-head-title">The Bakery Corner</div>
+            <div class="chat-head-sub">Quiet & cozy — Mara's here to help</div>
+          </div>
+        </div>
+        <div class="messages-area" id="bakery-messages">
+          <div class="msg">🧁 Hi there! I'm Mara, Jane's assistant. The cinnamon rolls just came out. What can I get you?</div>
+        </div>
+        <div class="input-row">
+          <input type="text" class="input-field" id="bakery-input" placeholder="Chat with Mara..." autocomplete="off">
+          <button class="send-btn" onclick="app.sendMsg('bakery')">➤</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: LOUNGE -->
+  <section id="view-lounge" class="view">
+    <span class="back-link" onclick="app.goTo('view-lobby')">← Back to Shop</span>
+    <div class="lounge-wrap">
+      <div class="lounge-header">
+        <h2>🛋️ The Lounge</h2>
+        <p>Soft chairs, warm light, good music</p>
+      </div>
+      <div class="jukebox">
+        <h3>🎵 Ronald's Jukebox</h3>
+        <div class="now-playing">
+          <div class="np-label">Now Playing</div>
+          <div class="vinyl" id="vinyl-spin">🎵</div>
+          <div class="np-track" id="jukebox-track">Late Night Rain</div>
+          <div class="np-artist" id="jukebox-artist">Soft jazz · 3:42</div>
+        </div>
+        <div class="jukebox-controls">
+          <button class="jk-btn" onclick="app.prevTrack()">⏮ Prev</button>
+          <button class="jk-btn" id="jk-play" onclick="app.togglePlay()">⏸ Playing</button>
+          <button class="jk-btn" onclick="app.nextTrack()">Next ⏭</button>
+        </div>
+      </div>
+      <div class="track-list">
+        <h4>🎼 Tonight's Playlist — For Ronald</h4>
+        <div id="track-list-items"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: COFFEE ORIGINS -->
+  <section id="view-origins" class="view">
+    <span class="back-link" onclick="app.goTo('view-lobby')">← Back to Shop</span>
+    <div class="origins-wrap">
+      <div class="origins-header">
+        <h2>🌍 Coffee Origins</h2>
+        <p>Ronald knew — great coffee starts with great land.<br>Travel the world through your cup.</p>
+      </div>
+      <div class="globe-banner">
+        <h3>☕ The Origin Wall</h3>
+        <p>Tap a country to discover its coffee story, flavours & history</p>
+      </div>
+      <div class="country-grid" id="country-grid"></div>
+    </div>
+  </section>
+
+  <!-- VIEW: NEWSPAPER -->
+  <section id="view-news" class="view">
+    <span class="back-link" onclick="app.goTo('view-lobby')">← Back to Shop</span>
+    <div class="news-wrap">
+      <div class="newspaper-header">
+        <div class="paper-title">The Bean Gazette</div>
+        <div class="paper-sub">Ronald's Daily Digest — Always Fresh</div>
+        <div class="paper-date" id="paper-date"></div>
+      </div>
+      <div class="news-body">
+        <div class="news-section">
+          <h4>☕ Coffee Fact of the Day</h4>
+          <div id="coffee-fact-card" class="news-card">
+            <div class="loading-brew"><div class="brew-spinner"></div>Brewing a fresh fact...</div>
+          </div>
+        </div>
+        <div class="news-section">
+          <h4>📅 On This Day in History</h4>
+          <div id="this-day-card" class="this-day-card">
+            <div class="loading-brew"><div class="brew-spinner"></div>Loading...</div>
+          </div>
+        </div>
+        <div class="news-section">
+          <h4>🧠 Ronald's Trivia Corner</h4>
+          <div class="trivia-card">
+            <div class="trivia-q" id="trivia-q">Loading today's question...</div>
+            <button class="btn btn-outline" id="trivia-reveal-btn" onclick="app.revealTrivia()" style="margin:.25rem auto;display:block;width:auto">Reveal Answer</button>
+            <div class="trivia-ans" id="trivia-ans"></div>
+          </div>
+        </div>
+        <div class="news-section">
+          <h4>🌟 Good News Stories</h4>
+          <div id="good-news-section">
+            <div class="loading-brew"><div class="brew-spinner"></div>Finding good news...</div>
+          </div>
+        </div>
+        <div class="news-section">
+          <h4>💬 Today's Conversation Starter</h4>
+          <div id="convo-starter-card" class="news-card" style="border-left-color:var(--gold)">
+            <div class="loading-brew"><div class="brew-spinner"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: RONALD'S CORNER -->
+  <section id="view-memorial" class="view">
+    <span class="back-link" onclick="app.goTo('view-lobby')">← Back to Shop</span>
+    <div class="memorial-wrap">
+      <div class="memorial-hero">
+        <div class="memorial-photo">👨‍🍳</div>
+        <h2>Ronald</h2>
+        <div class="dates">The Man Behind the Cup</div>
+        <div class="tagline">"He loved coffee, fixing machines,<br>gathering family, and cinnamon.<br>This shop is his legacy — always warm."</div>
+      </div>
+
+      <div class="quote-carousel" id="quote-carousel">
+        Loading Ronald's words...
+        <div class="quote-attr">— Ronald</div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:.5rem;margin-bottom:1rem">
+        <button class="btn btn-outline" onclick="app.prevQuote()">← Prev</button>
+        <button class="btn btn-outline" onclick="app.nextQuote()">Next →</button>
+      </div>
+
+      <div class="memorial-cards">
+        <div class="mem-card">
+          <span class="mem-card-icon">☕</span>
+          <h4>Coffee</h4>
+          <p>He believed the perfect cup could fix any morning</p>
+        </div>
+        <div class="mem-card">
+          <span class="mem-card-icon">🔧</span>
+          <h4>Fixing Things</h4>
+          <p>Machines, relationships, broken days — all fixable</p>
+        </div>
+        <div class="mem-card">
+          <span class="mem-card-icon">👨‍👩‍👧‍👦</span>
+          <h4>Family</h4>
+          <p>Gathered everyone around the table, always</p>
+        </div>
+        <div class="mem-card">
+          <span class="mem-card-icon">🌿</span>
+          <h4>Cinnamon</h4>
+          <p>On everything. No exceptions. That was his rule.</p>
+        </div>
+      </div>
+
+      <div class="memory-wall">
+        <h4>📝 Memory Wall — Leave a Note</h4>
+        <div id="memory-wall-notes"></div>
+        <div class="wall-input-row">
+          <input type="text" class="input-field" id="memory-input" placeholder="Write something for Ronald..." maxlength="120" autocomplete="off">
+          <button class="btn wall-btn" onclick="app.addMemoryNote()">Post ☕</button>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-top:.5rem">
+        <p style="font-size:.8rem;color:var(--text-soft);font-style:italic">Built with love by the family · Wendy's warmth lives here too 🧡</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- NAV -->
+<nav>
+  <button class="nav-btn active" id="nav-home" onclick="app.goTo('view-lobby')">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-lbl">Home</span>
+  </button>
+  <button class="nav-btn" onclick="app.goTo('view-memorial')">
+    <span class="nav-icon">🕯️</span>
+    <span class="nav-lbl">Ronald</span>
+  </button>
+  <button class="nav-btn" id="nav-avatar-btn" onclick="app.goTo('view-avatar')">
+    <span class="nav-icon" id="nav-av-icon">🧑</span>
+    <span class="nav-lbl">Avatar</span>
+  </button>
+  <button class="nav-btn" onclick="app.openSettings()">
+    <span class="nav-icon">⚙️</span>
+    <span class="nav-lbl">Settings</span>
+  </button>
+</nav>
+
+<!-- FOOTER -->
+<footer>In loving memory of Dad · Ronald's Coffee Shop · Always Warm 🕯️</footer>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-bg" id="settings-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>⚙️ Settings</h3>
+      <button class="modal-close" onclick="app.closeSettings()">✕</button>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-lbl">Jane's Replies</div>
+        <div class="setting-desc">Jane responds on the floor & tables</div>
+      </div>
+      <div class="toggle on" id="t-hostess" onclick="app.toggle('hostess')"></div>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-lbl">🔔 Message Sound</div>
+        <div class="setting-desc">Gentle ping on send</div>
+      </div>
+      <div class="toggle on" id="t-sound" onclick="app.toggle('sound')"></div>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-lbl">🌟 Ambient Moments</div>
+        <div class="setting-desc">Ronald's gentle reminders</div>
+      </div>
+      <div class="toggle on" id="t-ambient" onclick="app.toggle('ambient')"></div>
+    </div>
+    <div style="margin-top:1.25rem">
+      <button class="btn btn-outline" style="color:#c62828;border-color:#c62828;width:100%" onclick="app.clearData()">🗑 Reset Shop Data</button>
+    </div>
+  </div>
+</div>
+
+<!-- COUNTRY DETAIL MODAL -->
+<div class="country-modal" id="country-modal" onclick="app.closeCountryModal(event)">
+  <div class="country-modal-card" id="country-modal-card">
+    <span class="country-modal-flag" id="cm-flag">🇪🇹</span>
+    <h2 id="cm-name">Ethiopia</h2>
+    <div class="roast-badge"><span class="flavor-tag" id="cm-roast">Light Roast</span></div>
+    <p class="origin-story" id="cm-story"></p>
+    <div class="origin-fact">
+      <h4>☕ Did You Know?</h4>
+      <p id="cm-fact"><div class="loading-brew"><div class="brew-spinner"></div>Brewing the story...</div></p>
+    </div>
+    <div class="flavor-section">
+      <h4>Flavour Profile</h4>
+      <div id="cm-flavors"></div>
+    </div>
+    <button class="btn btn-outline" style="margin-top:1rem" onclick="document.getElementById('country-modal').classList.remove('active')">Close</button>
+  </div>
+</div>
+
+<!-- MENU ITEM DETAIL MODAL -->
+<div class="item-detail-modal" id="item-modal" onclick="app.closeItemModal(event)">
+  <div class="item-detail-card" id="item-modal-card">
+    <span class="big-icon" id="im-icon">☕</span>
+    <h3 id="im-name">Ronald's Dark Roast</h3>
+    <p id="im-desc"></p>
+    <span class="tag" id="im-tag">Ronald's Favourite</span>
+    <br>
+    <button class="btn btn-outline" style="margin-top:1rem" onclick="document.getElementById('item-modal').classList.remove('active')">Close</button>
+  </div>
+</div>
+
+<style>
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+</style>
+
+<script>
+const app = {
+  state: {
+    user: '', avatar: '☕', locked: false,
+    soundEnabled: true, hostessReplies: true, ambientEnabled: true,
+    currentView: 'view-welcome',
+    counterHistory: [], floorHistory: [], tableHistory: [], bakeryHistory: [],
+    currentTable: null,
+    jukeboxPlaying: true, trackIndex: 0,
+    quoteIndex: 0,
+    memoryNotes: [],
+    newUser: false,
+  },
+
+  tracks: [
+    { name:'Late Night Rain', artist:'Soft Jazz · 3:42', mood:'jazz' },
+    { name:'Morning Brew', artist:'Lo-fi Chill · 4:10', mood:'lo-fi' },
+    { name:'Cinnamon & Cream', artist:'Soul Café · 3:55', mood:'soul' },
+    { name:'Bossa Nova Sunrise', artist:'Bossa Nova · 4:28', mood:'bossa' },
+    { name:'Ronald\'s Waltz', artist:'Piano Solo · 5:02', mood:'jazz' },
+    { name:'Warm Corner', artist:'Acoustic Lo-fi · 3:38', mood:'lo-fi' },
+    { name:'Family Table', artist:'Soul Jazz · 4:17', mood:'soul' },
+    { name:'Coffee Steam', artist:'Bossa Nova · 3:50', mood:'bossa' },
+    { name:'Workshop Groove', artist:'Blues · 4:05', mood:'soul' },
+    { name:'Wendy\'s Theme', artist:'Piano & Strings · 4:44', mood:'jazz' },
+  ],
+
+  quotes: [
+    { text: "The coffee is always better when you share it with someone you love.", attr: "Ronald" },
+    { text: "A machine that won't start just needs patience and the right hands.", attr: "Ronald" },
+    { text: "Family is the reason you wake up. Coffee is the reason you function.", attr: "Ronald" },
+    { text: "Put cinnamon on it. Whatever it is. Trust me.", attr: "Ronald" },
+    { text: "Don't rush the brew. Good things take time to be good.", attr: "Ronald" },
+    { text: "Every broken thing can be fixed. Every cold cup can be warmed.", attr: "Ronald" },
+    { text: "Gather around the table. Everything else can wait.", attr: "Ronald" },
+    { text: "The best tool in the workshop is showing up.", attr: "Ronald" },
+  ],
+
+  menuItems: [
+    { icon:'☕', name:"Ronald's Dark Roast", desc:"Bold, deep, and warming — his every morning cup", price:'R28', tag:"Ronald's Signature", long:"A full-bodied dark roast with notes of dark chocolate and toasted walnut. Ronald drank this every morning at exactly 6am. No sugar. Just coffee." },
+    { icon:'🌿', name:"Cinnamon Latte", desc:"Wendy's favourite — sweet, spiced & comforting", price:'R35', tag:"Wendy's Pick", long:"Silky steamed milk, a double espresso shot, and a generous dusting of Ceylon cinnamon. Ronald added the cinnamon — Wendy kept ordering it." },
+    { icon:'🥐', name:"Butter Croissant", desc:"Flaky, golden, just out the oven", price:'R22', tag:"Bakery Fresh", long:"Baked fresh each morning. Ronald believed a croissant should flake everywhere and you shouldn't apologise for it." },
+    { icon:'🍩', name:"Cinnamon Ring", desc:"Ronald's absolute favourite pastry", price:'R18', tag:"Dad's Favourite", long:"Soft dough, cinnamon sugar glaze, baked golden. Ronald could eat three in a sitting. Wendy would pretend not to notice." },
+    { icon:'🫖', name:"Vanilla Chai", desc:"Soft, warm, spiced chai with vanilla", price:'R30', tag:"Cosy Choice", long:"Brewed chai spices with steamed milk and a hint of vanilla. Perfect for slow mornings and quiet conversations." },
+    { icon:'🧁', name:"Wendy's Vanilla Slice", desc:"A classic, made with love", price:'R25', tag:"Wendy's Recipe", long:"Layers of puff pastry and thick vanilla custard cream. Wendy's recipe, unchanged since 1987. Ronald always asked for two slices." },
+    { icon:'🍞', name:"Toast & Cinnamon Butter", desc:"Simple, comforting, perfect", price:'R14', tag:"Ronald's Simple Joy", long:"Thick white bread, lightly toasted, spread with Wendy's homemade cinnamon butter. Ronald said this was the most honest food there is." },
+    { icon:'🫙', name:"Cold Brew Float", desc:"Cold brew + vanilla ice cream", price:'R38', tag:"Summer Special", long:"Strong 24-hour cold brew poured over a scoop of vanilla ice cream. Ronald tried this once, called it 'ridiculous,' then ordered another." },
+  ],
+
+  countries: [
+    { flag:'🇪🇹', name:'Ethiopia', roast:'Light Roast', tags:['Floral','Fruity','Bright'],
+      story:'Ethiopia is the birthplace of coffee itself. According to legend, a goat herder named Kaldi noticed his goats dancing after eating red berries from a tree. Monks brewed them into a drink — and the world changed forever.',
+      flavors:[['Floral',85],['Fruity',90],['Acidity',75],['Body',50]] },
+    { flag:'🇨🇴', name:'Colombia', roast:'Medium Roast', tags:['Caramel','Nutty','Sweet'],
+      story:'Colombia\'s mountainous terrain and year-round harvests produce some of the most consistently excellent coffee in the world. The Juan Valdez character was created to celebrate Colombian farmers — real people who wake before dawn for your cup.',
+      flavors:[['Caramel',80],['Nutty',75],['Sweetness',85],['Body',70]] },
+    { flag:'🇧🇷', name:'Brazil', roast:'Medium-Dark', tags:['Chocolate','Nutty','Low Acid'],
+      story:'Brazil produces nearly 40% of the world\'s coffee supply. The vast cerrado and Atlantic rainforest regions each produce distinct profiles. Most espresso blends worldwide contain Brazilian beans as their foundation.',
+      flavors:[['Chocolate',85],['Nutty',80],['Sweetness',70],['Body',85]] },
+    { flag:'🇾🇪', name:'Yemen', roast:'Dark Roast', tags:['Earthy','Wine-like','Complex'],
+      story:'Yemen is where coffee was first commercially traded, in the port city of Mocha — which gives the mocha its name. The ancient terraced farms still use methods unchanged for 500 years. These are some of the world\'s rarest beans.',
+      flavors:[['Earthy',90],['Complexity',95],['Fruit',80],['Body',85]] },
+    { flag:'🇯🇲', name:'Jamaica', roast:'Medium Roast', tags:['Smooth','Mild','Sweet'],
+      story:'Jamaica Blue Mountain is among the most expensive and sought-after coffees on earth. The misty Blue Mountain peaks create a slow-growing environment that produces exceptionally mild, smooth, sweet beans with almost no bitterness.',
+      flavors:[['Smoothness',95],['Sweetness',80],['Acidity',50],['Body',65]] },
+    { flag:'🇻🇳', name:'Vietnam', roast:'Dark Roast', tags:['Bold','Earthy','Robusta'],
+      story:'Vietnam is the world\'s second-largest coffee producer, famous for Robusta beans grown in the Central Highlands. Vietnamese iced coffee — cà phê sữa đá — blends strong dark brew with sweetened condensed milk over ice. Once tried, never forgotten.',
+      flavors:[['Boldness',90],['Earthiness',80],['Bitterness',85],['Body',95]] },
+    { flag:'🇮🇩', name:'Indonesia', roast:'Dark Roast', tags:['Earthy','Woody','Spiced'],
+      story:'Sumatra, Java, Sulawesi — Indonesian islands produce coffee through a unique wet-hulling process called giling basah that creates distinctively earthy, full-bodied, low-acid beans. Kopi Luwak also originates here, though Ronald would have stuck to the regular.',
+      flavors:[['Earthiness',90],['Body',95],['Spice',70],['Acidity',30]] },
+    { flag:'🇰🇪', name:'Kenya', roast:'Light-Medium', tags:['Blackcurrant','Bright','Winey'],
+      story:'Kenya\'s AA-grade coffee is legendary. Grown at high altitude on the slopes of Mount Kenya, the beans go through a rigorous double-fermentation washing process. The result is a vibrant, complex cup with remarkable brightness and distinct blackcurrant notes.',
+      flavors:[['Brightness',90],['Fruit',95],['Complexity',85],['Body',60]] },
+  ],
+
+  trivia: [
+    { q:"How many coffee beans does it take to make a single espresso shot?", a:"It takes approximately 40–50 coffee beans — carefully selected, roasted, and ground — to produce one single shot of espresso. Ronald counted once. Just once." },
+    { q:"What country drinks the most coffee per person in the world?", a:"Finland! Finns drink about 12kg of coffee per person per year. Ronald approved of this statistic wholeheartedly." },
+    { q:"In what century was coffee first used as a drink?", a:"The 15th century — around 1450 CE — in Yemen, where Sufi monks used it to stay awake during night prayers. Coffee and dedication: a timeless combination." },
+    { q:"What does 'espresso' actually mean in Italian?", a:"'Expressed' or 'pressed out' — referring to the method of forcing hot water through ground coffee under pressure. Fast, intense, concentrated. Ronald in a cup." },
+    { q:"Which is stronger: espresso or filter coffee?", a:"Filter coffee actually has more caffeine per cup! Espresso is more concentrated per ml, but a full cup of drip coffee contains more caffeine. Ronald knew this and drank both anyway." },
+    { q:"What was the first European country to have a coffee house?", a:"England — the first coffee house opened in Oxford in 1650, called 'The Angel.' Coffee houses were called 'penny universities' because for a penny, anyone could buy a coffee and join the conversation." },
+  ],
+
+  goodNews: [
+    { tag:"Nature", title:"Forests Recovering Faster Than Expected", body:"Scientists report that reforestation efforts across multiple continents are exceeding projections, with millions of hectares returning to woodland." },
+    { tag:"Community", title:"Communities Growing Together", body:"Urban community gardens are seeing record participation worldwide, bringing neighbours together and growing food with shared care." },
+    { tag:"Science", title:"Coffee Found to Support Brain Health", body:"New research continues to support coffee's role in brain health — another reason to enjoy your morning cup with gratitude." },
+    { tag:"People", title:"Acts of Kindness Making Headlines", body:"Stories of everyday kindness — strangers helping strangers, communities rallying, families reconnecting — continue to inspire the world." },
+    { tag:"Animals", title:"Endangered Species Making a Comeback", body:"Multiple species once on the brink have seen population recoveries in the past decade, thanks to conservation efforts worldwide." },
+    { tag:"Technology", title:"Clean Energy Milestones Being Broken", body:"Renewable energy is now the fastest-growing electricity source globally, with many regions hitting record-clean power generation days." },
+  ],
+
+  convoStarters: [
+    "If Ronald's Coffee Shop were a real place in your city, what would your regular order be?",
+    "What's one thing from your childhood that still makes you feel completely at home?",
+    "If you could fix one broken thing in the world today — what would it be?",
+    "What's a simple pleasure you don't appreciate enough?",
+    "Tell me about someone who gathered people together the way Ronald did.",
+    "What smell instantly takes you back to a happy memory?",
+    "If you had to describe your life as a coffee order, what would it be?",
+    "What's one thing you'd want your family to remember about you?",
+  ],
+
+  broadcasts: [
+    { name:"Ronald himself", av:"👨‍🍳", msg:"Hello everyone! It's a message to all friends and family — enjoy Ronald's Coffee Shop. You're always welcome here. ☕" },
+    { name:"A regular", av:"🧔", msg:"Hey folks — this place never gets old. Grab a cup and stay a while 🙂" },
+    { name:"Table 3", av:"👥", msg:"Shoutout to everyone in the shop today. Good vibes only, people. ✨" },
+    { name:"Ronald himself", av:"👨‍🍳", msg:"Friends and family — the coffee is fresh, the seats are warm, and you are loved. ☕🧡" },
+    { name:"Wendy", av:"👩", msg:"Ronald always said: the best cup of coffee is the one you share. So share one today. 🌿" },
+    { name:"The Kitchen", av:"🍞", msg:"Fresh batch just came out. Share a pastry with someone today. Life's too short not to. 🥐" },
+    { name:"Ronald's Workshop", av:"🔧", msg:"Sometimes you just have to roll up your sleeves and start. Coffee first, though. Always coffee first." },
+  ],
+
+  ambientMoments: [
+    { icon:"☕", text:"The coffee is warm.\nYou are safe here." },
+    { icon:"🌅", text:"No worries.\nThe future is going to be amazing —\na paradise waiting for you." },
+    { icon:"✨", text:"You're on a journey.\nEvery step is taking you somewhere beautiful." },
+    { icon:"🧡", text:"Ronald's is glad you're here.\nStay as long as you need." },
+    { icon:"🌿", text:"Breathe.\nYou're exactly where you're supposed to be." },
+    { icon:"🌟", text:"The best days are still ahead.\nWarm cup, open road, good people." },
+    { icon:"☁️", text:"Even the clouds clear eventually.\nYou've got this, friend." },
+    { icon:"🕯️", text:"Ronald built this place\nso no one would ever sit alone." },
+  ],
+
+  // ── INIT ──
+  init() {
+    const savedUser = localStorage.getItem('beanUser');
+    const savedAv   = localStorage.getItem('beanAvatar');
+    const savedLock = localStorage.getItem('beanLock');
+    const savedNotes = localStorage.getItem('beanNotes');
+
+    if (savedUser) {
+      this.state.user = savedUser;
+      document.getElementById('username-input').value = savedUser;
+    }
+    if (savedAv) { this.state.avatar = savedAv; }
+    if (savedLock === 'true') { this.state.locked = true; this.updateLockUI(); }
+    if (localStorage.getItem('beanHostess') === 'false') this.state.hostessReplies = false;
+    if (localStorage.getItem('beanSound')   === 'false') this.state.soundEnabled = false;
+    if (localStorage.getItem('beanAmbient') === 'false') this.state.ambientEnabled = false;
+    if (savedNotes) { try { this.state.memoryNotes = JSON.parse(savedNotes); } catch(e){} }
+
+    this.updateHeaderUser();
+    this.updateToggleUIs();
+    this.renderTables();
+    this.renderMenu();
+    this.renderTracks();
+    this.renderCountries();
+    this.renderMemoryWall();
+    this.renderQuote();
+    this.loadNewsContent();
+    this.setJukebox();
+    this.renderRegulars();
+
+    const today = new Date();
+    document.getElementById('paper-date').innerText = today.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+
+    const seed = today.toDateString().split('').reduce((a,b)=>a+b.charCodeAt(0),0);
+    const prompts = [
+      "What's the best coffee memory you have? ☕",
+      "Name one thing that made you smile this week 🌟",
+      "If you could sit anywhere in Ronald's shop, where? 🪑",
+      "Share a skill Ronald would have approved of 🔧",
+      "What would you order from the menu board today? 🥐",
+      "What's a place that always feels like home? 🏠",
+      "One piece of advice you'd give your younger self ✨",
+      "What song always lifts your mood? 🎵",
+    ];
+    document.getElementById('daily-text').innerText = prompts[seed % prompts.length];
+
+    const triviaItem = this.trivia[seed % this.trivia.length];
+    document.getElementById('trivia-q').innerText = triviaItem.q;
+    document.getElementById('trivia-ans').innerText = triviaItem.a;
+
+    // Event listeners
+    document.getElementById('toggle-lock').addEventListener('click', () => {
+      this.state.locked = !this.state.locked;
+      localStorage.setItem('beanLock', this.state.locked);
+      this.updateLockUI();
+    });
+
+    ['username-input','floor-input','counter-input','table-input','bakery-input','memory-input'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('keypress', e => {
+        if (e.key !== 'Enter') return;
+        if (id === 'username-input') this.enterShop();
+        else if (id === 'floor-input') this.sendMsg('floor');
+        else if (id === 'counter-input') this.sendMsg('counter');
+        else if (id === 'table-input') this.sendMsg('table');
+        else if (id === 'bakery-input') this.sendMsg('bakery');
+        else if (id === 'memory-input') this.addMemoryNote();
+      });
+    });
+
+    // Avatar builder interactivity
+    document.querySelectorAll('.avatar-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        const part = opt.dataset.part;
+        document.querySelectorAll(`.avatar-opt[data-part="${part}"]`).forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        this.buildAvatarPreview();
+      });
+    });
+
+    document.getElementById('settings-modal').addEventListener('click', e => {
+      if (e.target.id === 'settings-modal') this.closeSettings();
+    });
+
+    window.addEventListener('popstate', e => {
+      const st = e.state || {};
+      if (st.modal === 'settings') { this.openSettings(); return; }
+      this.closeSettings();
+      const v = st.view || 'view-lobby';
+      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+      document.getElementById(v)?.classList.add('active');
+      this.state.currentView = v;
+    });
+    history.replaceState({ view: this.state.currentView }, '', '');
+  },
+
+  // ── AVATAR ──
+  buildAvatarPreview() {
+    const base = document.querySelector('.avatar-opt.selected[data-part="base"]')?.dataset.val || '☕';
+    const vibe = document.querySelector('.avatar-opt.selected[data-part="vibe"]')?.dataset.val || '';
+    document.getElementById('av-preview').innerText = base;
+    this.state.avatar = base + vibe;
+  },
+
+  saveAvatar() {
+    this.buildAvatarPreview();
+    localStorage.setItem('beanAvatar', this.state.avatar);
+    this.updateHeaderUser();
+    this.toast('Avatar saved! Welcome, ' + this.state.user + ' ' + this.state.avatar);
+    this.goTo('view-lobby');
+    if (!this._started) { this._started = true; this.startBroadcasts(); this.startAmbientMoments(); }
+  },
+
+  updateHeaderUser() {
+    const avEl = document.getElementById('user-avatar-display');
+    const nmEl = document.getElementById('user-name-display');
+    const navAv = document.getElementById('nav-av-icon');
+    if (avEl) avEl.innerText = this.state.avatar || '☕';
+    if (nmEl) nmEl.innerText = this.state.user || 'Guest';
+    if (navAv) navAv.innerText = this.state.avatar || '🧑';
+  },
+
+  // ── ENTER SHOP ──
+  enterShop() {
+    const input = document.getElementById('username-input');
+    const name  = input.value.trim();
+    if (!name) { alert('Please tell us your name! ☕'); input.focus(); return; }
+    if (!this.state.locked) {
+      this.state.user = name;
+      localStorage.setItem('beanUser', name);
+    }
+    const isNew = !localStorage.getItem('beanAvatarDone');
+    if (isNew) {
+      localStorage.setItem('beanAvatarDone', '1');
+      this.state.newUser = true;
+      this.goTo('view-avatar');
+    } else {
+      this.updateHeaderUser();
+      this.goTo('view-lobby');
+      if (!this._started) { this._started = true; this.startBroadcasts(); this.startAmbientMoments(); }
+    }
+  },
+
+  // ── NAVIGATE ──
+  goTo(viewId) {
+    if (viewId === this.state.currentView) return;
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+    document.getElementById(viewId)?.classList.add('active');
+    this.state.currentView = viewId;
+    document.getElementById('app-main').scrollTop = 0;
+    // nav highlight
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    if (viewId === 'view-lobby' || viewId === 'view-welcome') document.getElementById('nav-home')?.classList.add('active');
+    if (viewId === 'view-avatar') document.getElementById('nav-avatar-btn')?.classList.add('active');
+    history.pushState({ view: viewId }, '', '');
+    if (viewId === 'view-news' && !this._newsLoaded) this.loadNewsContent();
+  },
+
+  // ── TABLES ──
+  renderTables() {
+    const vibes = [
+      { name:'Quiet Corner', cls:'vibe-quiet', icon:'🤫', sub:'Stillness & focus' },
+      { name:'Tech Hub',     cls:'vibe-tech',     icon:'💻', sub:'Build something' },
+      { name:'Music Lounge', cls:'vibe-music',    icon:'🎵', sub:'Let the sound in' },
+      { name:'Creative Studio', cls:'vibe-creative', icon:'🎨', sub:'Make something beautiful' },
+      { name:'Deep Work',    cls:'vibe-tech',     icon:'🧠', sub:'No distractions' },
+      { name:'Casual Chat',  cls:'vibe-music',    icon:'☕', sub:'Easy conversation' },
+      { name:'Video Edit',   cls:'vibe-tech',     icon:'🎬', sub:'Frame by frame' },
+      { name:'Prompt Lab',   cls:'vibe-quiet',    icon:'🪄', sub:'AI experimentation' },
+    ];
+    document.getElementById('tables-grid').innerHTML = vibes.map((v,i) => `
+      <div class="table-seat ${v.cls}" onclick="app.openTable(${i},'${v.name}','${v.icon}','${v.sub}')">
+        <span class="table-icon">${v.icon}</span>
+        <strong>${v.name}</strong>
+        <span>${v.sub}</span>
+      </div>`).join('');
+  },
+
+  openTable(idx, name, icon, sub) {
+    this.state.currentTable = idx;
+    this.state.tableHistory = [];
+    document.getElementById('table-chat-icon').innerText  = icon;
+    document.getElementById('table-chat-title').innerText = name + ' · Table ' + (idx+1);
+    document.getElementById('table-chat-sub').innerText   = sub;
+    document.getElementById('table-messages').innerHTML   = '<div class="msg">Welcome to this table. The vibe is ' + sub.toLowerCase() + ' ☕</div>';
+    this.goTo('view-table-chat');
+  },
+
+  // ── MENU ──
+  renderMenu() {
+    document.getElementById('menu-grid').innerHTML = this.menuItems.map((item,i) => `
+      <div class="menu-item" onclick="app.openMenuItem(${i})">
+        <span class="item-icon">${item.icon}</span>
+        <span class="item-name">${item.name}</span>
+        <span class="item-desc">${item.desc}</span>
+        <span class="item-price">${item.price}</span>
+      </div>`).join('');
+  },
+
+  openMenuItem(i) {
+    const item = this.menuItems[i];
+    document.getElementById('im-icon').innerText = item.icon;
+    document.getElementById('im-name').innerText = item.name;
+    document.getElementById('im-desc').innerText = item.long;
+    document.getElementById('im-tag').innerText  = item.tag;
+    document.getElementById('item-modal').classList.add('active');
+  },
+
+  closeItemModal(e) { if (e.target.id === 'item-modal') document.getElementById('item-modal').classList.remove('active'); },
+
+  // ── JUKEBOX ──
+  renderTracks() {
+    document.getElementById('track-list-items').innerHTML = this.tracks.map((t,i) => `
+      <div class="track-row ${i===0?'playing':''}" id="track-row-${i}" onclick="app.selectTrack(${i})">
+        <span class="track-num">${i+1}</span>
+        <div class="track-info">
+          <div class="track-name">${t.name}</div>
+          <div class="track-mood">${t.artist}</div>
+        </div>
+        <span class="mood-badge mood-${t.mood}">${t.mood}</span>
+        <span class="track-dur">—</span>
+      </div>`).join('');
+  },
+
+  setJukebox() {
+    const t = this.tracks[this.state.trackIndex];
+    document.getElementById('jukebox-track').innerText  = t.name;
+    document.getElementById('jukebox-artist').innerText = t.artist;
+    document.querySelectorAll('.track-row').forEach((r,i) => r.classList.toggle('playing', i === this.state.trackIndex));
+    const vinyl = document.getElementById('vinyl-spin');
+    if (vinyl) vinyl.style.animationPlayState = this.state.jukeboxPlaying ? 'running' : 'paused';
+  },
+
+  selectTrack(i) { this.state.trackIndex = i; this.state.jukeboxPlaying = true; this.setJukebox(); document.getElementById('jk-play').innerText = '⏸ Playing'; this.toast('🎵 Now playing: ' + this.tracks[i].name); },
+  nextTrack() { this.state.trackIndex = (this.state.trackIndex+1) % this.tracks.length; this.setJukebox(); },
+  prevTrack() { this.state.trackIndex = (this.state.trackIndex - 1 + this.tracks.length) % this.tracks.length; this.setJukebox(); },
+  togglePlay() {
+    this.state.jukeboxPlaying = !this.state.jukeboxPlaying;
+    document.getElementById('jk-play').innerText = this.state.jukeboxPlaying ? '⏸ Playing' : '▶ Play';
+    const vinyl = document.getElementById('vinyl-spin');
+    if (vinyl) vinyl.style.animationPlayState = this.state.jukeboxPlaying ? 'running' : 'paused';
+  },
+
+  // ── COUNTRIES ──
+  renderCountries() {
+    document.getElementById('country-grid').innerHTML = this.countries.map((c,i) => `
+      <div class="country-card" onclick="app.openCountry(${i})">
+        <span class="country-flag">${c.flag}</span>
+        <span class="country-name">${c.name}</span>
+        <span class="country-roast">${c.roast}</span>
+        <div class="flavor-tags">${c.tags.map(t=>`<span class="flavor-tag">${t}</span>`).join('')}</div>
+      </div>`).join('');
+  },
+
+  async openCountry(i) {
+    const c = this.countries[i];
+    document.getElementById('cm-flag').innerText  = c.flag;
+    document.getElementById('cm-name').innerText  = c.name;
+    document.getElementById('cm-roast').innerText = c.roast;
+    document.getElementById('cm-story').innerText = c.story;
+    document.getElementById('cm-fact').innerHTML  = '<div class="loading-brew"><div class="brew-spinner"></div>Brewing the story...</div>';
+    document.getElementById('cm-flavors').innerHTML = c.flavors.map(([label,val]) => `
+      <div class="flavor-bar-row">
+        <span class="flavor-bar-label">${label}</span>
+        <div class="flavor-bar-track"><div class="flavor-bar-fill" style="width:${val}%"></div></div>
+      </div>`).join('');
+    document.getElementById('country-modal').classList.add('active');
+
+    // AI-powered "Did You Know?" fact
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:1000,
+          system:'You write warm, friendly, fascinating coffee facts for a memorial coffee shop app called Ronald\'s Coffee Shop. Keep responses to 2-3 sentences, conversational, warm, and surprising. Never start with "I".',
+          messages:[{role:'user',content:`Give me one fascinating "Did You Know?" fact about coffee from ${c.name} that a coffee lover named Ronald would have loved. Make it warm and specific.`}]
+        })
+      });
+      const data = await resp.json();
+      document.getElementById('cm-fact').innerText = data.content?.[0]?.text || c.story;
+    } catch(e) {
+      document.getElementById('cm-fact').innerText = 'The beans from ' + c.name + ' carry centuries of tradition in every single cup.';
+    }
+  },
+
+  closeCountryModal(e) { if (e.target.id === 'country-modal') document.getElementById('country-modal').classList.remove('active'); },
+
+  // ── NEWS / DAILY DIGEST ──
+  async loadNewsContent() {
+    this._newsLoaded = true;
+    const seed = new Date().toDateString().split('').reduce((a,b)=>a+b.charCodeAt(0),0);
+    const gn = this.goodNews[seed % this.goodNews.length];
+    const cs = this.convoStarters[seed % this.convoStarters.length];
+
+    document.getElementById('good-news-section').innerHTML = `
+      <div class="news-card" style="border-left-color:var(--sage)">
+        <span class="news-tag">${gn.tag}</span>
+        <h5>${gn.title}</h5>
+        <p>${gn.body}</p>
+      </div>`;
+
+    document.getElementById('convo-starter-card').innerHTML = `
+      <span class="news-tag">Conversation Starter</span>
+      <h5>${cs}</h5>`;
+
+    // AI coffee fact
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:1000,
+          system:'You write warm coffee facts for Ronald\'s Coffee Shop, a memorial app. 2-3 sentences max. Warm, surprising, conversational. No fluff. No "I".',
+          messages:[{role:'user',content:'Give me today\'s coffee fact of the day — something surprising and delightful that a real coffee lover named Ronald would have raised his cup to.'}]
+        })
+      });
+      const data = await resp.json();
+      const fact = data.content?.[0]?.text || 'Coffee is the most traded commodity after oil — and arguably more essential.';
+      document.getElementById('coffee-fact-card').innerHTML = `<span class="news-tag">Coffee Science</span><h5>${fact}</h5>`;
+    } catch(e) {
+      document.getElementById('coffee-fact-card').innerHTML = '<span class="news-tag">Coffee</span><h5>Coffee is the second most traded commodity in the world, right after oil — and arguably more essential to daily life.</h5>';
+    }
+
+    // This Day
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('en-US',{month:'long',day:'numeric'});
+    const thisDayFacts = [
+      `On ${dateStr} in 1901, the first instant coffee was patented by Satori Kato in Chicago. Ronald would have still preferred freshly ground.`,
+      `On ${dateStr} in 1971, Starbucks opened its first store in Seattle. The coffee world would never be the same.`,
+      `On ${dateStr} throughout history, families gathered around tables, machines were fixed, and coffee was shared. Some things never change.`,
+      `On ${dateStr}, somewhere in the world, a parent made their child coffee for the first time. A tradition passed down, like Ronald always did.`,
+    ];
+    document.getElementById('this-day-card').innerText = thisDayFacts[seed % thisDayFacts.length];
+  },
+
+  revealTrivia() {
+    document.getElementById('trivia-ans').classList.add('revealed');
+    document.getElementById('trivia-reveal-btn').style.display = 'none';
+  },
+
+  // ── RONALD'S QUOTES ──
+  renderQuote() {
+    const q = this.quotes[this.state.quoteIndex];
+    const el = document.getElementById('quote-carousel');
+    if (el) el.innerHTML = q.text + `<div class="quote-attr">— ${q.attr}</div>`;
+  },
+  nextQuote() { this.state.quoteIndex = (this.state.quoteIndex+1) % this.quotes.length; this.renderQuote(); },
+  prevQuote() { this.state.quoteIndex = (this.state.quoteIndex-1+this.quotes.length) % this.quotes.length; this.renderQuote(); },
+
+  // ── MEMORY WALL ──
+  renderMemoryWall() {
+    const container = document.getElementById('memory-wall-notes');
+    if (!container) return;
+    const defaultNotes = [
+      { author:'Wendy', text:'Ronald made the best cinnamon coffee I\'ve ever tasted. Every morning, without fail. I miss that smell. 🌿' },
+      { author:'The Family', text:'He fixed everything — machines, bad days, broken hearts. Always with a cup of coffee in hand. ☕' },
+      { author:'A regular', text:'This man always had a warm word for everyone who walked in. Ronald\'s was never just a coffee shop — it was home.' },
+    ];
+    const notes = this.state.memoryNotes.length > 0 ? this.state.memoryNotes : defaultNotes;
+    container.innerHTML = notes.map(n => `
+      <div class="wall-note">
+        <span class="note-author">${n.author}</span>
+        ${n.text}
+      </div>`).join('');
+  },
+
+  addMemoryNote() {
+    const input = document.getElementById('memory-input');
+    const text  = input.value.trim();
+    if (!text) return;
+    const note = { author: this.state.user || 'A visitor', text };
+    this.state.memoryNotes.push(note);
+    localStorage.setItem('beanNotes', JSON.stringify(this.state.memoryNotes));
+    this.renderMemoryWall();
+    input.value = '';
+    this.toast('Note left on the memory wall 🕯️');
+  },
+
+  // ── REGULARS BOARD ──
+  renderRegulars() {
+    const chip = document.getElementById('regulars-chips');
+    if (!chip) return;
+    const regulars = [
+      { av:'👩‍🦱', name:'Jane' },
+      { av:'👩', name:'Wendy' },
+      { av:'🧑‍🍳', name:'Mara' },
+    ];
+    if (this.state.user) regulars.push({ av: this.state.avatar || '☕', name: this.state.user });
+    chip.innerHTML = regulars.map(r => `<div class="reg-chip"><span class="reg-chip-av">${r.av}</span>${r.name}</div>`).join('');
+  },
+
+  // ── MESSAGING ──
+  async sendMsg(type) {
+    const ids = { floor:'floor', counter:'counter', table:'table', bakery:'bakery' };
+    const inputId = ids[type] + '-input';
+    const areaId  = ids[type] + '-messages';
+    const input = document.getElementById(inputId);
+    const text  = input.value.trim();
+    if (!text) return;
+
+    if (this.state.soundEnabled) this.playPing();
+
+    const area = document.getElementById(areaId);
+    const myMsg = document.createElement('div');
+    myMsg.className = 'msg mine';
+    myMsg.innerText = text;
+    area.appendChild(myMsg);
+    input.value = '';
+    area.scrollTop = area.scrollHeight;
+
+    const shouldReply = type === 'counter' || type === 'bakery' || this.state.hostessReplies;
+    if (shouldReply) {
+      const tid = 'typing-' + Date.now();
+      const dots = document.createElement('div');
+      dots.className = 'msg typing-dots';
+      dots.id = tid;
+      dots.innerHTML = '<span></span><span></span><span></span>';
+      area.appendChild(dots);
+      area.scrollTop = area.scrollHeight;
+
+      const reply = await this.getReply(text, type);
+      document.getElementById(tid)?.remove();
+
+      const replyMsg = document.createElement('div');
+      replyMsg.className = 'msg';
+      replyMsg.innerText = (type === 'bakery' ? '🧁 ' : (type === 'counter' ? '👩‍🦱 ' : '☕ ')) + reply;
+      area.appendChild(replyMsg);
+      area.scrollTop = area.scrollHeight;
+    }
+  },
+
+  async getReply(text, type) {
+    const histMap = { counter: this.state.counterHistory, floor: this.state.floorHistory, table: this.state.tableHistory, bakery: this.state.bakeryHistory };
+    const history = histMap[type];
+    const user    = this.state.user || 'a regular';
+
+    const systems = {
+      counter: `You are Jane, the warm, witty barista at Ronald's Coffee Shop — a memorial coffee shop built in honour of Ronald, a man who loved coffee, fixing machines, gathering family, and cinnamon. Ronald's wife is Wendy. You're having a genuine one-on-one conversation with ${user} at the counter. Be real, caring, curious, occasionally funny. Never repeat yourself. Under 3 sentences. No robotic patterns. You are human.`,
+      floor:   `You are Jane, the hostess at Ronald's Coffee Shop, a memorial tribute to Ronald. ${user} is chatting on the main floor. Reply warmly, briefly (1-2 sentences), like a caring barista who genuinely noticed something. Stay fresh and human.`,
+      table:   `You are Jane at Ronald's Coffee Shop, a loving tribute to Ronald. ${user} is at a private table. Give a warm, brief 1-2 sentence reply. Cozy, human, never robotic.`,
+      bakery:  `You are Mara, the warm young assistant baker at Ronald's Coffee Shop — a memorial for Ronald who loved coffee, cinnamon, and family. You work alongside Jane. You love baking, cinnamon rolls especially. Chat warmly and briefly with ${user} about the bakery, food, or anything they bring up. 1-3 sentences, natural and caring.`,
+    };
+
+    const messages = [...history, { role:'user', content:text }];
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:1000,
+          system: systems[type] || systems.floor,
+          messages
+        })
+      });
+      const data  = await resp.json();
+      const reply = data.content?.[0]?.text || '☕ One sec...';
+      history.push({ role:'user', content:text });
+      history.push({ role:'assistant', content:reply });
+      return reply;
+    } catch(e) {
+      return "The espresso machine's thinking. Try again in a moment.";
+    }
+  },
+
+  // ── BROADCASTS ──
+  startBroadcasts() {
+    const next = () => {
+      setTimeout(() => {
+        const bc = this.broadcasts[Math.floor(Math.random() * this.broadcasts.length)];
+        ['floor-messages','table-messages'].forEach(id => {
+          const area = document.getElementById(id);
+          if (!area) return;
+          const div = document.createElement('div');
+          div.className = 'msg broadcast';
+          div.innerHTML = `<span class="bc-av">${bc.av}</span><div><span class="bc-nm">${bc.name}</span><br>${bc.msg}</div>`;
+          area.appendChild(div);
+          area.scrollTop = area.scrollHeight;
         });
-    </script>
+        next();
+      }, 45000 + Math.random() * 75000);
+    };
+    next();
+  },
+
+  // ── AMBIENT MOMENTS ──
+  startAmbientMoments() {
+    const show = () => {
+      setTimeout(() => {
+        if (this.state.ambientEnabled) {
+          const m = this.ambientMoments[Math.floor(Math.random() * this.ambientMoments.length)];
+          this.showAmbient(m.icon, m.text);
+        }
+        show();
+      }, 90000 + Math.random() * 120000);
+    };
+    setTimeout(() => {
+      if (this.state.ambientEnabled) this.showAmbient('☕', 'No worries.\nThe future is going to be amazing —\na paradise waiting for you.');
+      show();
+    }, 25000);
+  },
+
+  showAmbient(icon, text) {
+    document.getElementById('ambient-ol')?.remove();
+    const ol = document.createElement('div');
+    ol.id = 'ambient-ol';
+    ol.className = 'ambient-overlay';
+    ol.innerHTML = `<div class="ambient-inner"><span class="ambient-icon">${icon}</span><div class="ambient-text">${text.replace(/\n/g,'<br>')}</div></div>`;
+    ol.addEventListener('click', () => ol.remove());
+    document.body.appendChild(ol);
+    setTimeout(() => {
+      ol.classList.add('fade-out');
+      setTimeout(() => ol.remove(), 900);
+    }, 5500);
+  },
+
+  // ── SETTINGS ──
+  openSettings()  { document.getElementById('settings-modal').classList.add('active'); history.pushState({view:this.state.currentView,modal:'settings'},'',''); },
+  closeSettings() { document.getElementById('settings-modal').classList.remove('active'); },
+
+  toggle(which) {
+    const map = {
+      hostess: { key:'hostessReplies', store:'beanHostess', id:'t-hostess' },
+      sound:   { key:'soundEnabled',   store:'beanSound',   id:'t-sound'   },
+      ambient: { key:'ambientEnabled', store:'beanAmbient', id:'t-ambient' },
+    };
+    const m = map[which];
+    this.state[m.key] = !this.state[m.key];
+    localStorage.setItem(m.store, this.state[m.key]);
+    document.getElementById(m.id).classList.toggle('on', this.state[m.key]);
+    this.toast(this.state[m.key] ? '✓ ' + which + ' on' : '✕ ' + which + ' off');
+  },
+
+  updateToggleUIs() {
+    document.getElementById('t-hostess').classList.toggle('on', this.state.hostessReplies);
+    document.getElementById('t-sound').classList.toggle('on', this.state.soundEnabled);
+    document.getElementById('t-ambient').classList.toggle('on', this.state.ambientEnabled);
+  },
+
+  updateLockUI() {
+    const st  = document.getElementById('lock-status');
+    const inp = document.getElementById('username-input');
+    if (this.state.locked) { st.innerText = '🔒 Locked'; inp.disabled = true; }
+    else                    { st.innerText = '🔓 Unlocked'; inp.disabled = false; }
+  },
+
+  clearData() {
+    if (confirm('Reset all data? This cannot be undone.')) { localStorage.clear(); location.reload(); }
+  },
+
+  // ── AUDIO ──
+  getCtx() { if (!this._ctx) this._ctx = new (window.AudioContext || window.webkitAudioContext)(); return this._ctx; },
+  playPing() {
+    const ctx = this.getCtx();
+    const go  = () => {
+      const now = ctx.currentTime;
+      const g1  = ctx.createGain(); g1.connect(ctx.destination);
+      g1.gain.setValueAtTime(0,now); g1.gain.linearRampToValueAtTime(.5,now+.003); g1.gain.exponentialRampToValueAtTime(.001,now+1.1);
+      const o1 = ctx.createOscillator(); o1.type='sine'; o1.frequency.setValueAtTime(1396,now); o1.connect(g1); o1.start(now); o1.stop(now+1.1);
+      const g2  = ctx.createGain(); g2.connect(ctx.destination);
+      g2.gain.setValueAtTime(.25,now); g2.gain.exponentialRampToValueAtTime(.001,now+.5);
+      const o2 = ctx.createOscillator(); o2.type='sine'; o2.frequency.setValueAtTime(2093,now); o2.connect(g2); o2.start(now); o2.stop(now+.5);
+    };
+    ctx.state === 'suspended' ? ctx.resume().then(go) : go();
+  },
+
+  // ── TOAST ──
+  toast(msg) {
+    document.querySelector('.toast')?.remove();
+    const t = document.createElement('div');
+    t.className = 'toast'; t.innerText = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2200);
+  },
+};
+
+document.addEventListener('DOMContentLoaded', () => app.init());
+</script>
 </body>
 </html>
