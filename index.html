@@ -1648,7 +1648,7 @@ footer {
 <main id="app-main">
 
   <!-- VIEW: WELCOME -->
-  <section id="view-welcome" class="view active">
+  <section id="view-welcome" class="view">
     <div class="welcome-wrap">
       <div class="welcome-card">
         <!-- Animated bean icon -->
@@ -2368,20 +2368,25 @@ const app = {
     if (localStorage.getItem('beanAmbient') === 'false') this.state.ambientEnabled = false;
     if (savedNotes) { try { this.state.memoryNotes = JSON.parse(savedNotes); } catch(e){} }
 
-    // ── SESSION RESTORE — if user is known, skip sign-in and go straight to lobby ──
-    const hasSession = savedUser && localStorage.getItem('beanAvatarDone');
-    if (hasSession) {
+    // ── SESSION RESTORE ──
+    // A returning user is anyone with a saved name — skip welcome entirely
+    const safeViews = ['view-lobby','view-floor','view-counter','view-bakery','view-lounge','view-origins','view-news','view-memorial','view-tables','view-machines'];
+    if (savedUser) {
       this.state.user   = savedUser;
       this.state.avatar = savedAv || '☕';
-      // Restore last view (but never restore to welcome/avatar screens)
+      // Mark avatar as done so they never get sent to avatar screen on refresh
+      if (!localStorage.getItem('beanAvatarDone')) localStorage.setItem('beanAvatarDone','1');
+      // Go to last viewed room, or lobby if none saved
       const lastView = localStorage.getItem('beanLastView');
-      const safeViews = ['view-lobby','view-floor','view-counter','view-bakery','view-lounge','view-origins','view-news','view-memorial','view-tables','view-machines'];
       const startView = (lastView && safeViews.includes(lastView)) ? lastView : 'view-lobby';
       document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
       document.getElementById(startView)?.classList.add('active');
       this.state.currentView = startView;
       this._started = true;
       setTimeout(() => { this.startBroadcasts(); this.startAmbientMoments(); this.initSteamBar(); }, 500);
+    } else {
+      // Fresh visitor — show welcome screen
+      document.getElementById('view-welcome').classList.add('active');
     }
 
     this.updateHeaderUser();
@@ -2495,6 +2500,7 @@ const app = {
       this.state.user = name;
       localStorage.setItem('beanUser', name);
     }
+    localStorage.setItem('beanLastView', 'view-lobby');
     const isNew = !localStorage.getItem('beanAvatarDone');
     if (isNew) {
       localStorage.setItem('beanAvatarDone', '1');
