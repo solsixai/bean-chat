@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Bean Chat V9 ☕ Ronald's Coffee Shop</title>
+<title>Bean Chat V10 ☕ Ronald's Coffee Shop</title>
 <meta name="description" content="Ronald's Coffee Shop — Always Warm">
 <meta name="theme-color" content="#F9F3EC">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════════════════════════
-   BEAN CHAT V9 — Ronald's Coffee Shop
+   BEAN CHAT V10 — Ronald's Coffee Shop
    Warm · Homely · Spacious · Family
 ══════════════════════════════════════════ */
 :root {
@@ -446,6 +446,7 @@ main {
 .room-card.news-room::before    { background: #8B7050; }
 .room-card.memorial-room::before{ background: var(--gold); }
 .room-card.tables-room::before  { background: var(--cinnamon); }
+.room-card.machines-room::before { background: #5A6A80; }
 
 .room-icon {
   font-size: 2.4rem;
@@ -1541,6 +1542,78 @@ footer {
 .sb-sp-av { font-size: 1.3rem; flex-shrink: 0; }
 .sb-sp-text { font-size: .83rem; color: var(--text); line-height: 1.45; }
 
+
+/* ── MACHINES ROOM ── */
+.machines-wrap { max-width: 680px; margin: 0 auto; }
+.machines-header { text-align: center; margin-bottom: 1.5rem; }
+.machines-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 600; color: var(--roast); }
+.machines-header p { color: var(--text-soft); font-size: .9rem; margin-top: .3rem; line-height: 1.55; }
+
+.machine-section { margin-bottom: 1.75rem; }
+.machine-section-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem; font-weight: 600; color: var(--roast);
+  border-bottom: 2px solid var(--cream-deep);
+  padding-bottom: .45rem; margin-bottom: 1rem;
+  display: flex; align-items: center; gap: .5rem;
+}
+.machine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+.machine-card {
+  background: var(--surface);
+  border-radius: var(--r);
+  padding: 1.35rem 1.1rem;
+  box-shadow: var(--shadow-xs);
+  border: 1.5px solid var(--cream);
+  transition: transform .2s, box-shadow .2s, border-color .2s;
+  position: relative; overflow: hidden;
+  cursor: default;
+}
+.machine-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+}
+.machine-card.type-home::before    { background: var(--gold); }
+.machine-card.type-pro::before     { background: var(--coffee); }
+.machine-card.type-commercial::before { background: var(--cinnamon); }
+.machine-card.type-industrial::before { background: #5A6A80; }
+.machine-card.type-grinder::before  { background: var(--sage); }
+.machine-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--cream-deep); }
+.mc-icon { font-size: 2.2rem; display: block; margin-bottom: .6rem; }
+.mc-name { font-weight: 700; color: var(--roast); font-size: .95rem; display: block; margin-bottom: .25rem; }
+.mc-type { font-size: .65rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: .5rem; }
+.mc-desc { font-size: .82rem; color: var(--text-soft); line-height: 1.55; }
+.mc-fact { margin-top: .6rem; font-size: .78rem; color: var(--cinnamon); font-style: italic; border-top: 1px solid var(--cream); padding-top: .5rem; }
+
+.fact-card {
+  background: var(--oat);
+  border-radius: var(--r-sm);
+  padding: 1rem 1.1rem;
+  margin-bottom: .75rem;
+  border-left: 4px solid var(--gold-soft);
+  display: flex; gap: .75rem; align-items: flex-start;
+}
+.fact-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.4rem; font-weight: 700; color: var(--gold);
+  flex-shrink: 0; line-height: 1.2;
+}
+.fact-text { font-size: .88rem; color: var(--text); line-height: 1.6; }
+.fact-text strong { color: var(--roast); }
+
+.ronald-machine-note {
+  background: var(--roast);
+  border-radius: var(--r);
+  padding: 1.4rem 1.5rem;
+  display: flex; gap: 1rem; align-items: flex-start;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 1rem;
+}
+.rmn-icon { font-size: 2rem; flex-shrink: 0; }
+.ronald-machine-note strong { color: var(--gold-soft); font-size: .75rem; text-transform: uppercase; letter-spacing: 1.2px; display: block; margin-bottom: .4rem; }
+.ronald-machine-note p { color: rgba(255,255,255,.85); font-size: .9rem; line-height: 1.65; font-style: italic; font-family: 'Cormorant Garamond', serif; }
+
+@media(max-width:480px) { .machine-grid { grid-template-columns: 1fr; } }
+
 </style>
 </head>
 <body>
@@ -1703,6 +1776,11 @@ footer {
         <span class="room-icon">📋</span>
         <strong>Book a Table</strong>
         <span>Private vibes</span>
+      </div>
+      <div class="room-card machines-room room-wide" onclick="app.goTo('view-machines')">
+        <span class="room-icon">⚙️</span>
+        <strong>The Machine Room</strong>
+        <span>Coffee machines, grinders & amazing facts — Ronald's kind of place</span>
       </div>
     </div>
   </section>
@@ -1926,22 +2004,42 @@ footer {
         <div class="mem-card">
           <span class="mem-card-icon">☕</span>
           <h4>Coffee</h4>
-          <p>He believed the perfect cup could fix any morning</p>
+          <p>Up at 6am every morning. Dark roast, no sugar, no milk. Just Ronald and his cup — pure intention in a mug.</p>
         </div>
         <div class="mem-card">
           <span class="mem-card-icon">🔧</span>
           <h4>Fixing Things</h4>
-          <p>Machines, relationships, broken days — all fixable</p>
+          <p>Machines, relationships, broken days. He fixed the espresso machine with a butter knife once. It never worked better.</p>
         </div>
         <div class="mem-card">
           <span class="mem-card-icon">👨‍👩‍👧‍👦</span>
-          <h4>Family</h4>
-          <p>Gathered everyone around the table, always</p>
+          <h4>Family First</h4>
+          <p>Always gathering people around the table. Gave Tony kilos of good beans just because he could. Generosity was second nature.</p>
         </div>
         <div class="mem-card">
           <span class="mem-card-icon">🌿</span>
           <h4>Cinnamon</h4>
-          <p>On everything. No exceptions. That was his rule.</p>
+          <p>On everything. No exceptions. That was his rule. He added it to Wendy's latte and she never stopped ordering it. 🧡</p>
+        </div>
+        <div class="mem-card">
+          <span class="mem-card-icon">🚗</span>
+          <h4>The Pearl Beetle</h4>
+          <p>Pearl-coloured, always polished, always gleaming. He'd catch you looking at it and just smile. So proud of her.</p>
+        </div>
+        <div class="mem-card">
+          <span class="mem-card-icon">🚙</span>
+          <h4>Red Datsun</h4>
+          <p>Red body, white seats — immaculate. His Nissan Datsun that went everywhere with him. You'd think no one ever sat in it.</p>
+        </div>
+        <div class="mem-card">
+          <span class="mem-card-icon">🧢</span>
+          <h4>The Cap & The Bag</h4>
+          <p>Black cap, bag on his back — always. If the cap was on, Ronald was in the building. Shop felt different the moment he arrived.</p>
+        </div>
+        <div class="mem-card">
+          <span class="mem-card-icon">💅</span>
+          <h4>A Man of Standards</h4>
+          <p>"A man who neglects himself, neglects his people." He took care of his nails, his feet, his presentation. Always showed up well.</p>
         </div>
       </div>
 
@@ -1956,6 +2054,44 @@ footer {
 
       <div style="text-align:center;margin-top:.5rem;padding-bottom:1rem">
         <p style="font-size:.82rem;color:var(--text-muted);font-style:italic;font-family:'Cormorant Garamond',serif">Built with love by the family · Wendy's warmth lives here too 🧡</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: COFFEE MACHINES & GRINDERS -->
+  <section id="view-machines" class="view">
+    <span class="back-link" onclick="app.goTo('view-lobby')">← Back to Shop</span>
+    <div class="machines-wrap">
+      <div class="machines-header">
+        <h2>⚙️ The Machine Room</h2>
+        <p>Ronald loved machines almost as much as coffee.<br>This one's for him — and for every curious mind.</p>
+      </div>
+
+      <!-- ESPRESSO MACHINES -->
+      <div class="machine-section">
+        <h3 class="machine-section-title">☕ Espresso Machines</h3>
+        <div class="machine-grid" id="espresso-grid"></div>
+      </div>
+
+      <!-- GRINDERS -->
+      <div class="machine-section">
+        <h3 class="machine-section-title">⚙️ Coffee Grinders</h3>
+        <div class="machine-grid" id="grinder-grid"></div>
+      </div>
+
+      <!-- AMAZING FACTS -->
+      <div class="machine-section">
+        <h3 class="machine-section-title">🌟 Amazing Coffee Machine Facts</h3>
+        <div id="machine-facts-grid"></div>
+      </div>
+
+      <!-- RONALD'S NOTE -->
+      <div class="ronald-machine-note">
+        <span class="rmn-icon">🔧</span>
+        <div>
+          <strong>Ronald's Note</strong>
+          <p>"Any machine — espresso, engine, workshop tool — will give you everything it's got if you treat it right, keep it clean, and never rush it. Same goes for people."</p>
+        </div>
       </div>
     </div>
   </section>
@@ -1976,8 +2112,12 @@ footer {
     <span class="nav-icon" id="nav-av-icon">🧑</span>
     <span class="nav-lbl">Avatar</span>
   </button>
-  <button class="nav-btn" onclick="app.openSettings()">
+  <button class="nav-btn" id="nav-machines-btn" onclick="app.goTo('view-machines')">
     <span class="nav-icon">⚙️</span>
+    <span class="nav-lbl">Machines</span>
+  </button>
+  <button class="nav-btn" onclick="app.openSettings()">
+    <span class="nav-icon">🔧</span>
     <span class="nav-lbl">Settings</span>
   </button>
 </nav>
@@ -2090,6 +2230,17 @@ const app = {
     { text: "Every broken thing can be fixed. Every cold cup can be warmed.", attr: "Ronald" },
     { text: "Gather around the table. Everything else can wait.", attr: "Ronald" },
     { text: "The best tool in the workshop is showing up.", attr: "Ronald" },
+    { text: "My pearl Beetle and my red Datsun — two things that always got me where I needed to be.", attr: "Ronald" },
+    { text: "The bag on my back has everything I need. The cap on my head means I'm ready. Let's go.", attr: "Ronald" },
+    { text: "Take care of yourself. Your nails, your feet, your mind. A man who neglects himself neglects his people.", attr: "Ronald" },
+    { text: "Tony, those beans are for sharing. You know the rules.", attr: "Ronald, on giving coffee" },
+    { text: "The red Datsun, white seats — she never let me down. Neither did good coffee.", attr: "Ronald" },
+    { text: "I always had my bag. People said I looked like I was always about to leave. I just liked being prepared.", attr: "Ronald" },
+    { text: "Two cars, two personalities: the pearl Beetle for Sundays, the red Datsun for every other day. Both always clean.", attr: "Ronald" },
+    { text: "Tony — those beans aren't for sitting in a cupboard. Grind them, brew them, share them. That's the rule.", attr: "Ronald" },
+    { text: "The cap goes on last. When the cap is on, I'm ready. Simple system, always works.", attr: "Ronald" },
+    { text: "Take care of your hands. They fix things, they hold people, they make coffee. Treat them well.", attr: "Ronald" },
+    { text: "I drove that red Datsun like it was the most important car in the world. Because to me, it was.", attr: "Ronald" },
   ],
 
   menuItems: [
@@ -2160,13 +2311,35 @@ const app = {
   ],
 
   broadcasts: [
-    { name:"Ronald himself", av:"👨‍🍳", msg:"Hello everyone! It's a message to all friends and family — enjoy Ronald's Coffee Shop. You're always welcome here. ☕" },
-    { name:"A regular", av:"🧔", msg:"Hey folks — this place never gets old. Grab a cup and stay a while 🙂" },
-    { name:"Table 3", av:"👥", msg:"Shoutout to everyone in the shop today. Good vibes only, people. ✨" },
-    { name:"Ronald himself", av:"👨‍🍳", msg:"Friends and family — the coffee is fresh, the seats are warm, and you are loved. ☕🧡" },
+    // Ronald's life moments
+    { name:"Ronald", av:"👨‍🍳", msg:"Hello everyone! 🧡 Just gave Tony a few kilos of our best beans. Tony — you know what to do with them. ☕" },
+    { name:"Ronald", av:"👨‍🍳", msg:"Morning family! Just got back from the workshop. The old Datsun needed a look. Red as ever, white seats spotless. She's a beauty. 🚗" },
+    { name:"Ronald", av:"👨‍🍳", msg:"Anyone seen my black cap? I left it somewhere in here. Can't leave without it — it's basically part of me. 🧢" },
+    { name:"Ronald", av:"👨‍🍳", msg:"Friends and family — missing you all today. Working late. But the coffee's on and the door's always open. 🕯️" },
+    { name:"Ronald", av:"👨‍🍳", msg:"Just polished the pearl Beetle. She's gleaming in the sun. Ronald's two loves — his car and his coffee. ✨🚗" },
+    { name:"Ronald", av:"👨‍🍳", msg:"Had my bag on my back all day like always. People think I'm always going somewhere. Maybe I am. ☕🎒" },
+    { name:"Ronald", av:"👨‍🍳", msg:"Took a little time for myself today — feet up, nails done. A man who takes care of himself takes better care of others. 😄" },
+    { name:"Ronald", av:"👨‍🍳", msg:"Everyone gather around. Coffee's fresh, cinnamon's on the counter. This is what life is for. 🧡" },
+    { name:"Ronald", av:"👨‍🍳", msg:"Tony just called — said those beans I gave him made the best brew of his life. That's what we do here. ☕" },
+    { name:"Ronald", av:"👨‍🍳", msg:"The red Datsun is parked out front. If you see it, you know I'm here. Come say hello. 🚗☕" },
+    // Staff
+    { name:"Jane", av:"👩‍🦱", msg:"Mara's cinnamon rolls are still warm. I'm just saying. First come, first served. 🥐" },
+    { name:"Jane", av:"👩‍🦱", msg:"Ronald just walked in wearing his black cap and that smile. Shop feels complete. 🧢☕" },
+    { name:"Jane", av:"👩‍🦱", msg:"The espresso machine is singing today. Ronald would say that means it's happy. ☕✨" },
+    { name:"Mara", av:"🧑‍🍳", msg:"Fresh cinnamon rings out! Ronald's recipe. I will never change a single ingredient. 🍩" },
+    { name:"Mara", av:"🧑‍🍳", msg:"Someone just ordered three cinnamon rings. Ronald would be proud. Or jealous. Probably both. 😄" },
     { name:"Wendy", av:"👩", msg:"Ronald always said: the best cup of coffee is the one you share. So share one today. 🌿" },
-    { name:"The Kitchen", av:"🍞", msg:"Fresh batch just came out. Share a pastry with someone today. Life's too short not to. 🥐" },
-    { name:"Ronald's Workshop", av:"🔧", msg:"Sometimes you just have to roll up your sleeves and start. Coffee first, though. Always coffee first." },
+    { name:"Wendy", av:"👩", msg:"I still make the vanilla slice from the same card he gave me in 1987. Some things you don't change. 🧁🧡" },
+    { name:"A regular", av:"🧔", msg:"Hey folks — this place never gets old. Ronald had that gift. Grab a cup. 🙂" },
+    { name:"Tony", av:"🧑", msg:"Ronald gave me a few kilos of those beans last week. My whole family is now addicted. Ronald — you genius. ☕😂" },
+    { name:"The Workshop", av:"🔧", msg:"Ronald's tools are still on the bench. The man could fix anything. Miss him every day. 🔧🧡" },
+    { name:"Ronald", av:"👨‍🍳", msg:"Pearl Beetle is parked outside. Datsun's at home. Came in the Beetle today — she needed a drive. ✨🚗" },
+    { name:"Ronald", av:"👨‍🍳", msg:"Cap's on. Bag's packed. Coffee's brewing. That's my whole checklist sorted. Let's go. 🧢🎒☕" },
+    { name:"Ronald", av:"👨‍🍳", msg:"Just took some time for myself — feet up, sorted my nails, had a quiet cup. A man who takes care of himself takes better care of others. 😊" },
+    { name:"Ronald", av:"👨‍🍳", msg:"Tony! If you're reading this — I hope you're sharing those beans. That was the deal. ☕😄" },
+    { name:"Ronald", av:"👨‍🍳", msg:"Polished the white seats in the Datsun this morning. Some people pray. I polish car seats. Same peace. 🚗🧡" },
+    { name:"Jane", av:"👩‍🦱", msg:"Ronald just walked through with that bag on his back and his cap slightly crooked. Didn't even notice. Absolute legend. 🧢😄" },
+    { name:"Tony", av:"🧑", msg:"Made another brew with Ronald's beans this morning. My neighbours knocked to ask what that smell was. Ronald — you changed my street. ☕😂" },
   ],
 
   ambientMoments: [
@@ -2195,9 +2368,26 @@ const app = {
     if (localStorage.getItem('beanAmbient') === 'false') this.state.ambientEnabled = false;
     if (savedNotes) { try { this.state.memoryNotes = JSON.parse(savedNotes); } catch(e){} }
 
+    // ── SESSION RESTORE — if user is known, skip sign-in and go straight to lobby ──
+    const hasSession = savedUser && localStorage.getItem('beanAvatarDone');
+    if (hasSession) {
+      this.state.user   = savedUser;
+      this.state.avatar = savedAv || '☕';
+      // Restore last view (but never restore to welcome/avatar screens)
+      const lastView = localStorage.getItem('beanLastView');
+      const safeViews = ['view-lobby','view-floor','view-counter','view-bakery','view-lounge','view-origins','view-news','view-memorial','view-tables','view-machines'];
+      const startView = (lastView && safeViews.includes(lastView)) ? lastView : 'view-lobby';
+      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+      document.getElementById(startView)?.classList.add('active');
+      this.state.currentView = startView;
+      this._started = true;
+      setTimeout(() => { this.startBroadcasts(); this.startAmbientMoments(); this.initSteamBar(); }, 500);
+    }
+
     this.updateHeaderUser();
     this.updateToggleUIs();
     this.renderTables();
+    this.renderMachines();
     this.renderMenu();
     this.renderTracks();
     this.renderCountries();
@@ -2269,6 +2459,7 @@ const app = {
       this.state.currentView = v;
     });
     history.replaceState({ view: this.state.currentView }, '', '');
+    localStorage.setItem('beanLastView', this.state.currentView);
   },
 
   buildAvatarPreview() {
@@ -2325,7 +2516,9 @@ const app = {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     if (viewId === 'view-lobby' || viewId === 'view-welcome') document.getElementById('nav-home')?.classList.add('active');
     if (viewId === 'view-avatar') document.getElementById('nav-avatar-btn')?.classList.add('active');
+    if (viewId === 'view-machines') document.getElementById('nav-machines-btn')?.classList.add('active');
     history.pushState({ view: viewId }, '', '');
+    localStorage.setItem('beanLastView', viewId);
     if (viewId === 'view-news' && !this._newsLoaded) this.loadNewsContent();
 
     // Personalise welcome messages on first visit
@@ -2419,6 +2612,10 @@ const app = {
         "Why did the coffee file a police report? It got mugged! 😂 Ronald loved that one.",
         "The machine is making a sound. I'm choosing to believe it's a good sound. 🙏",
         "Shift change soon! Ronald used to bring everyone a fresh cup at handover. 🕯️",
+        "Ronald just gave Tony a few more kilos of beans. Tony looked like Christmas came early. 😄",
+        "I saw Ronald's pearl Beetle parked outside this morning. Heart eyes. 🚗✨",
+        "Ronald walked in with his black cap and bag like always. Some things never change. 🧢🧡",
+        "Ronald spent some time on himself today. He always said: look after yourself first. 💅",
       ]},
       { staff:'sb-mara', av:'🧑‍🍳', lines:[
         "Fresh cinnamon rolls OUT! 🥐 First come first served!",
@@ -2431,6 +2628,8 @@ const app = {
         "Why did the baker stop making doughnuts? Sick of the hole business! 😂",
         "Croissants are golden. Like, actually golden. I'm so proud of myself today. 🥐",
         "Ronald used to sneak cinnamon rings before service. Three at a time. Three! 😄",
+        "Tony called to say the beans Ronald gave him made the best brew of his life. 🏆",
+        "Ronald came in, ate a cinnamon ring, nodded slowly and said nothing. That's 5 stars. 😂",
       ]},
     ];
     const showStaffLine = () => {
@@ -2609,6 +2808,26 @@ const app = {
       // WENDY
       if (/wendy/.test(t))
         return { reply: `Wendy! 🧡 She's the reason the vanilla slice exists. And the cinnamon latte. And honestly, the reason Ronald showed up every morning. She'd come in with this look — like the whole shop was exactly where it should be. Still does. 🌿`, state:'chatting' };
+      // RONALD'S CARS
+      if (/beetle|vw|volkswagen|pearl|pearl.?car/.test(t))
+        return { reply: `Ronald's pearl Beetle! 🚗✨ He polished that car like it was family. Cream-coloured, always gleaming, parked outside the shop on good days. He'd catch you looking at it and just smile. So proud of her.`, state:'chatting' };
+      if (/datsun|red car|nissan|white seats/.test(t))
+        return { reply: `The red Datsun! 🚗 Classic Ronald. Red body, white seats — he kept those seats immaculate. You'd think he never sat in it. He drove it everywhere. Some people have a signature coat. Ronald had a signature car. Two of them, actually. 😄`, state:'chatting' };
+      if (/(car|cars|vehicle|drive|drove)/.test(t))
+        return { reply: `Ronald and his cars. 🚗 The pearl Beetle and the red Datsun with white seats — two completely different personalities, both completely Ronald. He treated them the way he treated his coffee machines — with patience and care. 🧡`, state:'chatting' };
+
+      // RONALD'S STYLE — CAP & BAG
+      if (/black cap|cap|hat/.test(t))
+        return { reply: `The black cap! 🧢 That was Ronald's trademark — if you saw the black cap, you knew he was here. He'd walk in, cap on, bag on his back, and the whole shop felt different. More alive, somehow. 🧡`, state:'chatting' };
+      if (/bag|backpack|rucksack/.test(t))
+        return { reply: `Ronald and his bag! 🎒 Always on his back, always packed. People used to joke that he was either coming or going. He said he was always ready for both. That was just him — prepared, purposeful, always moving forward. ☕`, state:'chatting' };
+      if (/nails|feet|pedicure|manicure|groomed|grooming/.test(t))
+        return { reply: `Ha! Ronald believed in taking care of himself properly — nails, feet, the whole thing. He used to say "a man who neglects himself, neglects his people." And he was right. Always turned out well. Took pride in it. 😊`, state:'chatting' };
+
+      // TONY
+      if (/tony/.test(t))
+        return { reply: `Tony! ☕ One of Ronald's people. Ronald gave him kilos of beans — proper, good beans — and Tony made the best brew of his life with them. Called back just to say so. That was Ronald's gift — he didn't just share coffee, he shared the love of it. 🧡`, state:'chatting' };
+
       // JOKES
       if (/joke|funny|make me laugh|humor/.test(t)) {
         const j = [
@@ -2656,6 +2875,71 @@ const app = {
     }
 
     return { reply: `Hey ${name}! ☕ What can I get you?`, state:'idle' };
+  },
+
+
+  espressoMachines: [
+    { icon:'🏠', type:'home', name:'De'Longhi Dedica', category:'Home', desc:'Slim, stylish, 15-bar pump. Perfect for the home barista who means business without taking up the whole counter.', fact:'Ronald approved of anything that fit in a small space but punched above its weight.' },
+    { icon:'🏠', type:'home', name:'Breville Barista Express', category:'Home All-in-One', desc:'Built-in conical grinder, precise temperature control, steam wand. A complete setup in one machine.', fact:'If Ronald had a home machine, this would be it — grinder built in, no fuss.' },
+    { icon:'☕', type:'pro', name:'La Marzocco Linea Mini', category:'Prosumer', desc:'Dual boiler, commercial-grade group head — professional café quality in a home-friendly footprint. A dream machine.', fact:'These machines cost more than a second-hand Datsun. Ronald would have respected that.' },
+    { icon:'⚡', type:'pro', name:'Rocket Appartamento', category:'Prosumer', desc:'Heat exchanger boiler, beautiful Italian stainless design, rock-solid reliability. The workhorse of serious home cafés.', fact:'The kind of machine you buy once and leave to your children. Ronald's kind of investment.' },
+    { icon:'🏪', type:'commercial', name:'La Marzocco GB5', category:'Commercial', desc:'The gold standard of café espresso. Dual boilers, saturated group heads, used in the world's best specialty coffee bars.', fact:'If this machine were a car, it would be Ronald's pearl Beetle — classic, reliable, beautiful.' },
+    { icon:'🏭', type:'industrial', name:'Schaerer Coffee Art Plus', category:'Industrial', desc:'Fully automatic commercial giant — handles 300+ cups per day. Built for airports, hotels, and high-volume venues.', fact:'Ronald would have stood and watched this machine work for an hour. Pure mechanical joy.' },
+    { icon:'🏭', type:'industrial', name:'Franke A1000', category:'Industrial', desc:'Touch-screen interface, automatic milk system, cleans itself. Industrial coffee at the push of a button.', fact:'Ronald would say: "Impressive. But you still can't beat the smell of grinding it yourself." ☕' },
+    { icon:'🫘', type:'home', name:'AeroPress', category:'Manual Brew', desc:'Ingenious air-pressure manual brewer — makes incredibly smooth, concentrated coffee. Beloved by travellers and purists.', fact:'Ronald took one of these on a road trip in the Datsun. True story. Probably.' },
+  ],
+
+  grinders: [
+    { icon:'⚙️', type:'grinder', name:'Baratza Encore', category:'Home Grinder', desc:'The most recommended entry-level burr grinder in the world. 40 grind settings, consistent particle size, built to last.', fact:'The Encore is to coffee what the Datsun was to roads — simple, reliable, never lets you down.' },
+    { icon:'⚙️', type:'grinder', name:'Comandante C40', category:'Manual Hand Grinder', desc:'German-engineered hand grinder with nitrogen steel burrs. Produces a remarkable grind for filter and espresso. A collector's item.', fact:'Ronald would have loved this. Portable, mechanical, precise — pure craft in your hands.' },
+    { icon:'⚙️', type:'grinder', name:'Eureka Mignon Specialita', category:'Prosumer Grinder', desc:'Stepless micrometric adjustment, low noise, touch timer. The Italian stallion of home espresso grinding.', fact:'The kind of grinder where you grind once, smell the air, and forget everything that was bothering you.' },
+    { icon:'🏭', type:'industrial', name:'Mahlkönig EK43', category:'Commercial Grinder', desc:'The legend. Used by every world barista champion since 2012. Flat burrs, massive hopper, breathtaking grind consistency.', fact:'When Ronald visited a café with one of these, he stood in silence for a moment. Then ordered two coffees.' },
+    { icon:'🏭', type:'industrial', name:'Mazzer Robur', category:'Commercial Grinder', desc:'Conical burr workhorse. High-volume, low heat transfer, beloved by specialty cafés for its consistent espresso output.', fact:'Built like the red Datsun — not the flashiest, but will outlast everything around it.' },
+    { icon:'🏭', type:'industrial', name:'Bunn G9 Industrial', category:'Industrial Bulk Grinder', desc:'Grinds up to 3 lbs of coffee per minute. Used in factories, large hotels, and high-volume roasters. An absolute beast.', fact:'Ronald gave Tony several kilos of beans. A Bunn G9 would have made short work of them. 😄' },
+  ],
+
+  machineFacts: [
+    { n:'01', text:'The first espresso machine was built in <strong>1884 by Angelo Moriondo</strong> in Turin, Italy. He patented it to serve the guests of his hotel more efficiently. Ronald would have fixed it himself.' },
+    { n:'02', text:'A commercial espresso machine operates at <strong>9 bars of pressure</strong> — that's 130 PSI, or about 9 times the pressure of a car tyre. Ronald knew exactly what that felt like.' },
+    { n:'03', text:'The world's most expensive coffee machine, the <strong>Benz Patent-Motorwagen Espresso</strong>, sold for over $1 million at auction. Ronald's pearl Beetle is priceless by comparison. 😄' },
+    { n:'04', text:'Burr grinders produce <strong>more consistent particle sizes</strong> than blade grinders — and consistent grind means consistent extraction. Ronald understood this was the difference between good and great.' },
+    { n:'05', text:'The <strong>La Marzocco company</strong> was founded in Florence in 1927 and still hand-builds every machine. Each takes 5 days to assemble. Ronald respected craftsmanship like that.' },
+    { n:'06', text:'Industrial coffee roasters can process <strong>up to 500kg of green beans per hour</strong>. The aroma from a roastery can be smelled from 2km away. Ronald would have lived next door.' },
+    { n:'07', text:'The <strong>AeroPress</strong> was invented in 2005 by Alan Adler, a Stanford engineering lecturer who also invented the Aerobie flying disc. One man, two legendary inventions. Ronald would have approved.' },
+    { n:'08', text:'A well-maintained commercial espresso machine can last <strong>20–30 years</strong> with proper care. Ronald could have kept one running for 40. With a butter knife if necessary. 🔧' },
+    { n:'09', text:'The <strong>Mahlkönig EK43</strong> grinder was originally designed for spices, not coffee. A barista in 2012 tried it for espresso on a hunch and changed the coffee world forever.' },
+    { n:'10', text:'Ronald gave Tony a few kilos of beans. If Tony used an industrial Bunn grinder, he could have ground all of them in <strong>under 60 seconds</strong>. Tony probably used his hands. 😂' },
+  ],
+
+  renderMachines() {
+    const eg = document.getElementById('espresso-grid');
+    const gg = document.getElementById('grinder-grid');
+    const fg = document.getElementById('machine-facts-grid');
+    if (!eg || !gg || !fg) return;
+
+    eg.innerHTML = this.espressoMachines.map(m => `
+      <div class="machine-card type-${m.type}">
+        <span class="mc-icon">${m.icon}</span>
+        <span class="mc-type">${m.category}</span>
+        <span class="mc-name">${m.name}</span>
+        <p class="mc-desc">${m.desc}</p>
+        <p class="mc-fact">${m.fact}</p>
+      </div>`).join('');
+
+    gg.innerHTML = this.grinders.map(m => `
+      <div class="machine-card type-${m.type}">
+        <span class="mc-icon">${m.icon}</span>
+        <span class="mc-type">${m.category}</span>
+        <span class="mc-name">${m.name}</span>
+        <p class="mc-desc">${m.desc}</p>
+        <p class="mc-fact">${m.fact}</p>
+      </div>`).join('');
+
+    fg.innerHTML = this.machineFacts.map(f => `
+      <div class="fact-card">
+        <span class="fact-num">${f.n}</span>
+        <p class="fact-text">${f.text}</p>
+      </div>`).join('');
   },
 
   renderTables() {
