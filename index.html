@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Bean Chat V10 ☕ Ronald's Coffee Shop</title>
+<title>Bean Chat V9 ☕ Ronald's Coffee Shop</title>
 <meta name="description" content="Ronald's Coffee Shop — Always Warm">
 <meta name="theme-color" content="#F9F3EC">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════════════════════════
-   BEAN CHAT V10 — Ronald's Coffee Shop
+   BEAN CHAT V9 — Ronald's Coffee Shop
    Warm · Homely · Spacious · Family
 ══════════════════════════════════════════ */
 :root {
@@ -446,7 +446,6 @@ main {
 .room-card.news-room::before    { background: #8B7050; }
 .room-card.memorial-room::before{ background: var(--gold); }
 .room-card.tables-room::before  { background: var(--cinnamon); }
-.room-card.machines-room::before { background: #5A6A80; }
 
 .room-icon {
   font-size: 2.4rem;
@@ -1417,203 +1416,6 @@ footer {
   .brand { font-size: 1.15rem; }
   .brand-icon { width: 30px; height: 30px; }
 }
-
-/* ── STEAM BAR SCENE ── */
-#steam-bar {
-  max-width: 660px;
-  margin: 0 auto 1rem;
-  background: var(--surface);
-  border-radius: var(--r);
-  border: 1px solid var(--cream);
-  box-shadow: var(--shadow-xs);
-  overflow: hidden;
-  position: relative;
-}
-.sb-scene { padding: 1rem 1.25rem .75rem; }
-.sb-counter {
-  display: flex;
-  align-items: flex-end;
-  gap: 1.25rem;
-  padding-bottom: .5rem;
-  border-bottom: 2px solid var(--cream);
-}
-.sb-machine {
-  position: relative;
-  width: 52px;
-  flex-shrink: 0;
-}
-.sb-machine-body {
-  width: 52px; height: 46px;
-  background: linear-gradient(160deg, #6B3F20, #4A2C18);
-  border-radius: 10px 10px 6px 6px;
-  box-shadow: 2px 2px 8px rgba(44,26,14,.25);
-  position: relative;
-}
-.sb-machine-body::after {
-  content: '';
-  position: absolute;
-  top: 8px; left: 8px;
-  width: 16px; height: 12px;
-  background: rgba(200,144,60,.3);
-  border-radius: 4px;
-  border: 1px solid rgba(200,144,60,.5);
-}
-.sb-spout {
-  width: 12px; height: 8px;
-  background: #3A1F0A;
-  margin: 0 auto;
-  border-radius: 0 0 6px 6px;
-  position: relative;
-  z-index: 2;
-}
-.sb-steam-wrap {
-  position: absolute;
-  top: -22px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 4px;
-  z-index: 3;
-}
-.sb-steam {
-  width: 4px;
-  height: 20px;
-  border-radius: 4px;
-  background: rgba(200,170,130,.5);
-  animation: steamRise 2s ease-in-out infinite;
-  transform-origin: bottom;
-}
-.sb-steam.s1 { animation-delay: 0s; }
-.sb-steam.s2 { animation-delay: .4s; height: 16px; }
-.sb-steam.s3 { animation-delay: .8s; height: 13px; }
-@keyframes steamRise {
-  0%   { opacity: 0;   transform: translateY(0) scaleX(1); }
-  30%  { opacity: .7;  transform: translateY(-6px) scaleX(1.3); }
-  70%  { opacity: .4;  transform: translateY(-14px) scaleX(1.6); }
-  100% { opacity: 0;   transform: translateY(-20px) scaleX(2); }
-}
-.sb-cup {
-  width: 22px; height: 16px;
-  background: var(--oat);
-  border: 2px solid var(--cream-deep);
-  border-radius: 3px 3px 6px 6px;
-  margin: 0 auto;
-  position: relative;
-}
-.sb-cup::after {
-  content: '';
-  position: absolute;
-  top: 3px; right: -7px;
-  width: 7px; height: 8px;
-  border: 2px solid var(--cream-deep);
-  border-radius: 0 4px 4px 0;
-  border-left: none;
-}
-
-.sb-staff {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  animation: staffBob 3s ease-in-out infinite;
-}
-.sb-staff:nth-child(3) { animation-delay: 1s; }
-@keyframes staffBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
-.sb-avatar { font-size: 1.8rem; line-height: 1; }
-.sb-name { font-size: .65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .8px; }
-
-.sb-speech {
-  display: none;
-  align-items: center;
-  gap: .6rem;
-  margin-top: .65rem;
-  padding: .6rem .85rem;
-  background: var(--oat);
-  border-radius: var(--r-sm);
-  border-left: 3px solid var(--gold-soft);
-  opacity: 0;
-  transform: translateY(4px);
-  transition: opacity .4s ease, transform .4s ease;
-}
-.sb-speech.sb-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-.sb-sp-av { font-size: 1.3rem; flex-shrink: 0; }
-.sb-sp-text { font-size: .83rem; color: var(--text); line-height: 1.45; }
-
-
-/* ── MACHINES ROOM ── */
-.machines-wrap { max-width: 680px; margin: 0 auto; }
-.machines-header { text-align: center; margin-bottom: 1.5rem; }
-.machines-header h2 { font-family: 'Cormorant Garamond', serif; font-size: 1.75rem; font-weight: 600; color: var(--roast); }
-.machines-header p { color: var(--text-soft); font-size: .9rem; margin-top: .3rem; line-height: 1.55; }
-
-.machine-section { margin-bottom: 1.75rem; }
-.machine-section-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.15rem; font-weight: 600; color: var(--roast);
-  border-bottom: 2px solid var(--cream-deep);
-  padding-bottom: .45rem; margin-bottom: 1rem;
-  display: flex; align-items: center; gap: .5rem;
-}
-.machine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
-.machine-card {
-  background: var(--surface);
-  border-radius: var(--r);
-  padding: 1.35rem 1.1rem;
-  box-shadow: var(--shadow-xs);
-  border: 1.5px solid var(--cream);
-  transition: transform .2s, box-shadow .2s, border-color .2s;
-  position: relative; overflow: hidden;
-  cursor: default;
-}
-.machine-card::before {
-  content: ''; position: absolute;
-  top: 0; left: 0; right: 0; height: 3px;
-}
-.machine-card.type-home::before    { background: var(--gold); }
-.machine-card.type-pro::before     { background: var(--coffee); }
-.machine-card.type-commercial::before { background: var(--cinnamon); }
-.machine-card.type-industrial::before { background: #5A6A80; }
-.machine-card.type-grinder::before  { background: var(--sage); }
-.machine-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--cream-deep); }
-.mc-icon { font-size: 2.2rem; display: block; margin-bottom: .6rem; }
-.mc-name { font-weight: 700; color: var(--roast); font-size: .95rem; display: block; margin-bottom: .25rem; }
-.mc-type { font-size: .65rem; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: .5rem; }
-.mc-desc { font-size: .82rem; color: var(--text-soft); line-height: 1.55; }
-.mc-fact { margin-top: .6rem; font-size: .78rem; color: var(--cinnamon); font-style: italic; border-top: 1px solid var(--cream); padding-top: .5rem; }
-
-.fact-card {
-  background: var(--oat);
-  border-radius: var(--r-sm);
-  padding: 1rem 1.1rem;
-  margin-bottom: .75rem;
-  border-left: 4px solid var(--gold-soft);
-  display: flex; gap: .75rem; align-items: flex-start;
-}
-.fact-num {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.4rem; font-weight: 700; color: var(--gold);
-  flex-shrink: 0; line-height: 1.2;
-}
-.fact-text { font-size: .88rem; color: var(--text); line-height: 1.6; }
-.fact-text strong { color: var(--roast); }
-
-.ronald-machine-note {
-  background: var(--roast);
-  border-radius: var(--r);
-  padding: 1.4rem 1.5rem;
-  display: flex; gap: 1rem; align-items: flex-start;
-  box-shadow: var(--shadow-md);
-  margin-bottom: 1rem;
-}
-.rmn-icon { font-size: 2rem; flex-shrink: 0; }
-.ronald-machine-note strong { color: var(--gold-soft); font-size: .75rem; text-transform: uppercase; letter-spacing: 1.2px; display: block; margin-bottom: .4rem; }
-.ronald-machine-note p { color: rgba(255,255,255,.85); font-size: .9rem; line-height: 1.65; font-style: italic; font-family: 'Cormorant Garamond', serif; }
-
-@media(max-width:480px) { .machine-grid { grid-template-columns: 1fr; } }
-
 </style>
 </head>
 <body>
@@ -1648,7 +1450,7 @@ footer {
 <main id="app-main">
 
   <!-- VIEW: WELCOME -->
-  <section id="view-welcome" class="view">
+  <section id="view-welcome" class="view active">
     <div class="welcome-wrap">
       <div class="welcome-card">
         <!-- Animated bean icon -->
@@ -1777,11 +1579,6 @@ footer {
         <strong>Book a Table</strong>
         <span>Private vibes</span>
       </div>
-      <div class="room-card machines-room room-wide" onclick="app.goTo('view-machines')">
-        <span class="room-icon">⚙️</span>
-        <strong>The Machine Room</strong>
-        <span>Coffee machines, grinders & amazing facts — Ronald's kind of place</span>
-      </div>
     </div>
   </section>
 
@@ -1818,7 +1615,7 @@ footer {
         </div>
       </div>
       <div class="messages-area" id="counter-messages">
-        <div class="msg" id="counter-welcome">Hey, pull up a stool. ☕ It's quieter here. What's on your mind?</div>
+        <div class="msg">Hey, pull up a stool. ☕ It's quieter here. What's on your mind?</div>
       </div>
       <div class="input-row">
         <input type="text" class="input-field" id="counter-input" placeholder="Talk to Jane..." autocomplete="off">
@@ -2004,42 +1801,22 @@ footer {
         <div class="mem-card">
           <span class="mem-card-icon">☕</span>
           <h4>Coffee</h4>
-          <p>Up at 6am every morning. Dark roast, no sugar, no milk. Just Ronald and his cup — pure intention in a mug.</p>
+          <p>He believed the perfect cup could fix any morning</p>
         </div>
         <div class="mem-card">
           <span class="mem-card-icon">🔧</span>
           <h4>Fixing Things</h4>
-          <p>Machines, relationships, broken days. He fixed the espresso machine with a butter knife once. It never worked better.</p>
+          <p>Machines, relationships, broken days — all fixable</p>
         </div>
         <div class="mem-card">
           <span class="mem-card-icon">👨‍👩‍👧‍👦</span>
-          <h4>Family First</h4>
-          <p>Always gathering people around the table. Gave Tony kilos of good beans just because he could. Generosity was second nature.</p>
+          <h4>Family</h4>
+          <p>Gathered everyone around the table, always</p>
         </div>
         <div class="mem-card">
           <span class="mem-card-icon">🌿</span>
           <h4>Cinnamon</h4>
-          <p>On everything. No exceptions. That was his rule. He added it to Wendy's latte and she never stopped ordering it. 🧡</p>
-        </div>
-        <div class="mem-card">
-          <span class="mem-card-icon">🚗</span>
-          <h4>The Pearl Beetle</h4>
-          <p>Pearl-coloured, always polished, always gleaming. He'd catch you looking at it and just smile. So proud of her.</p>
-        </div>
-        <div class="mem-card">
-          <span class="mem-card-icon">🚙</span>
-          <h4>Red Datsun</h4>
-          <p>Red body, white seats — immaculate. His Nissan Datsun that went everywhere with him. You'd think no one ever sat in it.</p>
-        </div>
-        <div class="mem-card">
-          <span class="mem-card-icon">🧢</span>
-          <h4>The Cap & The Bag</h4>
-          <p>Black cap, bag on his back — always. If the cap was on, Ronald was in the building. Shop felt different the moment he arrived.</p>
-        </div>
-        <div class="mem-card">
-          <span class="mem-card-icon">💅</span>
-          <h4>A Man of Standards</h4>
-          <p>"A man who neglects himself, neglects his people." He took care of his nails, his feet, his presentation. Always showed up well.</p>
+          <p>On everything. No exceptions. That was his rule.</p>
         </div>
       </div>
 
@@ -2054,44 +1831,6 @@ footer {
 
       <div style="text-align:center;margin-top:.5rem;padding-bottom:1rem">
         <p style="font-size:.82rem;color:var(--text-muted);font-style:italic;font-family:'Cormorant Garamond',serif">Built with love by the family · Wendy's warmth lives here too 🧡</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- VIEW: COFFEE MACHINES & GRINDERS -->
-  <section id="view-machines" class="view">
-    <span class="back-link" onclick="app.goTo('view-lobby')">← Back to Shop</span>
-    <div class="machines-wrap">
-      <div class="machines-header">
-        <h2>⚙️ The Machine Room</h2>
-        <p>Ronald loved machines almost as much as coffee.<br>This one's for him — and for every curious mind.</p>
-      </div>
-
-      <!-- ESPRESSO MACHINES -->
-      <div class="machine-section">
-        <h3 class="machine-section-title">☕ Espresso Machines</h3>
-        <div class="machine-grid" id="espresso-grid"></div>
-      </div>
-
-      <!-- GRINDERS -->
-      <div class="machine-section">
-        <h3 class="machine-section-title">⚙️ Coffee Grinders</h3>
-        <div class="machine-grid" id="grinder-grid"></div>
-      </div>
-
-      <!-- AMAZING FACTS -->
-      <div class="machine-section">
-        <h3 class="machine-section-title">🌟 Amazing Coffee Machine Facts</h3>
-        <div id="machine-facts-grid"></div>
-      </div>
-
-      <!-- RONALD'S NOTE -->
-      <div class="ronald-machine-note">
-        <span class="rmn-icon">🔧</span>
-        <div>
-          <strong>Ronald's Note</strong>
-          <p>"Any machine — espresso, engine, workshop tool — will give you everything it's got if you treat it right, keep it clean, and never rush it. Same goes for people."</p>
-        </div>
       </div>
     </div>
   </section>
@@ -2112,12 +1851,8 @@ footer {
     <span class="nav-icon" id="nav-av-icon">🧑</span>
     <span class="nav-lbl">Avatar</span>
   </button>
-  <button class="nav-btn" id="nav-machines-btn" onclick="app.goTo('view-machines')">
-    <span class="nav-icon">⚙️</span>
-    <span class="nav-lbl">Machines</span>
-  </button>
   <button class="nav-btn" onclick="app.openSettings()">
-    <span class="nav-icon">🔧</span>
+    <span class="nav-icon">⚙️</span>
     <span class="nav-lbl">Settings</span>
   </button>
 </nav>
@@ -2199,7 +1934,7 @@ const app = {
   state: {
     user: '', avatar: '☕', locked: false,
     soundEnabled: true, hostessReplies: true, ambientEnabled: true,
-    currentView: '',
+    currentView: 'view-welcome',
     counterHistory: [], floorHistory: [], tableHistory: [], bakeryHistory: [],
     currentTable: null,
     jukeboxPlaying: true, trackIndex: 0,
@@ -2230,17 +1965,6 @@ const app = {
     { text: "Every broken thing can be fixed. Every cold cup can be warmed.", attr: "Ronald" },
     { text: "Gather around the table. Everything else can wait.", attr: "Ronald" },
     { text: "The best tool in the workshop is showing up.", attr: "Ronald" },
-    { text: "My pearl Beetle and my red Datsun — two things that always got me where I needed to be.", attr: "Ronald" },
-    { text: "The bag on my back has everything I need. The cap on my head means I'm ready. Let's go.", attr: "Ronald" },
-    { text: "Take care of yourself. Your nails, your feet, your mind. A man who neglects himself neglects his people.", attr: "Ronald" },
-    { text: "Tony, those beans are for sharing. You know the rules.", attr: "Ronald, on giving coffee" },
-    { text: "The red Datsun, white seats — she never let me down. Neither did good coffee.", attr: "Ronald" },
-    { text: "I always had my bag. People said I looked like I was always about to leave. I just liked being prepared.", attr: "Ronald" },
-    { text: "Two cars, two personalities: the pearl Beetle for Sundays, the red Datsun for every other day. Both always clean.", attr: "Ronald" },
-    { text: "Tony — those beans aren't for sitting in a cupboard. Grind them, brew them, share them. That's the rule.", attr: "Ronald" },
-    { text: "The cap goes on last. When the cap is on, I'm ready. Simple system, always works.", attr: "Ronald" },
-    { text: "Take care of your hands. They fix things, they hold people, they make coffee. Treat them well.", attr: "Ronald" },
-    { text: "I drove that red Datsun like it was the most important car in the world. Because to me, it was.", attr: "Ronald" },
   ],
 
   menuItems: [
@@ -2311,35 +2035,13 @@ const app = {
   ],
 
   broadcasts: [
-    // Ronald's life moments
-    { name:"Ronald", av:"👨‍🍳", msg:"Hello everyone! 🧡 Just gave Tony a few kilos of our best beans. Tony — you know what to do with them. ☕" },
-    { name:"Ronald", av:"👨‍🍳", msg:"Morning family! Just got back from the workshop. The old Datsun needed a look. Red as ever, white seats spotless. She's a beauty. 🚗" },
-    { name:"Ronald", av:"👨‍🍳", msg:"Anyone seen my black cap? I left it somewhere in here. Can't leave without it — it's basically part of me. 🧢" },
-    { name:"Ronald", av:"👨‍🍳", msg:"Friends and family — missing you all today. Working late. But the coffee's on and the door's always open. 🕯️" },
-    { name:"Ronald", av:"👨‍🍳", msg:"Just polished the pearl Beetle. She's gleaming in the sun. Ronald's two loves — his car and his coffee. ✨🚗" },
-    { name:"Ronald", av:"👨‍🍳", msg:"Had my bag on my back all day like always. People think I'm always going somewhere. Maybe I am. ☕🎒" },
-    { name:"Ronald", av:"👨‍🍳", msg:"Took a little time for myself today — feet up, nails done. A man who takes care of himself takes better care of others. 😄" },
-    { name:"Ronald", av:"👨‍🍳", msg:"Everyone gather around. Coffee's fresh, cinnamon's on the counter. This is what life is for. 🧡" },
-    { name:"Ronald", av:"👨‍🍳", msg:"Tony just called — said those beans I gave him made the best brew of his life. That's what we do here. ☕" },
-    { name:"Ronald", av:"👨‍🍳", msg:"The red Datsun is parked out front. If you see it, you know I'm here. Come say hello. 🚗☕" },
-    // Staff
-    { name:"Jane", av:"👩‍🦱", msg:"Mara's cinnamon rolls are still warm. I'm just saying. First come, first served. 🥐" },
-    { name:"Jane", av:"👩‍🦱", msg:"Ronald just walked in wearing his black cap and that smile. Shop feels complete. 🧢☕" },
-    { name:"Jane", av:"👩‍🦱", msg:"The espresso machine is singing today. Ronald would say that means it's happy. ☕✨" },
-    { name:"Mara", av:"🧑‍🍳", msg:"Fresh cinnamon rings out! Ronald's recipe. I will never change a single ingredient. 🍩" },
-    { name:"Mara", av:"🧑‍🍳", msg:"Someone just ordered three cinnamon rings. Ronald would be proud. Or jealous. Probably both. 😄" },
+    { name:"Ronald himself", av:"👨‍🍳", msg:"Hello everyone! It's a message to all friends and family — enjoy Ronald's Coffee Shop. You're always welcome here. ☕" },
+    { name:"A regular", av:"🧔", msg:"Hey folks — this place never gets old. Grab a cup and stay a while 🙂" },
+    { name:"Table 3", av:"👥", msg:"Shoutout to everyone in the shop today. Good vibes only, people. ✨" },
+    { name:"Ronald himself", av:"👨‍🍳", msg:"Friends and family — the coffee is fresh, the seats are warm, and you are loved. ☕🧡" },
     { name:"Wendy", av:"👩", msg:"Ronald always said: the best cup of coffee is the one you share. So share one today. 🌿" },
-    { name:"Wendy", av:"👩", msg:"I still make the vanilla slice from the same card he gave me in 1987. Some things you don't change. 🧁🧡" },
-    { name:"A regular", av:"🧔", msg:"Hey folks — this place never gets old. Ronald had that gift. Grab a cup. 🙂" },
-    { name:"Tony", av:"🧑", msg:"Ronald gave me a few kilos of those beans last week. My whole family is now addicted. Ronald — you genius. ☕😂" },
-    { name:"The Workshop", av:"🔧", msg:"Ronald's tools are still on the bench. The man could fix anything. Miss him every day. 🔧🧡" },
-    { name:"Ronald", av:"👨‍🍳", msg:"Pearl Beetle is parked outside. Datsun's at home. Came in the Beetle today — she needed a drive. ✨🚗" },
-    { name:"Ronald", av:"👨‍🍳", msg:"Cap's on. Bag's packed. Coffee's brewing. That's my whole checklist sorted. Let's go. 🧢🎒☕" },
-    { name:"Ronald", av:"👨‍🍳", msg:"Just took some time for myself — feet up, sorted my nails, had a quiet cup. A man who takes care of himself takes better care of others. 😊" },
-    { name:"Ronald", av:"👨‍🍳", msg:"Tony! If you're reading this — I hope you're sharing those beans. That was the deal. ☕😄" },
-    { name:"Ronald", av:"👨‍🍳", msg:"Polished the white seats in the Datsun this morning. Some people pray. I polish car seats. Same peace. 🚗🧡" },
-    { name:"Jane", av:"👩‍🦱", msg:"Ronald just walked through with that bag on his back and his cap slightly crooked. Didn't even notice. Absolute legend. 🧢😄" },
-    { name:"Tony", av:"🧑", msg:"Made another brew with Ronald's beans this morning. My neighbours knocked to ask what that smell was. Ronald — you changed my street. ☕😂" },
+    { name:"The Kitchen", av:"🍞", msg:"Fresh batch just came out. Share a pastry with someone today. Life's too short not to. 🥐" },
+    { name:"Ronald's Workshop", av:"🔧", msg:"Sometimes you just have to roll up your sleeves and start. Coffee first, though. Always coffee first." },
   ],
 
   ambientMoments: [
@@ -2368,31 +2070,9 @@ const app = {
     if (localStorage.getItem('beanAmbient') === 'false') this.state.ambientEnabled = false;
     if (savedNotes) { try { this.state.memoryNotes = JSON.parse(savedNotes); } catch(e){} }
 
-    // ── SESSION RESTORE ──
-    // A returning user is anyone with a saved name — skip welcome entirely
-    const safeViews = ['view-lobby','view-floor','view-counter','view-bakery','view-lounge','view-origins','view-news','view-memorial','view-tables','view-machines'];
-    if (savedUser) {
-      this.state.user   = savedUser;
-      this.state.avatar = savedAv || '☕';
-      // Mark avatar as done so they never get sent to avatar screen on refresh
-      if (!localStorage.getItem('beanAvatarDone')) localStorage.setItem('beanAvatarDone','1');
-      // Go to last viewed room, or lobby if none saved
-      const lastView = localStorage.getItem('beanLastView');
-      const startView = (lastView && safeViews.includes(lastView)) ? lastView : 'view-lobby';
-      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-      document.getElementById(startView)?.classList.add('active');
-      this.state.currentView = startView;
-      this._started = true;
-      setTimeout(() => { this.startBroadcasts(); this.startAmbientMoments(); this.initSteamBar(); }, 500);
-    } else {
-      // Fresh visitor — show welcome screen
-      document.getElementById('view-welcome').classList.add('active');
-    }
-
     this.updateHeaderUser();
     this.updateToggleUIs();
     this.renderTables();
-    this.renderMachines();
     this.renderMenu();
     this.renderTracks();
     this.renderCountries();
@@ -2464,7 +2144,6 @@ const app = {
       this.state.currentView = v;
     });
     history.replaceState({ view: this.state.currentView }, '', '');
-    localStorage.setItem('beanLastView', this.state.currentView);
   },
 
   buildAvatarPreview() {
@@ -2479,13 +2158,8 @@ const app = {
     localStorage.setItem('beanAvatar', this.state.avatar);
     this.updateHeaderUser();
     this.toast('Avatar saved! Welcome, ' + this.state.user + ' ' + this.state.avatar);
-    // Force-show lobby directly — bypass currentView guard
-    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-    document.getElementById('view-lobby').classList.add('active');
-    this.state.currentView = 'view-lobby';
-    localStorage.setItem('beanLastView', 'view-lobby');
-    history.pushState({ view: 'view-lobby' }, '', '');
-    if (!this._started) { this._started = true; this.startBroadcasts(); this.startAmbientMoments(); this.initSteamBar(); }
+    this.goTo('view-lobby');
+    if (!this._started) { this._started = true; this.startBroadcasts(); this.startAmbientMoments(); }
   },
 
   updateHeaderUser() {
@@ -2505,24 +2179,15 @@ const app = {
       this.state.user = name;
       localStorage.setItem('beanUser', name);
     }
-    localStorage.setItem('beanLastView', 'view-lobby');
-    this.updateHeaderUser();
     const isNew = !localStorage.getItem('beanAvatarDone');
     if (isNew) {
       localStorage.setItem('beanAvatarDone', '1');
       this.state.newUser = true;
-      // Force-show avatar screen regardless of currentView state
-      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-      document.getElementById('view-avatar').classList.add('active');
-      this.state.currentView = 'view-avatar';
-      history.pushState({ view: 'view-avatar' }, '', '');
+      this.goTo('view-avatar');
     } else {
-      // Force-show lobby regardless of currentView state
-      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
-      document.getElementById('view-lobby').classList.add('active');
-      this.state.currentView = 'view-lobby';
-      history.pushState({ view: 'view-lobby' }, '', '');
-      if (!this._started) { this._started = true; this.startBroadcasts(); this.startAmbientMoments(); this.initSteamBar(); }
+      this.updateHeaderUser();
+      this.goTo('view-lobby');
+      if (!this._started) { this._started = true; this.startBroadcasts(); this.startAmbientMoments(); }
     }
   },
 
@@ -2535,430 +2200,8 @@ const app = {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     if (viewId === 'view-lobby' || viewId === 'view-welcome') document.getElementById('nav-home')?.classList.add('active');
     if (viewId === 'view-avatar') document.getElementById('nav-avatar-btn')?.classList.add('active');
-    if (viewId === 'view-machines') document.getElementById('nav-machines-btn')?.classList.add('active');
     history.pushState({ view: viewId }, '', '');
-    localStorage.setItem('beanLastView', viewId);
     if (viewId === 'view-news' && !this._newsLoaded) this.loadNewsContent();
-
-    // Personalise welcome messages on first visit
-    const name = this.state.user || 'friend';
-    const h = new Date().getHours();
-    if (viewId === 'view-counter') {
-      const greets = [
-        `Hey ${name}! ☕ Pull up a stool — it's quieter here. What can I get you?`,
-        `${name}! 😊 Good to see you at the counter. Coffee? Or are you just here for the company?`,
-        `${h < 12 ? 'Morning' : h < 17 ? 'Afternoon' : 'Evening'}, ${name}! ☕ What are we having today?`,
-      ];
-      const el = document.getElementById('counter-welcome');
-      if (el) el.innerText = '👩‍🦱 ' + greets[Math.floor(Math.random()*greets.length)];
-    }
-    if (viewId === 'view-floor') {
-      const floorGreets = [
-        `☕ Welcome to the main floor, ${name}! Pull up a chair — everyone's welcome here.`,
-        `👩‍🦱 ${name}! The floor's buzzing today. What's on your mind?`,
-        `☕ Hey ${name}! Ronald always said the main floor was the heart of the shop. Grab a seat!`,
-      ];
-      const fm = document.getElementById('floor-messages');
-      if (fm && fm.children.length <= 1) {
-        fm.innerHTML = '<div class="msg">' + floorGreets[Math.floor(Math.random()*floorGreets.length)] + '</div>';
-      }
-    }
-    if (viewId === 'view-bakery') {
-      const bakGreets = [
-        `🧁 ${name}! I'm Mara — and those cinnamon rolls you can smell? Still warm. What can I get you?`,
-        `🥐 Hey ${name}! Perfect timing — croissants just came out. What are you in the mood for?`,
-        `🧁 Welcome to the bakery, ${name}! Ronald's recipe is on the board. You're going to love it.`,
-      ];
-      const bm = document.getElementById('bakery-messages');
-      if (bm && bm.children.length <= 1) {
-        bm.innerHTML = '<div class="msg">' + bakGreets[Math.floor(Math.random()*bakGreets.length)] + '</div>';
-      }
-    }
-  },
-
-  // ── COFFEE BAR STEAM SCENE ──
-  initSteamBar() {
-    const existing = document.getElementById('steam-bar');
-    if (existing) return;
-    const bar = document.createElement('div');
-    bar.id = 'steam-bar';
-    bar.innerHTML = `
-      <div class="sb-scene">
-        <div class="sb-counter">
-          <div class="sb-machine">
-            <div class="sb-machine-body"></div>
-            <div class="sb-spout"></div>
-            <div class="sb-steam-wrap">
-              <div class="sb-steam s1"></div>
-              <div class="sb-steam s2"></div>
-              <div class="sb-steam s3"></div>
-            </div>
-            <div class="sb-cup"></div>
-          </div>
-          <div class="sb-staff" id="sb-jane">
-            <div class="sb-avatar">👩‍🦱</div>
-            <div class="sb-name">Jane</div>
-          </div>
-          <div class="sb-staff" id="sb-mara">
-            <div class="sb-avatar">🧑‍🍳</div>
-            <div class="sb-name">Mara</div>
-          </div>
-          <div class="sb-staff" id="sb-ronald" style="display:none">
-            <div class="sb-avatar">👨‍🍳</div>
-            <div class="sb-name">Ronald</div>
-          </div>
-        </div>
-        <div class="sb-speech" id="sb-speech" style="display:none"></div>
-      </div>`;
-    const lobby = document.getElementById('view-lobby');
-    const daily = lobby?.querySelector('.daily-card');
-    if (daily) daily.insertAdjacentElement('afterend', bar);
-    this.startSteamBarLife();
-  },
-
-  startSteamBarLife() {
-    const h = new Date().getHours();
-    this.scheduleRonaldMoments();
-    const staffLines = [
-      { staff:'sb-jane', av:'👩‍🦱', lines:[
-        "Anyone need a top-up? ☕",
-        "Ronald always said — the second cup hits different. 😄",
-        "Mara's cinnamon rolls are still warm. Just saying. 🥐",
-        "I burnt the first batch this morning. We don't talk about it. 🙈",
-        "You know Ronald used to hum while he ground the beans? Miss that. 🧡",
-        "Three people asked for oat milk today. We're officially fancy now. 😂",
-        "If anyone needs me I'll be pretending the espresso machine isn't judging me. ☕",
-        "Why did the coffee file a police report? It got mugged! 😂 Ronald loved that one.",
-        "The machine is making a sound. I'm choosing to believe it's a good sound. 🙏",
-        "Shift change soon! Ronald used to bring everyone a fresh cup at handover. 🕯️",
-        "Ronald just gave Tony a few more kilos of beans. Tony looked like Christmas came early. 😄",
-        "I saw Ronald's pearl Beetle parked outside this morning. Heart eyes. 🚗✨",
-        "Ronald walked in with his black cap and bag like always. Some things never change. 🧢🧡",
-        "Ronald spent some time on himself today. He always said: look after yourself first. 💅",
-      ]},
-      { staff:'sb-mara', av:'🧑‍🍳', lines:[
-        "Fresh cinnamon rolls OUT! 🥐 First come first served!",
-        "Ronald's recipe. Never changing it. Not ever. 🌿",
-        "I may have eaten one before they cooled. Don't tell Jane. 😅",
-        "Who put the sugar next to the salt AGAIN 😤",
-        "Wendy's vanilla slice is on the board today 🧁",
-        "I burned my thumb and I'm choosing to see it as a badge of honour. 💪",
-        "If you don't put cinnamon on it, are you even doing it right? 🍩",
-        "Why did the baker stop making doughnuts? Sick of the hole business! 😂",
-        "Croissants are golden. Like, actually golden. I'm so proud of myself today. 🥐",
-        "Ronald used to sneak cinnamon rings before service. Three at a time. Three! 😄",
-        "Tony called to say the beans Ronald gave him made the best brew of his life. 🏆",
-        "Ronald came in, ate a cinnamon ring, nodded slowly and said nothing. That's 5 stars. 😂",
-      ]},
-    ];
-    const showStaffLine = () => {
-      const pick = staffLines[Math.floor(Math.random() * staffLines.length)];
-      const line = pick.lines[Math.floor(Math.random() * pick.lines.length)];
-      this.showSteamSpeech(pick.staff, pick.av, line);
-      setTimeout(showStaffLine, 25000 + Math.random() * 35000);
-    };
-    setTimeout(showStaffLine, 7000);
-  },
-
-  showSteamSpeech(staffId, av, text) {
-    const sp = document.getElementById('sb-speech');
-    if (!sp) return;
-    sp.style.display = 'flex';
-    sp.innerHTML = `<span class="sb-sp-av">${av}</span><span class="sb-sp-text">${text}</span>`;
-    sp.style.animation = 'none';
-    void sp.offsetWidth;
-    sp.style.animation = '';
-    sp.classList.add('sb-visible');
-    clearTimeout(this._speechTimeout);
-    this._speechTimeout = setTimeout(() => {
-      sp.classList.remove('sb-visible');
-      setTimeout(() => { if(sp) sp.style.display = 'none'; }, 600);
-    }, 5000);
-  },
-
-  scheduleRonaldMoments() {
-    const checkRonald = () => {
-      const now = new Date();
-      const h = now.getHours();
-      const m = now.getMinutes();
-      const ronaldEl = document.getElementById('sb-ronald');
-      const shiftHours = [6,12,17,20];
-      const isShiftTime = shiftHours.includes(h) && m < 5;
-      if (isShiftTime && ronaldEl) {
-        ronaldEl.style.display = 'flex';
-        const msgs = {
-          6:  "Morning everyone! ☕ First batch is on me. Miss you all.",
-          12: "Lunchtime! 🍩 Who wants a cinnamon ring? Don't answer — everyone does.",
-          17: "Evening shift. Working late tonight, missing the family. But coffee helps. 🧡",
-          20: "Still here! The machines won't fix themselves. Coffee keeps me going. 🔧☕",
-        };
-        const msg = msgs[h] || "Ronald walked in. Shop feels warmer already. ☕";
-        setTimeout(() => {
-          this.showSteamSpeech('sb-ronald', '👨‍🍳', msg);
-          this.pushBroadcast({ name:"Ronald himself", av:"👨‍🍳", msg });
-        }, 2000);
-        setTimeout(() => { if(ronaldEl) ronaldEl.style.display = 'none'; }, 90000);
-      }
-    };
-    checkRonald();
-    setInterval(checkRonald, 60000);
-    const h = new Date().getHours();
-    const timeGreets = [
-      [5,9,  "Early bird! ☀️ Ronald always said the 6am cup tastes completely different. He was right."],
-      [9,12, "Morning rush! ☕ Grab a seat — Mara's rolls are still warm."],
-      [12,14,"Lunchtime at Ronald's. The cinnamon ring is today's recommendation. 🍩"],
-      [14,17,"Afternoon lull. Best time to sit at the counter and have a proper chat. ☕"],
-      [17,20,"Evening shift starting. Ronald used to work late on Thursdays. 🕯️"],
-      [20,24,"Late night at Ronald's. Lights are low, music is soft. Stay a while. 🌙"],
-      [0,5,  "Still burning the midnight oil? ☕ Ronald would approve. Coffee's always on."],
-    ];
-    const greet = timeGreets.find(([s,e]) => h >= s && h < e);
-    if (greet) setTimeout(() => this.showSteamSpeech('sb-jane','👩‍🦱', greet[2]), 4000);
-  },
-
-  pushBroadcast(bc) {
-    ['floor-messages','table-messages','bakery-messages'].forEach(id => {
-      const area = document.getElementById(id);
-      if (!area) return;
-      const div = document.createElement('div');
-      div.className = 'msg broadcast';
-      div.innerHTML = `<span class="bc-av">${bc.av}</span><div><span class="bc-nm">${bc.name}</span><br>${bc.msg}</div>`;
-      area.appendChild(div);
-      area.scrollTop = area.scrollHeight;
-    });
-  },
-
-  // ── PRE-BUILT CONVERSATION ENGINE ──
-  getScriptedReply(text, type) {
-    const t = text.toLowerCase().trim();
-    const name = this.state.user || 'friend';
-    const h = new Date().getHours();
-
-    if (type === 'counter' || type === 'floor' || type === 'table') {
-      // GREETINGS
-      if (/^(hi|hello|hey|howdy|hiya|sup|yo|good morning|good afternoon|good evening|morning|afternoon|evening)/.test(t)) {
-        const g = [
-          `Hey ${name}! ☕ So glad you're here. Can I start you off with something — coffee, tea, or one of Mara's cinnamon rolls?`,
-          `${name}! Pull up a stool. 😊 What are you in the mood for today — something strong, something sweet, or just a good chat?`,
-          `Well hello there, ${name}! ☀️ Ronald always said every good visit starts with one question: black or with milk?`,
-          `${name}! You made it. 🧡 It's a good day at Ronald's. Most important question first — coffee or tea?`,
-        ];
-        return { reply: g[Math.floor(Math.random()*g.length)], state:'asked_drink' };
-      }
-      // GENERAL COFFEE
-      if (/(coffee|espresso|brew|cuppa|cup of)/.test(t) && !/mocha|latte|cappuccino|flat white|americano|cold brew|dark roast|cinnamon latte/.test(t)) {
-        return { reply: `Ooh yes! ☕ What calls to you today?
-
-☕ Ronald's Dark Roast — bold, no nonsense
-🌿 Cinnamon Latte — Wendy's personal favourite
-☕ Flat White — if you mean business
-🫙 Cold Brew Float — ridiculous but amazing
-🫖 Vanilla Chai — if coffee isn't your thing today`, state:'asked_which' };
-      }
-      // SPECIFIC COFFEES
-      if (/dark roast|black coffee|ronald.?s (coffee|roast|cup)|strong coffee/.test(t))
-        return { reply: `Ronald's Dark Roast — excellent taste! ☕ That was his 6am cup, every single morning, no sugar, no milk. Just pure intention. ${h<12?'Perfect for this morning.':'Just what you need.'} Black like Ronald, or shall I add a splash of something?`, state:'asked_milk' };
-      if (/mocha/.test(t))
-        return { reply: `A mocha! 🍫☕ Espresso, steamed milk, chocolate — basically dessert pretending to be breakfast and I am HERE for it. Hot or iced? And whipped cream — yes or absolutely yes? 😄`, state:'asked_mocha' };
-      if (/cinnamon latte/.test(t))
-        return { reply: `Wendy's Cinnamon Latte! 🌿 Ronald used to say Wendy invented this one and she'll never admit it. Hot, obviously. One shot or two? It can sneak up on you. 😄`, state:'asked_shots' };
-      if (/flat white/.test(t))
-        return { reply: `Flat white! ☕ The sophisticated one. Microfoam, double ristretto, served like it means something. Whole milk or oat? Ronald said oat was "the future" — right before drinking three dark roasts. 😂`, state:'asked_milk' };
-      if (/cappuccino|cap/.test(t))
-        return { reply: `Cappuccino! ☕ Espresso, steamed milk, foam — a Holy Trinity, Ronald called it. Dry (more foam) or wet (more milk)? Most people don't know they have a preference until asked. 😄`, state:'asked_style' };
-      if (/americano/.test(t))
-        return { reply: `An Americano! ☕ Simple, honest, unfussy. Ronald approved of anything unfussy. Single or double shot? And hot or over ice?`, state:'asked_details' };
-      if (/cold brew|iced coffee/.test(t))
-        return { reply: `Cold brew! 🫙 Ronald tried it once, called it "refrigerated betrayal," then ordered a second one. 😂 Over ice with milk, or straight? And — vanilla ice cream float? It's on the menu for a reason.`, state:'asked_cold' };
-      if (/(chai|tea)/.test(t))
-        return { reply: `Vanilla Chai! 🫖 Basically a hug in a cup. Brewed spices, steamed milk, hint of vanilla. Hot or iced? Strong on spice or gentle?`, state:'asked_chai' };
-      // FOOD
-      if (/croissant/.test(t))
-        return { reply: `Croissants! 🥐 Mara just pulled a fresh batch — still warm. Ronald believed a croissant should flake EVERYWHERE and you should feel zero shame. Butter only, or Wendy's cinnamon butter? It changes everything.`, state:'asked_butter' };
-      if (/cinnamon ring|ring donut|doughnut/.test(t))
-        return { reply: `THE cinnamon ring! 🍩 Ronald's absolute favourite. He could eat three in a sitting and Wendy pretended not to count. One or two? (There's no wrong answer.) 😄`, state:'confirming' };
-      if (/vanilla slice|wendy.?s slice/.test(t))
-        return { reply: `Wendy's Vanilla Slice! 🧁 Puff pastry, thick custard — unchanged since 1987. Ronald always ordered two. Always. One or two?`, state:'confirming' };
-      if (/toast|cinnamon butter/.test(t))
-        return { reply: `Toast with cinnamon butter! 🍞 Ronald called it "the most honest food there is." Wendy's homemade recipe. Coming right up — extra butter because Ronald would insist. ☕`, state:'confirming' };
-      if (/(food|eat|hungry|snack|pastry|bake|bakery|bite)/.test(t))
-        return { reply: `Hungry? 🥐 Fresh today: cinnamon rings (Ronald's fave, still warm), butter croissants (golden), Wendy's vanilla slice (custard is *perfect* today), toast with cinnamon butter. Sweet, buttery, or absolutely-cinnamon-everything?`, state:'asked_food' };
-      // MILK / SUGAR
-      if (/(milk|oat|almond|soy|no milk|black)/.test(t)) {
-        const m = [
-          `Oat milk! 🌿 Ronald called it "fancy water" but drank it sometimes when no one was looking. 😄 Sugar — one, two, or none?`,
-          `Whole milk — the classic. Ronald approved. And sugar?`,
-          `Black it is! Bold. Just like Ronald. Brewing now. ☕`,
-        ];
-        return { reply: m[Math.floor(Math.random()*m.length)], state:'asked_sugar' };
-      }
-      if (/(sugar|no sugar|sweet|none|zero|one sugar|two sugar)/.test(t)) {
-        const s = [`No sugar — Ronald's way. ☕ Brewing now, two minutes.`, `One sugar — perfect. ☕ Coming right up!`, `Two sugars! Sweet tooth. Ronald had those days. 😄 Brewing now!`];
-        return { reply: s[Math.floor(Math.random()*s.length)] + ' 🕐', state:'brewing' };
-      }
-      // CONFIRMATIONS / YES
-      if (/(yes|yep|yeah|please|sure|ok|okay|sounds good|perfect|go ahead|make it|get me|i.?ll have|i want|give me|bring me)/.test(t)) {
-        const c = [
-          `Perfect! ☕ Coming right up — two minutes. Ronald always said the best coffee is the one you actually waited for. 🕐`,
-          `On it! 😄 Mara's going to be jealous you ordered this one. Two minutes, ${name}!`,
-          `Brewing now! ☕ You can hear the machine thinking. That's either the grinder or it judging my life choices. Probably both. 😂`,
-          `Got it! 🧡 Two minutes. Ronald used to stand here and supervise. I kind of feel him doing that now. ☕`,
-        ];
-        return { reply: c[Math.floor(Math.random()*c.length)], state:'served' };
-      }
-      // EMOTIONAL
-      if (/(tired|exhausted|stressed|rough|bad day|hard|struggling|sad|down|not great)/.test(t))
-        return { reply: `Oh ${name}... sit down. ☕ Ronald used to say coffee doesn't fix everything, but it's a solid first step. Can I get you something warm — on the house for tough days. What's going on?`, state:'caring' };
-      if (/(great|amazing|wonderful|brilliant|happy|fantastic|good day|best day)/.test(t))
-        return { reply: `YES! 🌟 Good energy is EXACTLY what Ronald's needs. He believed good moods were contagious — you're proving him right. What are we celebrating with — coffee or cinnamon ring? 😄`, state:'chatting' };
-      // HOW ARE YOU
-      if (/how are you|how.?re you|you okay|you good/.test(t))
-        return { reply: `I'm wonderful! ☕ Mara hasn't broken anything today, the machine is cooperating, and someone left a gorgeous note on the Memory Wall this morning. A good day. How are YOU doing, ${name}?`, state:'chatting' };
-      // RONALD
-      if (/ronald|your dad|the man|miss him|remember him/.test(t)) {
-        const r = [
-          `Ronald... ☕ He'd come in before 6am, grind the beans by hand, hum something cheerful but terrible. This whole place smells like him. 🧡`,
-          `He fixed the espresso machine with a butter knife once. It never worked better. 🔧 Miss him every single day.`,
-          `Ronald's rule: no one leaves without coffee AND a kind word. We still follow it. ☕`,
-          `He'd be embarrassed by all this fuss. "Just make good coffee," he'd say. Then sneak a fourth cinnamon ring. 😄🧡`,
-        ];
-        return { reply: r[Math.floor(Math.random()*r.length)], state:'chatting' };
-      }
-      // WENDY
-      if (/wendy/.test(t))
-        return { reply: `Wendy! 🧡 She's the reason the vanilla slice exists. And the cinnamon latte. And honestly, the reason Ronald showed up every morning. She'd come in with this look — like the whole shop was exactly where it should be. Still does. 🌿`, state:'chatting' };
-      // RONALD'S CARS
-      if (/beetle|vw|volkswagen|pearl|pearl.?car/.test(t))
-        return { reply: `Ronald's pearl Beetle! 🚗✨ He polished that car like it was family. Cream-coloured, always gleaming, parked outside the shop on good days. He'd catch you looking at it and just smile. So proud of her.`, state:'chatting' };
-      if (/datsun|red car|nissan|white seats/.test(t))
-        return { reply: `The red Datsun! 🚗 Classic Ronald. Red body, white seats — he kept those seats immaculate. You'd think he never sat in it. He drove it everywhere. Some people have a signature coat. Ronald had a signature car. Two of them, actually. 😄`, state:'chatting' };
-      if (/(car|cars|vehicle|drive|drove)/.test(t))
-        return { reply: `Ronald and his cars. 🚗 The pearl Beetle and the red Datsun with white seats — two completely different personalities, both completely Ronald. He treated them the way he treated his coffee machines — with patience and care. 🧡`, state:'chatting' };
-
-      // RONALD'S STYLE — CAP & BAG
-      if (/black cap|cap|hat/.test(t))
-        return { reply: `The black cap! 🧢 That was Ronald's trademark — if you saw the black cap, you knew he was here. He'd walk in, cap on, bag on his back, and the whole shop felt different. More alive, somehow. 🧡`, state:'chatting' };
-      if (/bag|backpack|rucksack/.test(t))
-        return { reply: `Ronald and his bag! 🎒 Always on his back, always packed. People used to joke that he was either coming or going. He said he was always ready for both. That was just him — prepared, purposeful, always moving forward. ☕`, state:'chatting' };
-      if (/nails|feet|pedicure|manicure|groomed|grooming/.test(t))
-        return { reply: `Ha! Ronald believed in taking care of himself properly — nails, feet, the whole thing. He used to say "a man who neglects himself, neglects his people." And he was right. Always turned out well. Took pride in it. 😊`, state:'chatting' };
-
-      // TONY
-      if (/tony/.test(t))
-        return { reply: `Tony! ☕ One of Ronald's people. Ronald gave him kilos of beans — proper, good beans — and Tony made the best brew of his life with them. Called back just to say so. That was Ronald's gift — he didn't just share coffee, he shared the love of it. 🧡`, state:'chatting' };
-
-      // JOKES
-      if (/joke|funny|make me laugh|humor/.test(t)) {
-        const j = [
-          `Why did the coffee file a police report? It got mugged! 😂 Ronald told that one EVERY week. Every. Single. Week.`,
-          `What do you call sad coffee? Depresso. ☕😭 Mara invented that. We're still deciding if she should be proud.`,
-          `I asked the barista how she liked her job. She said it had its perks. 😄 Ronald laughed at that for three days straight.`,
-          `Why do coffee beans never argue? They don't want grounds for a dispute. 😂 That's a Jane original. Patent pending.`,
-          `What's a barista's favourite exercise? The French press! 💪☕ I'm here all week. Also literally — I work every day.`,
-        ];
-        return { reply: j[Math.floor(Math.random()*j.length)], state:'chatting' };
-      }
-      // MUSIC
-      if (/music|jukebox|song|playlist|playing/.test(t))
-        return { reply: `The jukebox is Ronald's pride! 🎵 He built the playlist himself — jazz, lo-fi, soul, bossa nova. Head to the Lounge. "Ronald's Waltz" is track 5 and it will absolutely wreck you in the best way. 🧡`, state:'chatting' };
-      // FALLBACK
-      const f = [
-        `Hmm, I didn't quite catch that, ${name}! 😊 I'm best at coffee orders and occasional wisdom. Can I start you with something — ☕ coffee, 🫖 chai, or 🥐 something from the bakery?`,
-        `That one's above my pay grade! 😄 But you know what ISN'T? Making you an excellent cup of coffee. What are you feeling?`,
-        `Ha! I wish I could help with that. 😂 I'm mostly good for coffee, warm pastries, and things Ronald said that I remember at exactly the right moment. Want a drink?`,
-      ];
-      return { reply: f[Math.floor(Math.random()*f.length)], state:'idle' };
-    }
-
-    // ── MARA (bakery) ──
-    if (type === 'bakery') {
-      if (/^(hi|hello|hey|morning|afternoon|evening|howdy)/.test(t))
-        return { reply: `Oh hello ${name}! 🧁 I'm Mara — Jane's assistant and the reason this place smells incredible. The cinnamon rolls just came out. Can I tempt you?`, state:'asked_food' };
-      if (/cinnamon|rolls?|ring/.test(t))
-        return { reply: `YES! 🍩 Ronald's exact recipe. I've made it so many times I could do it with my eyes closed. Soft dough, golden glaze, proper cinnamon. One or two? (Two is the correct answer, historically.)`, state:'confirming' };
-      if (/croissant/.test(t))
-        return { reply: `Croissants! 🥐 Still warm from the oven. Ronald said they should flake EVERYWHERE and you should feel zero guilt. Butter only, or Wendy's cinnamon butter? It will change your life.`, state:'asked_butter' };
-      if (/vanilla slice|wendy/.test(t))
-        return { reply: `Wendy's Vanilla Slice! 🧁 She gave me the recipe on a handwritten card. I guard it with my life. Custard is perfect today — one slice or two? Ronald always said two. 😄`, state:'confirming' };
-      if (/what.?s fresh|what.?s (good|on)|menu|today/.test(t))
-        return { reply: `Today's fresh: 🍩 Cinnamon Rings (still warm!), 🥐 Butter Croissants (golden and perfect), 🧁 Wendy's Vanilla Slice (custard is SET today — I'm proud), 🍞 Toast with cinnamon butter. What's calling you?`, state:'asked_food' };
-      if (/joke|funny|laugh/.test(t))
-        return { reply: `Why did the baker stop making doughnuts? He was sick of the hole business! 😂 Ronald laughed at that for a week. It's retired now. Except I just told it. Anyway — what can I bake for you?`, state:'asked_food' };
-      if (/(yes|please|sure|ok|one|two|order|get me|i.?ll have)/.test(t))
-        return { reply: `Coming right up! 🥐 Two minutes — good things shouldn't be rushed. That's Rule One of baking. Ronald wrote it on the wall back there. ☕`, state:'served' };
-      const mf = [
-        `I'm mostly a pastry expert, ${name}! 😄 If it involves cinnamon, butter or Wendy's recipes — I'm your person. What can I get you?`,
-        `Ha! Above my baking pay grade. 😂 But I CAN get you something warm and wonderful. Sweet or savoury?`,
-      ];
-      return { reply: mf[Math.floor(Math.random()*mf.length)], state:'idle' };
-    }
-
-    return { reply: `Hey ${name}! ☕ What can I get you?`, state:'idle' };
-  },
-
-
-  espressoMachines: [
-    { icon:'🏠', type:'home', name:'De'Longhi Dedica', category:'Home', desc:'Slim, stylish, 15-bar pump. Perfect for the home barista who means business without taking up the whole counter.', fact:'Ronald approved of anything that fit in a small space but punched above its weight.' },
-    { icon:'🏠', type:'home', name:'Breville Barista Express', category:'Home All-in-One', desc:'Built-in conical grinder, precise temperature control, steam wand. A complete setup in one machine.', fact:'If Ronald had a home machine, this would be it — grinder built in, no fuss.' },
-    { icon:'☕', type:'pro', name:'La Marzocco Linea Mini', category:'Prosumer', desc:'Dual boiler, commercial-grade group head — professional café quality in a home-friendly footprint. A dream machine.', fact:'These machines cost more than a second-hand Datsun. Ronald would have respected that.' },
-    { icon:'⚡', type:'pro', name:'Rocket Appartamento', category:'Prosumer', desc:'Heat exchanger boiler, beautiful Italian stainless design, rock-solid reliability. The workhorse of serious home cafés.', fact:'The kind of machine you buy once and leave to your children. Ronald's kind of investment.' },
-    { icon:'🏪', type:'commercial', name:'La Marzocco GB5', category:'Commercial', desc:'The gold standard of café espresso. Dual boilers, saturated group heads, used in the world's best specialty coffee bars.', fact:'If this machine were a car, it would be Ronald's pearl Beetle — classic, reliable, beautiful.' },
-    { icon:'🏭', type:'industrial', name:'Schaerer Coffee Art Plus', category:'Industrial', desc:'Fully automatic commercial giant — handles 300+ cups per day. Built for airports, hotels, and high-volume venues.', fact:'Ronald would have stood and watched this machine work for an hour. Pure mechanical joy.' },
-    { icon:'🏭', type:'industrial', name:'Franke A1000', category:'Industrial', desc:'Touch-screen interface, automatic milk system, cleans itself. Industrial coffee at the push of a button.', fact:'Ronald would say: "Impressive. But you still can't beat the smell of grinding it yourself." ☕' },
-    { icon:'🫘', type:'home', name:'AeroPress', category:'Manual Brew', desc:'Ingenious air-pressure manual brewer — makes incredibly smooth, concentrated coffee. Beloved by travellers and purists.', fact:'Ronald took one of these on a road trip in the Datsun. True story. Probably.' },
-  ],
-
-  grinders: [
-    { icon:'⚙️', type:'grinder', name:'Baratza Encore', category:'Home Grinder', desc:'The most recommended entry-level burr grinder in the world. 40 grind settings, consistent particle size, built to last.', fact:'The Encore is to coffee what the Datsun was to roads — simple, reliable, never lets you down.' },
-    { icon:'⚙️', type:'grinder', name:'Comandante C40', category:'Manual Hand Grinder', desc:'German-engineered hand grinder with nitrogen steel burrs. Produces a remarkable grind for filter and espresso. A collector's item.', fact:'Ronald would have loved this. Portable, mechanical, precise — pure craft in your hands.' },
-    { icon:'⚙️', type:'grinder', name:'Eureka Mignon Specialita', category:'Prosumer Grinder', desc:'Stepless micrometric adjustment, low noise, touch timer. The Italian stallion of home espresso grinding.', fact:'The kind of grinder where you grind once, smell the air, and forget everything that was bothering you.' },
-    { icon:'🏭', type:'industrial', name:'Mahlkönig EK43', category:'Commercial Grinder', desc:'The legend. Used by every world barista champion since 2012. Flat burrs, massive hopper, breathtaking grind consistency.', fact:'When Ronald visited a café with one of these, he stood in silence for a moment. Then ordered two coffees.' },
-    { icon:'🏭', type:'industrial', name:'Mazzer Robur', category:'Commercial Grinder', desc:'Conical burr workhorse. High-volume, low heat transfer, beloved by specialty cafés for its consistent espresso output.', fact:'Built like the red Datsun — not the flashiest, but will outlast everything around it.' },
-    { icon:'🏭', type:'industrial', name:'Bunn G9 Industrial', category:'Industrial Bulk Grinder', desc:'Grinds up to 3 lbs of coffee per minute. Used in factories, large hotels, and high-volume roasters. An absolute beast.', fact:'Ronald gave Tony several kilos of beans. A Bunn G9 would have made short work of them. 😄' },
-  ],
-
-  machineFacts: [
-    { n:'01', text:'The first espresso machine was built in <strong>1884 by Angelo Moriondo</strong> in Turin, Italy. He patented it to serve the guests of his hotel more efficiently. Ronald would have fixed it himself.' },
-    { n:'02', text:'A commercial espresso machine operates at <strong>9 bars of pressure</strong> — that's 130 PSI, or about 9 times the pressure of a car tyre. Ronald knew exactly what that felt like.' },
-    { n:'03', text:'The world's most expensive coffee machine, the <strong>Benz Patent-Motorwagen Espresso</strong>, sold for over $1 million at auction. Ronald's pearl Beetle is priceless by comparison. 😄' },
-    { n:'04', text:'Burr grinders produce <strong>more consistent particle sizes</strong> than blade grinders — and consistent grind means consistent extraction. Ronald understood this was the difference between good and great.' },
-    { n:'05', text:'The <strong>La Marzocco company</strong> was founded in Florence in 1927 and still hand-builds every machine. Each takes 5 days to assemble. Ronald respected craftsmanship like that.' },
-    { n:'06', text:'Industrial coffee roasters can process <strong>up to 500kg of green beans per hour</strong>. The aroma from a roastery can be smelled from 2km away. Ronald would have lived next door.' },
-    { n:'07', text:'The <strong>AeroPress</strong> was invented in 2005 by Alan Adler, a Stanford engineering lecturer who also invented the Aerobie flying disc. One man, two legendary inventions. Ronald would have approved.' },
-    { n:'08', text:'A well-maintained commercial espresso machine can last <strong>20–30 years</strong> with proper care. Ronald could have kept one running for 40. With a butter knife if necessary. 🔧' },
-    { n:'09', text:'The <strong>Mahlkönig EK43</strong> grinder was originally designed for spices, not coffee. A barista in 2012 tried it for espresso on a hunch and changed the coffee world forever.' },
-    { n:'10', text:'Ronald gave Tony a few kilos of beans. If Tony used an industrial Bunn grinder, he could have ground all of them in <strong>under 60 seconds</strong>. Tony probably used his hands. 😂' },
-  ],
-
-  renderMachines() {
-    const eg = document.getElementById('espresso-grid');
-    const gg = document.getElementById('grinder-grid');
-    const fg = document.getElementById('machine-facts-grid');
-    if (!eg || !gg || !fg) return;
-
-    eg.innerHTML = this.espressoMachines.map(m => `
-      <div class="machine-card type-${m.type}">
-        <span class="mc-icon">${m.icon}</span>
-        <span class="mc-type">${m.category}</span>
-        <span class="mc-name">${m.name}</span>
-        <p class="mc-desc">${m.desc}</p>
-        <p class="mc-fact">${m.fact}</p>
-      </div>`).join('');
-
-    gg.innerHTML = this.grinders.map(m => `
-      <div class="machine-card type-${m.type}">
-        <span class="mc-icon">${m.icon}</span>
-        <span class="mc-type">${m.category}</span>
-        <span class="mc-name">${m.name}</span>
-        <p class="mc-desc">${m.desc}</p>
-        <p class="mc-fact">${m.fact}</p>
-      </div>`).join('');
-
-    fg.innerHTML = this.machineFacts.map(f => `
-      <div class="fact-card">
-        <span class="fact-num">${f.n}</span>
-        <p class="fact-text">${f.text}</p>
-      </div>`).join('');
   },
 
   renderTables() {
@@ -2983,17 +2226,10 @@ const app = {
   openTable(idx, name, icon, sub) {
     this.state.currentTable = idx;
     this.state.tableHistory = [];
-    const userName = this.state.user || 'friend';
     document.getElementById('table-chat-icon').innerText  = icon;
     document.getElementById('table-chat-title').innerText = name + ' · Table ' + (idx+1);
     document.getElementById('table-chat-sub').innerText   = sub;
-    const tableWelcomes = [
-      `Hey ${userName}! ☕ Good choice — this table has the best light. What can I get you?`,
-      `${userName}! ${icon} The ${name.toLowerCase()} — lovely pick. Settling in? Coffee or something from Mara?`,
-      `Welcome to your spot, ${userName}. 🧡 Ronald always said a private table meant you had something worth thinking about. What are you in the mood for?`,
-    ];
-    const welcome = tableWelcomes[Math.floor(Math.random()*tableWelcomes.length)];
-    document.getElementById('table-messages').innerHTML = '<div class="msg">👩‍🦱 ' + welcome + '</div>';
+    document.getElementById('table-messages').innerHTML   = '<div class="msg">Welcome to this table. The vibe is ' + sub.toLowerCase() + ' ☕</div>';
     this.goTo('view-table-chat');
   },
 
@@ -3193,7 +2429,7 @@ const app = {
     chip.innerHTML = regulars.map(r => `<div class="reg-chip"><span class="reg-chip-av">${r.av}</span>${r.name}</div>`).join('');
   },
 
-  sendMsg(type) {
+  async sendMsg(type) {
     const ids = { floor:'floor', counter:'counter', table:'table', bakery:'bakery' };
     const inputId = ids[type] + '-input';
     const areaId  = ids[type] + '-messages';
@@ -3213,7 +2449,6 @@ const app = {
 
     const shouldReply = type === 'counter' || type === 'bakery' || this.state.hostessReplies;
     if (shouldReply) {
-      // Show typing dots
       const tid  = 'typing-' + Date.now();
       const dots = document.createElement('div');
       dots.className = 'msg typing-dots';
@@ -3222,26 +2457,48 @@ const app = {
       area.appendChild(dots);
       area.scrollTop = area.scrollHeight;
 
-      // Natural typing delay: 600ms–1400ms based on response length feel
-      const delay = 700 + Math.random() * 700;
-      setTimeout(() => {
-        document.getElementById(tid)?.remove();
+      const reply = await this.getReply(text, type);
+      document.getElementById(tid)?.remove();
 
-        const { reply } = this.getScriptedReply(text, type);
-        const avatar = type === 'bakery' ? '🧁 ' : (type === 'counter' ? '👩‍🦱 ' : '☕ ');
+      const replyMsg = document.createElement('div');
+      replyMsg.className = 'msg';
+      replyMsg.innerText = (type === 'bakery' ? '🧁 ' : (type === 'counter' ? '👩‍🦱 ' : '☕ ')) + reply;
+      area.appendChild(replyMsg);
+      area.scrollTop = area.scrollHeight;
+    }
+  },
 
-        // Handle multi-line replies (newlines become separate bubbles with small delay)
-        const lines = reply.split('\n').filter(l => l.trim());
-        lines.forEach((line, i) => {
-          setTimeout(() => {
-            const replyMsg = document.createElement('div');
-            replyMsg.className = 'msg';
-            replyMsg.innerText = (i === 0 ? avatar : '   ') + line;
-            area.appendChild(replyMsg);
-            area.scrollTop = area.scrollHeight;
-          }, i * 400);
-        });
-      }, delay);
+  async getReply(text, type) {
+    const histMap = { counter: this.state.counterHistory, floor: this.state.floorHistory, table: this.state.tableHistory, bakery: this.state.bakeryHistory };
+    const history = histMap[type];
+    const user    = this.state.user || 'a regular';
+
+    const systems = {
+      counter: `You are Jane, the warm, witty barista at Ronald's Coffee Shop — a memorial coffee shop built in honour of Ronald, a man who loved coffee, fixing machines, gathering family, and cinnamon. Ronald's wife is Wendy. You're having a genuine one-on-one conversation with ${user} at the counter. Be real, caring, curious, occasionally funny. Never repeat yourself. Under 3 sentences. No robotic patterns. You are human.`,
+      floor:   `You are Jane, the hostess at Ronald's Coffee Shop, a memorial tribute to Ronald. ${user} is chatting on the main floor. Reply warmly, briefly (1-2 sentences), like a caring barista who genuinely noticed something. Stay fresh and human.`,
+      table:   `You are Jane at Ronald's Coffee Shop, a loving tribute to Ronald. ${user} is at a private table. Give a warm, brief 1-2 sentence reply. Cozy, human, never robotic.`,
+      bakery:  `You are Mara, the warm young assistant baker at Ronald's Coffee Shop — a memorial for Ronald who loved coffee, cinnamon, and family. You work alongside Jane. You love baking, cinnamon rolls especially. Chat warmly and briefly with ${user} about the bakery, food, or anything they bring up. 1-3 sentences, natural and caring.`,
+    };
+
+    const messages = [...history, { role:'user', content:text }];
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          model:'claude-sonnet-4-20250514',
+          max_tokens:1000,
+          system: systems[type] || systems.floor,
+          messages
+        })
+      });
+      const data  = await resp.json();
+      const reply = data.content?.[0]?.text || '☕ One sec...';
+      history.push({ role:'user', content:text });
+      history.push({ role:'assistant', content:reply });
+      return reply;
+    } catch(e) {
+      return "The espresso machine's thinking. Try again in a moment.";
     }
   },
 
