@@ -2199,7 +2199,7 @@ const app = {
   state: {
     user: '', avatar: '☕', locked: false,
     soundEnabled: true, hostessReplies: true, ambientEnabled: true,
-    currentView: 'view-welcome',
+    currentView: '',
     counterHistory: [], floorHistory: [], tableHistory: [], bakeryHistory: [],
     currentTable: null,
     jukeboxPlaying: true, trackIndex: 0,
@@ -2479,7 +2479,12 @@ const app = {
     localStorage.setItem('beanAvatar', this.state.avatar);
     this.updateHeaderUser();
     this.toast('Avatar saved! Welcome, ' + this.state.user + ' ' + this.state.avatar);
-    this.goTo('view-lobby');
+    // Force-show lobby directly — bypass currentView guard
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+    document.getElementById('view-lobby').classList.add('active');
+    this.state.currentView = 'view-lobby';
+    localStorage.setItem('beanLastView', 'view-lobby');
+    history.pushState({ view: 'view-lobby' }, '', '');
     if (!this._started) { this._started = true; this.startBroadcasts(); this.startAmbientMoments(); this.initSteamBar(); }
   },
 
@@ -2501,14 +2506,22 @@ const app = {
       localStorage.setItem('beanUser', name);
     }
     localStorage.setItem('beanLastView', 'view-lobby');
+    this.updateHeaderUser();
     const isNew = !localStorage.getItem('beanAvatarDone');
     if (isNew) {
       localStorage.setItem('beanAvatarDone', '1');
       this.state.newUser = true;
-      this.goTo('view-avatar');
+      // Force-show avatar screen regardless of currentView state
+      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+      document.getElementById('view-avatar').classList.add('active');
+      this.state.currentView = 'view-avatar';
+      history.pushState({ view: 'view-avatar' }, '', '');
     } else {
-      this.updateHeaderUser();
-      this.goTo('view-lobby');
+      // Force-show lobby regardless of currentView state
+      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+      document.getElementById('view-lobby').classList.add('active');
+      this.state.currentView = 'view-lobby';
+      history.pushState({ view: 'view-lobby' }, '', '');
       if (!this._started) { this._started = true; this.startBroadcasts(); this.startAmbientMoments(); this.initSteamBar(); }
     }
   },
