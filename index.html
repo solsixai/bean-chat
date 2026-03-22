@@ -1416,6 +1416,131 @@ footer {
   .brand { font-size: 1.15rem; }
   .brand-icon { width: 30px; height: 30px; }
 }
+
+/* ── STEAM BAR SCENE ── */
+#steam-bar {
+  max-width: 660px;
+  margin: 0 auto 1rem;
+  background: var(--surface);
+  border-radius: var(--r);
+  border: 1px solid var(--cream);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+  position: relative;
+}
+.sb-scene { padding: 1rem 1.25rem .75rem; }
+.sb-counter {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.25rem;
+  padding-bottom: .5rem;
+  border-bottom: 2px solid var(--cream);
+}
+.sb-machine {
+  position: relative;
+  width: 52px;
+  flex-shrink: 0;
+}
+.sb-machine-body {
+  width: 52px; height: 46px;
+  background: linear-gradient(160deg, #6B3F20, #4A2C18);
+  border-radius: 10px 10px 6px 6px;
+  box-shadow: 2px 2px 8px rgba(44,26,14,.25);
+  position: relative;
+}
+.sb-machine-body::after {
+  content: '';
+  position: absolute;
+  top: 8px; left: 8px;
+  width: 16px; height: 12px;
+  background: rgba(200,144,60,.3);
+  border-radius: 4px;
+  border: 1px solid rgba(200,144,60,.5);
+}
+.sb-spout {
+  width: 12px; height: 8px;
+  background: #3A1F0A;
+  margin: 0 auto;
+  border-radius: 0 0 6px 6px;
+  position: relative;
+  z-index: 2;
+}
+.sb-steam-wrap {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  z-index: 3;
+}
+.sb-steam {
+  width: 4px;
+  height: 20px;
+  border-radius: 4px;
+  background: rgba(200,170,130,.5);
+  animation: steamRise 2s ease-in-out infinite;
+  transform-origin: bottom;
+}
+.sb-steam.s1 { animation-delay: 0s; }
+.sb-steam.s2 { animation-delay: .4s; height: 16px; }
+.sb-steam.s3 { animation-delay: .8s; height: 13px; }
+@keyframes steamRise {
+  0%   { opacity: 0;   transform: translateY(0) scaleX(1); }
+  30%  { opacity: .7;  transform: translateY(-6px) scaleX(1.3); }
+  70%  { opacity: .4;  transform: translateY(-14px) scaleX(1.6); }
+  100% { opacity: 0;   transform: translateY(-20px) scaleX(2); }
+}
+.sb-cup {
+  width: 22px; height: 16px;
+  background: var(--oat);
+  border: 2px solid var(--cream-deep);
+  border-radius: 3px 3px 6px 6px;
+  margin: 0 auto;
+  position: relative;
+}
+.sb-cup::after {
+  content: '';
+  position: absolute;
+  top: 3px; right: -7px;
+  width: 7px; height: 8px;
+  border: 2px solid var(--cream-deep);
+  border-radius: 0 4px 4px 0;
+  border-left: none;
+}
+
+.sb-staff {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  animation: staffBob 3s ease-in-out infinite;
+}
+.sb-staff:nth-child(3) { animation-delay: 1s; }
+@keyframes staffBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+.sb-avatar { font-size: 1.8rem; line-height: 1; }
+.sb-name { font-size: .65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .8px; }
+
+.sb-speech {
+  display: none;
+  align-items: center;
+  gap: .6rem;
+  margin-top: .65rem;
+  padding: .6rem .85rem;
+  background: var(--oat);
+  border-radius: var(--r-sm);
+  border-left: 3px solid var(--gold-soft);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity .4s ease, transform .4s ease;
+}
+.sb-speech.sb-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.sb-sp-av { font-size: 1.3rem; flex-shrink: 0; }
+.sb-sp-text { font-size: .83rem; color: var(--text); line-height: 1.45; }
+
 </style>
 </head>
 <body>
@@ -1615,7 +1740,7 @@ footer {
         </div>
       </div>
       <div class="messages-area" id="counter-messages">
-        <div class="msg">Hey, pull up a stool. ☕ It's quieter here. What's on your mind?</div>
+        <div class="msg" id="counter-welcome">Hey, pull up a stool. ☕ It's quieter here. What's on your mind?</div>
       </div>
       <div class="input-row">
         <input type="text" class="input-field" id="counter-input" placeholder="Talk to Jane..." autocomplete="off">
@@ -2159,7 +2284,7 @@ const app = {
     this.updateHeaderUser();
     this.toast('Avatar saved! Welcome, ' + this.state.user + ' ' + this.state.avatar);
     this.goTo('view-lobby');
-    if (!this._started) { this._started = true; this.startBroadcasts(); this.startAmbientMoments(); }
+    if (!this._started) { this._started = true; this.startBroadcasts(); this.startAmbientMoments(); this.initSteamBar(); }
   },
 
   updateHeaderUser() {
@@ -2187,7 +2312,7 @@ const app = {
     } else {
       this.updateHeaderUser();
       this.goTo('view-lobby');
-      if (!this._started) { this._started = true; this.startBroadcasts(); this.startAmbientMoments(); }
+      if (!this._started) { this._started = true; this.startBroadcasts(); this.startAmbientMoments(); this.initSteamBar(); }
     }
   },
 
@@ -2202,6 +2327,335 @@ const app = {
     if (viewId === 'view-avatar') document.getElementById('nav-avatar-btn')?.classList.add('active');
     history.pushState({ view: viewId }, '', '');
     if (viewId === 'view-news' && !this._newsLoaded) this.loadNewsContent();
+
+    // Personalise welcome messages on first visit
+    const name = this.state.user || 'friend';
+    const h = new Date().getHours();
+    if (viewId === 'view-counter') {
+      const greets = [
+        `Hey ${name}! ☕ Pull up a stool — it's quieter here. What can I get you?`,
+        `${name}! 😊 Good to see you at the counter. Coffee? Or are you just here for the company?`,
+        `${h < 12 ? 'Morning' : h < 17 ? 'Afternoon' : 'Evening'}, ${name}! ☕ What are we having today?`,
+      ];
+      const el = document.getElementById('counter-welcome');
+      if (el) el.innerText = '👩‍🦱 ' + greets[Math.floor(Math.random()*greets.length)];
+    }
+    if (viewId === 'view-floor') {
+      const floorGreets = [
+        `☕ Welcome to the main floor, ${name}! Pull up a chair — everyone's welcome here.`,
+        `👩‍🦱 ${name}! The floor's buzzing today. What's on your mind?`,
+        `☕ Hey ${name}! Ronald always said the main floor was the heart of the shop. Grab a seat!`,
+      ];
+      const fm = document.getElementById('floor-messages');
+      if (fm && fm.children.length <= 1) {
+        fm.innerHTML = '<div class="msg">' + floorGreets[Math.floor(Math.random()*floorGreets.length)] + '</div>';
+      }
+    }
+    if (viewId === 'view-bakery') {
+      const bakGreets = [
+        `🧁 ${name}! I'm Mara — and those cinnamon rolls you can smell? Still warm. What can I get you?`,
+        `🥐 Hey ${name}! Perfect timing — croissants just came out. What are you in the mood for?`,
+        `🧁 Welcome to the bakery, ${name}! Ronald's recipe is on the board. You're going to love it.`,
+      ];
+      const bm = document.getElementById('bakery-messages');
+      if (bm && bm.children.length <= 1) {
+        bm.innerHTML = '<div class="msg">' + bakGreets[Math.floor(Math.random()*bakGreets.length)] + '</div>';
+      }
+    }
+  },
+
+  // ── COFFEE BAR STEAM SCENE ──
+  initSteamBar() {
+    const existing = document.getElementById('steam-bar');
+    if (existing) return;
+    const bar = document.createElement('div');
+    bar.id = 'steam-bar';
+    bar.innerHTML = `
+      <div class="sb-scene">
+        <div class="sb-counter">
+          <div class="sb-machine">
+            <div class="sb-machine-body"></div>
+            <div class="sb-spout"></div>
+            <div class="sb-steam-wrap">
+              <div class="sb-steam s1"></div>
+              <div class="sb-steam s2"></div>
+              <div class="sb-steam s3"></div>
+            </div>
+            <div class="sb-cup"></div>
+          </div>
+          <div class="sb-staff" id="sb-jane">
+            <div class="sb-avatar">👩‍🦱</div>
+            <div class="sb-name">Jane</div>
+          </div>
+          <div class="sb-staff" id="sb-mara">
+            <div class="sb-avatar">🧑‍🍳</div>
+            <div class="sb-name">Mara</div>
+          </div>
+          <div class="sb-staff" id="sb-ronald" style="display:none">
+            <div class="sb-avatar">👨‍🍳</div>
+            <div class="sb-name">Ronald</div>
+          </div>
+        </div>
+        <div class="sb-speech" id="sb-speech" style="display:none"></div>
+      </div>`;
+    const lobby = document.getElementById('view-lobby');
+    const daily = lobby?.querySelector('.daily-card');
+    if (daily) daily.insertAdjacentElement('afterend', bar);
+    this.startSteamBarLife();
+  },
+
+  startSteamBarLife() {
+    const h = new Date().getHours();
+    this.scheduleRonaldMoments();
+    const staffLines = [
+      { staff:'sb-jane', av:'👩‍🦱', lines:[
+        "Anyone need a top-up? ☕",
+        "Ronald always said — the second cup hits different. 😄",
+        "Mara's cinnamon rolls are still warm. Just saying. 🥐",
+        "I burnt the first batch this morning. We don't talk about it. 🙈",
+        "You know Ronald used to hum while he ground the beans? Miss that. 🧡",
+        "Three people asked for oat milk today. We're officially fancy now. 😂",
+        "If anyone needs me I'll be pretending the espresso machine isn't judging me. ☕",
+        "Why did the coffee file a police report? It got mugged! 😂 Ronald loved that one.",
+        "The machine is making a sound. I'm choosing to believe it's a good sound. 🙏",
+        "Shift change soon! Ronald used to bring everyone a fresh cup at handover. 🕯️",
+      ]},
+      { staff:'sb-mara', av:'🧑‍🍳', lines:[
+        "Fresh cinnamon rolls OUT! 🥐 First come first served!",
+        "Ronald's recipe. Never changing it. Not ever. 🌿",
+        "I may have eaten one before they cooled. Don't tell Jane. 😅",
+        "Who put the sugar next to the salt AGAIN 😤",
+        "Wendy's vanilla slice is on the board today 🧁",
+        "I burned my thumb and I'm choosing to see it as a badge of honour. 💪",
+        "If you don't put cinnamon on it, are you even doing it right? 🍩",
+        "Why did the baker stop making doughnuts? Sick of the hole business! 😂",
+        "Croissants are golden. Like, actually golden. I'm so proud of myself today. 🥐",
+        "Ronald used to sneak cinnamon rings before service. Three at a time. Three! 😄",
+      ]},
+    ];
+    const showStaffLine = () => {
+      const pick = staffLines[Math.floor(Math.random() * staffLines.length)];
+      const line = pick.lines[Math.floor(Math.random() * pick.lines.length)];
+      this.showSteamSpeech(pick.staff, pick.av, line);
+      setTimeout(showStaffLine, 25000 + Math.random() * 35000);
+    };
+    setTimeout(showStaffLine, 7000);
+  },
+
+  showSteamSpeech(staffId, av, text) {
+    const sp = document.getElementById('sb-speech');
+    if (!sp) return;
+    sp.style.display = 'flex';
+    sp.innerHTML = `<span class="sb-sp-av">${av}</span><span class="sb-sp-text">${text}</span>`;
+    sp.style.animation = 'none';
+    void sp.offsetWidth;
+    sp.style.animation = '';
+    sp.classList.add('sb-visible');
+    clearTimeout(this._speechTimeout);
+    this._speechTimeout = setTimeout(() => {
+      sp.classList.remove('sb-visible');
+      setTimeout(() => { if(sp) sp.style.display = 'none'; }, 600);
+    }, 5000);
+  },
+
+  scheduleRonaldMoments() {
+    const checkRonald = () => {
+      const now = new Date();
+      const h = now.getHours();
+      const m = now.getMinutes();
+      const ronaldEl = document.getElementById('sb-ronald');
+      const shiftHours = [6,12,17,20];
+      const isShiftTime = shiftHours.includes(h) && m < 5;
+      if (isShiftTime && ronaldEl) {
+        ronaldEl.style.display = 'flex';
+        const msgs = {
+          6:  "Morning everyone! ☕ First batch is on me. Miss you all.",
+          12: "Lunchtime! 🍩 Who wants a cinnamon ring? Don't answer — everyone does.",
+          17: "Evening shift. Working late tonight, missing the family. But coffee helps. 🧡",
+          20: "Still here! The machines won't fix themselves. Coffee keeps me going. 🔧☕",
+        };
+        const msg = msgs[h] || "Ronald walked in. Shop feels warmer already. ☕";
+        setTimeout(() => {
+          this.showSteamSpeech('sb-ronald', '👨‍🍳', msg);
+          this.pushBroadcast({ name:"Ronald himself", av:"👨‍🍳", msg });
+        }, 2000);
+        setTimeout(() => { if(ronaldEl) ronaldEl.style.display = 'none'; }, 90000);
+      }
+    };
+    checkRonald();
+    setInterval(checkRonald, 60000);
+    const h = new Date().getHours();
+    const timeGreets = [
+      [5,9,  "Early bird! ☀️ Ronald always said the 6am cup tastes completely different. He was right."],
+      [9,12, "Morning rush! ☕ Grab a seat — Mara's rolls are still warm."],
+      [12,14,"Lunchtime at Ronald's. The cinnamon ring is today's recommendation. 🍩"],
+      [14,17,"Afternoon lull. Best time to sit at the counter and have a proper chat. ☕"],
+      [17,20,"Evening shift starting. Ronald used to work late on Thursdays. 🕯️"],
+      [20,24,"Late night at Ronald's. Lights are low, music is soft. Stay a while. 🌙"],
+      [0,5,  "Still burning the midnight oil? ☕ Ronald would approve. Coffee's always on."],
+    ];
+    const greet = timeGreets.find(([s,e]) => h >= s && h < e);
+    if (greet) setTimeout(() => this.showSteamSpeech('sb-jane','👩‍🦱', greet[2]), 4000);
+  },
+
+  pushBroadcast(bc) {
+    ['floor-messages','table-messages','bakery-messages'].forEach(id => {
+      const area = document.getElementById(id);
+      if (!area) return;
+      const div = document.createElement('div');
+      div.className = 'msg broadcast';
+      div.innerHTML = `<span class="bc-av">${bc.av}</span><div><span class="bc-nm">${bc.name}</span><br>${bc.msg}</div>`;
+      area.appendChild(div);
+      area.scrollTop = area.scrollHeight;
+    });
+  },
+
+  // ── PRE-BUILT CONVERSATION ENGINE ──
+  getScriptedReply(text, type) {
+    const t = text.toLowerCase().trim();
+    const name = this.state.user || 'friend';
+    const h = new Date().getHours();
+
+    if (type === 'counter' || type === 'floor' || type === 'table') {
+      // GREETINGS
+      if (/^(hi|hello|hey|howdy|hiya|sup|yo|good morning|good afternoon|good evening|morning|afternoon|evening)/.test(t)) {
+        const g = [
+          `Hey ${name}! ☕ So glad you're here. Can I start you off with something — coffee, tea, or one of Mara's cinnamon rolls?`,
+          `${name}! Pull up a stool. 😊 What are you in the mood for today — something strong, something sweet, or just a good chat?`,
+          `Well hello there, ${name}! ☀️ Ronald always said every good visit starts with one question: black or with milk?`,
+          `${name}! You made it. 🧡 It's a good day at Ronald's. Most important question first — coffee or tea?`,
+        ];
+        return { reply: g[Math.floor(Math.random()*g.length)], state:'asked_drink' };
+      }
+      // GENERAL COFFEE
+      if (/(coffee|espresso|brew|cuppa|cup of)/.test(t) && !/mocha|latte|cappuccino|flat white|americano|cold brew|dark roast|cinnamon latte/.test(t)) {
+        return { reply: `Ooh yes! ☕ What calls to you today?
+
+☕ Ronald's Dark Roast — bold, no nonsense
+🌿 Cinnamon Latte — Wendy's personal favourite
+☕ Flat White — if you mean business
+🫙 Cold Brew Float — ridiculous but amazing
+🫖 Vanilla Chai — if coffee isn't your thing today`, state:'asked_which' };
+      }
+      // SPECIFIC COFFEES
+      if (/dark roast|black coffee|ronald.?s (coffee|roast|cup)|strong coffee/.test(t))
+        return { reply: `Ronald's Dark Roast — excellent taste! ☕ That was his 6am cup, every single morning, no sugar, no milk. Just pure intention. ${h<12?'Perfect for this morning.':'Just what you need.'} Black like Ronald, or shall I add a splash of something?`, state:'asked_milk' };
+      if (/mocha/.test(t))
+        return { reply: `A mocha! 🍫☕ Espresso, steamed milk, chocolate — basically dessert pretending to be breakfast and I am HERE for it. Hot or iced? And whipped cream — yes or absolutely yes? 😄`, state:'asked_mocha' };
+      if (/cinnamon latte/.test(t))
+        return { reply: `Wendy's Cinnamon Latte! 🌿 Ronald used to say Wendy invented this one and she'll never admit it. Hot, obviously. One shot or two? It can sneak up on you. 😄`, state:'asked_shots' };
+      if (/flat white/.test(t))
+        return { reply: `Flat white! ☕ The sophisticated one. Microfoam, double ristretto, served like it means something. Whole milk or oat? Ronald said oat was "the future" — right before drinking three dark roasts. 😂`, state:'asked_milk' };
+      if (/cappuccino|cap/.test(t))
+        return { reply: `Cappuccino! ☕ Espresso, steamed milk, foam — a Holy Trinity, Ronald called it. Dry (more foam) or wet (more milk)? Most people don't know they have a preference until asked. 😄`, state:'asked_style' };
+      if (/americano/.test(t))
+        return { reply: `An Americano! ☕ Simple, honest, unfussy. Ronald approved of anything unfussy. Single or double shot? And hot or over ice?`, state:'asked_details' };
+      if (/cold brew|iced coffee/.test(t))
+        return { reply: `Cold brew! 🫙 Ronald tried it once, called it "refrigerated betrayal," then ordered a second one. 😂 Over ice with milk, or straight? And — vanilla ice cream float? It's on the menu for a reason.`, state:'asked_cold' };
+      if (/(chai|tea)/.test(t))
+        return { reply: `Vanilla Chai! 🫖 Basically a hug in a cup. Brewed spices, steamed milk, hint of vanilla. Hot or iced? Strong on spice or gentle?`, state:'asked_chai' };
+      // FOOD
+      if (/croissant/.test(t))
+        return { reply: `Croissants! 🥐 Mara just pulled a fresh batch — still warm. Ronald believed a croissant should flake EVERYWHERE and you should feel zero shame. Butter only, or Wendy's cinnamon butter? It changes everything.`, state:'asked_butter' };
+      if (/cinnamon ring|ring donut|doughnut/.test(t))
+        return { reply: `THE cinnamon ring! 🍩 Ronald's absolute favourite. He could eat three in a sitting and Wendy pretended not to count. One or two? (There's no wrong answer.) 😄`, state:'confirming' };
+      if (/vanilla slice|wendy.?s slice/.test(t))
+        return { reply: `Wendy's Vanilla Slice! 🧁 Puff pastry, thick custard — unchanged since 1987. Ronald always ordered two. Always. One or two?`, state:'confirming' };
+      if (/toast|cinnamon butter/.test(t))
+        return { reply: `Toast with cinnamon butter! 🍞 Ronald called it "the most honest food there is." Wendy's homemade recipe. Coming right up — extra butter because Ronald would insist. ☕`, state:'confirming' };
+      if (/(food|eat|hungry|snack|pastry|bake|bakery|bite)/.test(t))
+        return { reply: `Hungry? 🥐 Fresh today: cinnamon rings (Ronald's fave, still warm), butter croissants (golden), Wendy's vanilla slice (custard is *perfect* today), toast with cinnamon butter. Sweet, buttery, or absolutely-cinnamon-everything?`, state:'asked_food' };
+      // MILK / SUGAR
+      if (/(milk|oat|almond|soy|no milk|black)/.test(t)) {
+        const m = [
+          `Oat milk! 🌿 Ronald called it "fancy water" but drank it sometimes when no one was looking. 😄 Sugar — one, two, or none?`,
+          `Whole milk — the classic. Ronald approved. And sugar?`,
+          `Black it is! Bold. Just like Ronald. Brewing now. ☕`,
+        ];
+        return { reply: m[Math.floor(Math.random()*m.length)], state:'asked_sugar' };
+      }
+      if (/(sugar|no sugar|sweet|none|zero|one sugar|two sugar)/.test(t)) {
+        const s = [`No sugar — Ronald's way. ☕ Brewing now, two minutes.`, `One sugar — perfect. ☕ Coming right up!`, `Two sugars! Sweet tooth. Ronald had those days. 😄 Brewing now!`];
+        return { reply: s[Math.floor(Math.random()*s.length)] + ' 🕐', state:'brewing' };
+      }
+      // CONFIRMATIONS / YES
+      if (/(yes|yep|yeah|please|sure|ok|okay|sounds good|perfect|go ahead|make it|get me|i.?ll have|i want|give me|bring me)/.test(t)) {
+        const c = [
+          `Perfect! ☕ Coming right up — two minutes. Ronald always said the best coffee is the one you actually waited for. 🕐`,
+          `On it! 😄 Mara's going to be jealous you ordered this one. Two minutes, ${name}!`,
+          `Brewing now! ☕ You can hear the machine thinking. That's either the grinder or it judging my life choices. Probably both. 😂`,
+          `Got it! 🧡 Two minutes. Ronald used to stand here and supervise. I kind of feel him doing that now. ☕`,
+        ];
+        return { reply: c[Math.floor(Math.random()*c.length)], state:'served' };
+      }
+      // EMOTIONAL
+      if (/(tired|exhausted|stressed|rough|bad day|hard|struggling|sad|down|not great)/.test(t))
+        return { reply: `Oh ${name}... sit down. ☕ Ronald used to say coffee doesn't fix everything, but it's a solid first step. Can I get you something warm — on the house for tough days. What's going on?`, state:'caring' };
+      if (/(great|amazing|wonderful|brilliant|happy|fantastic|good day|best day)/.test(t))
+        return { reply: `YES! 🌟 Good energy is EXACTLY what Ronald's needs. He believed good moods were contagious — you're proving him right. What are we celebrating with — coffee or cinnamon ring? 😄`, state:'chatting' };
+      // HOW ARE YOU
+      if (/how are you|how.?re you|you okay|you good/.test(t))
+        return { reply: `I'm wonderful! ☕ Mara hasn't broken anything today, the machine is cooperating, and someone left a gorgeous note on the Memory Wall this morning. A good day. How are YOU doing, ${name}?`, state:'chatting' };
+      // RONALD
+      if (/ronald|your dad|the man|miss him|remember him/.test(t)) {
+        const r = [
+          `Ronald... ☕ He'd come in before 6am, grind the beans by hand, hum something cheerful but terrible. This whole place smells like him. 🧡`,
+          `He fixed the espresso machine with a butter knife once. It never worked better. 🔧 Miss him every single day.`,
+          `Ronald's rule: no one leaves without coffee AND a kind word. We still follow it. ☕`,
+          `He'd be embarrassed by all this fuss. "Just make good coffee," he'd say. Then sneak a fourth cinnamon ring. 😄🧡`,
+        ];
+        return { reply: r[Math.floor(Math.random()*r.length)], state:'chatting' };
+      }
+      // WENDY
+      if (/wendy/.test(t))
+        return { reply: `Wendy! 🧡 She's the reason the vanilla slice exists. And the cinnamon latte. And honestly, the reason Ronald showed up every morning. She'd come in with this look — like the whole shop was exactly where it should be. Still does. 🌿`, state:'chatting' };
+      // JOKES
+      if (/joke|funny|make me laugh|humor/.test(t)) {
+        const j = [
+          `Why did the coffee file a police report? It got mugged! 😂 Ronald told that one EVERY week. Every. Single. Week.`,
+          `What do you call sad coffee? Depresso. ☕😭 Mara invented that. We're still deciding if she should be proud.`,
+          `I asked the barista how she liked her job. She said it had its perks. 😄 Ronald laughed at that for three days straight.`,
+          `Why do coffee beans never argue? They don't want grounds for a dispute. 😂 That's a Jane original. Patent pending.`,
+          `What's a barista's favourite exercise? The French press! 💪☕ I'm here all week. Also literally — I work every day.`,
+        ];
+        return { reply: j[Math.floor(Math.random()*j.length)], state:'chatting' };
+      }
+      // MUSIC
+      if (/music|jukebox|song|playlist|playing/.test(t))
+        return { reply: `The jukebox is Ronald's pride! 🎵 He built the playlist himself — jazz, lo-fi, soul, bossa nova. Head to the Lounge. "Ronald's Waltz" is track 5 and it will absolutely wreck you in the best way. 🧡`, state:'chatting' };
+      // FALLBACK
+      const f = [
+        `Hmm, I didn't quite catch that, ${name}! 😊 I'm best at coffee orders and occasional wisdom. Can I start you with something — ☕ coffee, 🫖 chai, or 🥐 something from the bakery?`,
+        `That one's above my pay grade! 😄 But you know what ISN'T? Making you an excellent cup of coffee. What are you feeling?`,
+        `Ha! I wish I could help with that. 😂 I'm mostly good for coffee, warm pastries, and things Ronald said that I remember at exactly the right moment. Want a drink?`,
+      ];
+      return { reply: f[Math.floor(Math.random()*f.length)], state:'idle' };
+    }
+
+    // ── MARA (bakery) ──
+    if (type === 'bakery') {
+      if (/^(hi|hello|hey|morning|afternoon|evening|howdy)/.test(t))
+        return { reply: `Oh hello ${name}! 🧁 I'm Mara — Jane's assistant and the reason this place smells incredible. The cinnamon rolls just came out. Can I tempt you?`, state:'asked_food' };
+      if (/cinnamon|rolls?|ring/.test(t))
+        return { reply: `YES! 🍩 Ronald's exact recipe. I've made it so many times I could do it with my eyes closed. Soft dough, golden glaze, proper cinnamon. One or two? (Two is the correct answer, historically.)`, state:'confirming' };
+      if (/croissant/.test(t))
+        return { reply: `Croissants! 🥐 Still warm from the oven. Ronald said they should flake EVERYWHERE and you should feel zero guilt. Butter only, or Wendy's cinnamon butter? It will change your life.`, state:'asked_butter' };
+      if (/vanilla slice|wendy/.test(t))
+        return { reply: `Wendy's Vanilla Slice! 🧁 She gave me the recipe on a handwritten card. I guard it with my life. Custard is perfect today — one slice or two? Ronald always said two. 😄`, state:'confirming' };
+      if (/what.?s fresh|what.?s (good|on)|menu|today/.test(t))
+        return { reply: `Today's fresh: 🍩 Cinnamon Rings (still warm!), 🥐 Butter Croissants (golden and perfect), 🧁 Wendy's Vanilla Slice (custard is SET today — I'm proud), 🍞 Toast with cinnamon butter. What's calling you?`, state:'asked_food' };
+      if (/joke|funny|laugh/.test(t))
+        return { reply: `Why did the baker stop making doughnuts? He was sick of the hole business! 😂 Ronald laughed at that for a week. It's retired now. Except I just told it. Anyway — what can I bake for you?`, state:'asked_food' };
+      if (/(yes|please|sure|ok|one|two|order|get me|i.?ll have)/.test(t))
+        return { reply: `Coming right up! 🥐 Two minutes — good things shouldn't be rushed. That's Rule One of baking. Ronald wrote it on the wall back there. ☕`, state:'served' };
+      const mf = [
+        `I'm mostly a pastry expert, ${name}! 😄 If it involves cinnamon, butter or Wendy's recipes — I'm your person. What can I get you?`,
+        `Ha! Above my baking pay grade. 😂 But I CAN get you something warm and wonderful. Sweet or savoury?`,
+      ];
+      return { reply: mf[Math.floor(Math.random()*mf.length)], state:'idle' };
+    }
+
+    return { reply: `Hey ${name}! ☕ What can I get you?`, state:'idle' };
   },
 
   renderTables() {
@@ -2226,10 +2680,17 @@ const app = {
   openTable(idx, name, icon, sub) {
     this.state.currentTable = idx;
     this.state.tableHistory = [];
+    const userName = this.state.user || 'friend';
     document.getElementById('table-chat-icon').innerText  = icon;
     document.getElementById('table-chat-title').innerText = name + ' · Table ' + (idx+1);
     document.getElementById('table-chat-sub').innerText   = sub;
-    document.getElementById('table-messages').innerHTML   = '<div class="msg">Welcome to this table. The vibe is ' + sub.toLowerCase() + ' ☕</div>';
+    const tableWelcomes = [
+      `Hey ${userName}! ☕ Good choice — this table has the best light. What can I get you?`,
+      `${userName}! ${icon} The ${name.toLowerCase()} — lovely pick. Settling in? Coffee or something from Mara?`,
+      `Welcome to your spot, ${userName}. 🧡 Ronald always said a private table meant you had something worth thinking about. What are you in the mood for?`,
+    ];
+    const welcome = tableWelcomes[Math.floor(Math.random()*tableWelcomes.length)];
+    document.getElementById('table-messages').innerHTML = '<div class="msg">👩‍🦱 ' + welcome + '</div>';
     this.goTo('view-table-chat');
   },
 
@@ -2429,7 +2890,7 @@ const app = {
     chip.innerHTML = regulars.map(r => `<div class="reg-chip"><span class="reg-chip-av">${r.av}</span>${r.name}</div>`).join('');
   },
 
-  async sendMsg(type) {
+  sendMsg(type) {
     const ids = { floor:'floor', counter:'counter', table:'table', bakery:'bakery' };
     const inputId = ids[type] + '-input';
     const areaId  = ids[type] + '-messages';
@@ -2449,6 +2910,7 @@ const app = {
 
     const shouldReply = type === 'counter' || type === 'bakery' || this.state.hostessReplies;
     if (shouldReply) {
+      // Show typing dots
       const tid  = 'typing-' + Date.now();
       const dots = document.createElement('div');
       dots.className = 'msg typing-dots';
@@ -2457,14 +2919,26 @@ const app = {
       area.appendChild(dots);
       area.scrollTop = area.scrollHeight;
 
-      const reply = await this.getReply(text, type);
-      document.getElementById(tid)?.remove();
+      // Natural typing delay: 600ms–1400ms based on response length feel
+      const delay = 700 + Math.random() * 700;
+      setTimeout(() => {
+        document.getElementById(tid)?.remove();
 
-      const replyMsg = document.createElement('div');
-      replyMsg.className = 'msg';
-      replyMsg.innerText = (type === 'bakery' ? '🧁 ' : (type === 'counter' ? '👩‍🦱 ' : '☕ ')) + reply;
-      area.appendChild(replyMsg);
-      area.scrollTop = area.scrollHeight;
+        const { reply } = this.getScriptedReply(text, type);
+        const avatar = type === 'bakery' ? '🧁 ' : (type === 'counter' ? '👩‍🦱 ' : '☕ ');
+
+        // Handle multi-line replies (newlines become separate bubbles with small delay)
+        const lines = reply.split('\n').filter(l => l.trim());
+        lines.forEach((line, i) => {
+          setTimeout(() => {
+            const replyMsg = document.createElement('div');
+            replyMsg.className = 'msg';
+            replyMsg.innerText = (i === 0 ? avatar : '   ') + line;
+            area.appendChild(replyMsg);
+            area.scrollTop = area.scrollHeight;
+          }, i * 400);
+        });
+      }, delay);
     }
   },
 
